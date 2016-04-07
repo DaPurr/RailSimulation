@@ -1,5 +1,7 @@
 package wagon.components.network.expanded;
 
-public interface Transfer {
+import wagon.components.network.Node;
+
+public interface Transfer extends Node {
 
 }

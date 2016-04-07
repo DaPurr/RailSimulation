@@ -1,4 +1,4 @@
-package wagon.components;
+package wagon.components.infrastructure;
 
 /**
  * This class models the necessary characteristics of a railway station.
