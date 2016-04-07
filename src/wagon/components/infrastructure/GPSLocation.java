@@ -2,7 +2,8 @@ package wagon.components.infrastructure;
 
 /**
  * 
- * The <code>GPSLocation</code> class provides the latitude and longitude of the location it represents.
+ * The <code>GPSLocation</code> class provides the latitude and longitude of the location 
+ * it represents.
  * 
  * @author Nemanja Milovanovic
  *
@@ -14,9 +15,11 @@ public class GPSLocation {
 	private double longitude;
 
 	/**
-	 * Creates a new <code>GPSLocation</code> object with the coordinates represented in latitude and longitude.
+	 * Creates a new <code>GPSLocation</code> object with the coordinates represented in 
+	 * latitude and longitude.
 	 * 
-	 * This class is mainly needed for algorithms utilizing location-specific heuristics (A* search, for example).
+	 * This class is mainly needed for algorithms utilizing location-specific heuristics 
+	 * (A* search, for example).
 	 * 
 	 * @param latitude	latitude of location
 	 * @param longitude	longitude of location
@@ -27,25 +30,23 @@ public class GPSLocation {
 	}
 	
 	/**
-	 * Returns the latitude of the location represented by <code>GPSLocation</code>.
-	 * 
-	 * @return	latitude of location
+	 * @return	Returns the latitude of the location represented by <code>GPSLocation</code>.
 	 */
 	public double latitude() {
 		return latitude;
 	}
 	
 	/**
-	 * Returns the latitude of the location represented by <code>GPSLocation</code>.
-	 * 
-	 * @return	longitude of location
+	 * @return	Returns the latitude of the location represented by 
+	 * <code>GPSLocation</code>.
 	 */
 	public double longitude() {
 		return longitude;
 	}
 	
 	/**
-	 * Calculates distance between two <code>GPSLocation</code> objects. Uses ... to determine the distance between the two points.
+	 * Calculates distance between two <code>GPSLocation</code> objects. Uses ... 
+	 * to determine the distance between the two points.
 	 * 
 	 * @param	other	<code>GPSLocation</code> object representing other location
 	 * @return	distance between the two GPS locations

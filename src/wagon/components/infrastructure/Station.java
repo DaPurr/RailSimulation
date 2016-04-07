@@ -24,7 +24,6 @@ public class Station {
 	}
 	
 	/**
-	 * 
 	 * @return	station name
 	 */
 	public String name() {
@@ -32,7 +31,6 @@ public class Station {
 	}
 	
 	/**
-	 * 
 	 * @return	station id
 	 */
 	public int id() {

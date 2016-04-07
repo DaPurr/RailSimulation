@@ -33,27 +33,20 @@ public class Composition {
 	}
 
 	/**
-	 * Getter for the number of wagons in this composition.
-	 * 
-	 * @return	number of wagons
+	 * @return	number of wagons in composition
 	 */
 	public int getNrWagons() {
 		return nrWagons;
 	}
 
 	/**
-	 * Getter for the type of rolling stock. A composition necessarily 
-	 * consists of only one type of rolling stock
-	 * 
-	 * @return	the rolling stock type
+	 * @return	the rolling stock type of this composition
 	 */
 	public TrainType type() {
 		return type;
 	}
 
 	/**
-	 * Getter for the capacity available for business class. 
-	 * 
 	 * @return	business class passenger capacity
 	 */
 	public int capacity1() {
@@ -61,9 +54,6 @@ public class Composition {
 	}
 
 	/**
-	 * Getter for the capacity available for economy class. This includes
-	 * foldable seats and non-seated capacity.
-	 * 
 	 * @return	economy class passenger capacity
 	 */
 	public int capacity2() {
