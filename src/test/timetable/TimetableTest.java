@@ -1,4 +1,4 @@
-package junit.timetable;
+package test.timetable;
 
 import static org.junit.Assert.*;
 
