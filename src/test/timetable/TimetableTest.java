@@ -19,7 +19,8 @@ public class TimetableTest {
 	
 	@Test
 	public void testAddStationStationListOfScheduledDeparture() {
-		Station station = new Station("test1", 26);
+		Station stationFrom1 = new Station("test1", 26);
+		Station stationTo1 = new Station("test2", 30);
 		
 		Composition comp1 = new Composition(TrainType.VIRM, 6, 100, 20);
 		Composition comp2 = new Composition(TrainType.DDZ, 6, 100, 20);
@@ -31,10 +32,10 @@ public class TimetableTest {
 		LocalTime time3 = LocalTime.parse("15:09");
 		LocalTime time4 = LocalTime.parse("22:09");
 		
-		ScheduledDeparture sd1 = new ScheduledDeparture(comp1, time1);
-		ScheduledDeparture sd2 = new ScheduledDeparture(comp2, time2);
-		ScheduledDeparture sd3 = new ScheduledDeparture(comp3, time3);
-		ScheduledDeparture sd4 = new ScheduledDeparture(comp4, time4);
+		ScheduledDeparture sd1 = new ScheduledDeparture(comp1, time1, stationTo1);
+		ScheduledDeparture sd2 = new ScheduledDeparture(comp2, time2, stationTo1);
+		ScheduledDeparture sd3 = new ScheduledDeparture(comp3, time3, stationTo1);
+		ScheduledDeparture sd4 = new ScheduledDeparture(comp4, time4, stationTo1);
 		
 		List<ScheduledDeparture> departures = new ArrayList<>();
 		departures.add(sd1);
@@ -46,10 +47,10 @@ public class TimetableTest {
 		Collections.shuffle(shuffledDepartures);
 		
 		Timetable tt1 = new Timetable();
-		tt1.addStation(station, shuffledDepartures);
+		tt1.addStation(stationFrom1, shuffledDepartures);
 		
 		assertEquals("Departures not added.", 4, shuffledDepartures.size());
-		assertEquals("Departures not sorted.", departures, tt1.departuresByStation(station));
+		assertEquals("Departures not sorted.", departures, tt1.departuresByStation(stationFrom1));
 	}
 
 	@Test
