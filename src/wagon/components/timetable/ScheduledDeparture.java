@@ -2,6 +2,7 @@ package wagon.components.timetable;
 
 import java.time.LocalTime;
 
+import wagon.components.infrastructure.Station;
 import wagon.components.rollingstock.Composition;
 
 /**
@@ -17,6 +18,7 @@ public class ScheduledDeparture implements Comparable<ScheduledDeparture> {
 
 	private Composition composition;
 	private LocalTime time;
+	private Station toStation;
 	
 	/**
 	 * Constructs a <code>ScheduldDeparture</code> object.
@@ -24,9 +26,10 @@ public class ScheduledDeparture implements Comparable<ScheduledDeparture> {
 	 * @param composition	train composition
 	 * @param time			scheduled departure time
 	 */
-	public ScheduledDeparture(Composition composition, LocalTime time) {
+	public ScheduledDeparture(Composition composition, LocalTime time, Station toStation) {
 		this.composition = composition;
 		this.time = time;
+		this.toStation = toStation;
 	}
 	
 	/**
@@ -37,15 +40,26 @@ public class ScheduledDeparture implements Comparable<ScheduledDeparture> {
 	}
 	
 	/**
-	 * 
 	 * @return	scheduled departure time
 	 */
 	public LocalTime time() {
 		return time;
 	}
+	
+	/**
+	 * @return	arriving station
+	 */
+	public Station toStation() {
+		return toStation;
+	}
 
 	@Override
 	public int compareTo(ScheduledDeparture that) {
 		return this.time.compareTo(that.time());
+	}
+	
+	@Override
+	public String toString() {
+		return "[" + time + ": " + toStation + "(" + composition.type() + ")]";
 	}
 }
