@@ -3,8 +3,10 @@ package wagon.components.timetable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import wagon.components.infrastructure.Station;
 
@@ -71,7 +73,54 @@ public class Timetable {
 		return new ArrayList<>(departures.get(station));
 	}
 	
+	/**
+	 * @return	number of stations
+	 */
 	public int size() {
 		return departures.size();
+	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if (!(other instanceof Timetable))
+			return false;
+		Timetable o = (Timetable) other;
+		return this.departures.equals(o.departures);
+	}
+	
+	@Override
+	public int hashCode() {
+		return departures.hashCode();
+	}
+	
+	@Override
+	public String toString() {
+		String s = "[\n";
+		for (Station station : departures.keySet()) {
+			s += "  ";
+			s += station.name();
+			if (departures.get(station) == null)
+				continue;
+			List<ScheduledDeparture> deps = departuresByStation(station);
+			for (int i = 0; i < deps.size(); i++) {
+				s += "\t";
+				if (i > 0)
+					s += "\t";
+				ScheduledDeparture dep = deps.get(i);
+				s += dep.toStation().name() + " ";
+				s += dep.time() + " ";
+				s += dep.composition().type().toString() + "_"
+						+ dep.composition().getNrWagons() + "\n";
+			}
+		}
+		s += "]";
+		return s;
+	}
+	
+	/**
+	 * @return	set of train stations
+	 */
+	public Set<Station> stations() {
+		return new HashSet<>(departures.keySet());
 	}
 }
