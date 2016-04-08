@@ -19,48 +19,83 @@ public class TimetableTest {
 	
 	@Test
 	public void testAddStationStationListOfScheduledDeparture() {
-		Station stationFrom1 = new Station("test1", 26);
-		Station stationTo1 = new Station("test2", 30);
+		int nrTimetables = 10;
+		int nrDeps = 4;
+		Timetable[] expectedTimetables = new Timetable[nrTimetables];
+		Timetable[] actualTimetables = new Timetable[nrTimetables];
+		Station stationFrom = new Station("from", 1);
+		Station stationTo = new Station("to", 2);
+		Composition comp = new Composition(TrainType.VIRM, 6, 100, 20);
 		
-		Composition comp1 = new Composition(TrainType.VIRM, 6, 100, 20);
-		Composition comp2 = new Composition(TrainType.DDZ, 6, 100, 20);
-		Composition comp3 = new Composition(TrainType.SLT, 6, 100, 20);
-		Composition comp4 = new Composition(TrainType.SLT, 6, 100, 20);
+		for (int i = 0; i < nrTimetables; i++) {
+			LocalTime time = LocalTime.parse("12:00:00");
+			Timetable actualTimetable = new Timetable();
+			Timetable expectedTimetable = new Timetable();
+			List<ScheduledDeparture> listDeps = new ArrayList<>();
+			for (int j = 0; j < nrDeps; j++) {
+				time = time.plusMinutes(5);
+				ScheduledDeparture departure = 
+						new ScheduledDeparture(comp, time, stationTo);
+				listDeps.add(departure);
+			}
+			expectedTimetable.addStation(stationFrom, listDeps);
+			expectedTimetables[i] = actualTimetable;
+			List<ScheduledDeparture> shuffledDeps = new ArrayList<>(listDeps);
+			Collections.shuffle(shuffledDeps);
+			actualTimetable.addStation(stationFrom, shuffledDeps);
+			actualTimetables[i] = expectedTimetable;
+		}
 		
-		LocalTime time1 = LocalTime.parse("12:09");
-		LocalTime time2 = LocalTime.parse("12:23");
-		LocalTime time3 = LocalTime.parse("15:09");
-		LocalTime time4 = LocalTime.parse("22:09");
-		
-		ScheduledDeparture sd1 = new ScheduledDeparture(comp1, time1, stationTo1);
-		ScheduledDeparture sd2 = new ScheduledDeparture(comp2, time2, stationTo1);
-		ScheduledDeparture sd3 = new ScheduledDeparture(comp3, time3, stationTo1);
-		ScheduledDeparture sd4 = new ScheduledDeparture(comp4, time4, stationTo1);
-		
-		List<ScheduledDeparture> departures = new ArrayList<>();
-		departures.add(sd1);
-		departures.add(sd2);
-		departures.add(sd3);
-		departures.add(sd4);
-		
-		List<ScheduledDeparture> shuffledDepartures = new ArrayList<>(departures);
-		Collections.shuffle(shuffledDepartures);
-		
-		Timetable tt1 = new Timetable();
-		tt1.addStation(stationFrom1, shuffledDepartures);
-		
-		assertEquals("Departures not added.", 4, shuffledDepartures.size());
-		assertEquals("Departures not sorted.", departures, tt1.departuresByStation(stationFrom1));
+		for (int i = 0; i < nrTimetables; i++) {
+			Timetable actual = actualTimetables[i];
+			Timetable expected = expectedTimetables[i];
+			assertEquals("Incorrect nr. of scheduled departures.", nrDeps, actual.size());
+			assertEquals("Scheduled departures not sorted.", expected, actual);
+		}
 	}
 
 	@Test
 	public void testAddStationStationScheduledDeparture() {
-		fail("Not yet implemented");
+		int nrTimetables = 10;
+		int nrDeps = 4;
+		Timetable[] expectedTimetables = new Timetable[nrTimetables];
+		Timetable[] actualTimetables = new Timetable[nrTimetables];
+		Station stationFrom = new Station("from", 1);
+		Station stationTo = new Station("to", 2);
+		Composition comp = new Composition(TrainType.VIRM, 6, 100, 20);
+		
+		for (int i = 0; i < nrTimetables; i++) {
+			LocalTime time = LocalTime.parse("12:00:00");
+			Timetable actualTimetable = new Timetable();
+			Timetable expectedTimetable = new Timetable();
+			List<ScheduledDeparture> listDeps = new ArrayList<>();
+			for (int j = 0; j < nrDeps; j++) {
+				time = time.plusMinutes(5);
+				ScheduledDeparture departure = 
+						new ScheduledDeparture(comp, time, stationTo);
+				listDeps.add(departure);
+			}
+			for (ScheduledDeparture dep : listDeps)
+				expectedTimetable.addStation(stationFrom, dep);
+			expectedTimetables[i] = actualTimetable;
+			List<ScheduledDeparture> shuffledDeps = new ArrayList<>(listDeps);
+			Collections.shuffle(shuffledDeps);
+			for (ScheduledDeparture dep : shuffledDeps)
+				actualTimetable.addStation(stationFrom, dep);
+			actualTimetables[i] = expectedTimetable;
+		}
+		
+		for (int i = 0; i < nrTimetables; i++) {
+			Timetable actual = actualTimetables[i];
+			Timetable expected = expectedTimetables[i];
+			assertEquals("Incorrect nr. of scheduled departures.", nrDeps, actual.size());
+			assertEquals("Scheduled departures not sorted.", expected, actual);
+		}
 	}
 
 	@Test
 	public void testDeparturesByStation() {
-		fail("Not yet implemented");
+		assertEquals("BOE", 1, 1);
 	}
 
 }

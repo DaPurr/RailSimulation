@@ -70,4 +70,8 @@ public class Timetable {
 			throw new IllegalArgumentException("Station not available: " + station);
 		return new ArrayList<>(departures.get(station));
 	}
+	
+	public int size() {
+		return departures.size();
+	}
 }
