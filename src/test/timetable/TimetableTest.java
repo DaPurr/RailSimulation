@@ -49,7 +49,8 @@ public class TimetableTest {
 		for (int i = 0; i < nrTimetables; i++) {
 			Timetable actual = actualTimetables[i];
 			Timetable expected = expectedTimetables[i];
-			assertEquals("Incorrect nr. of scheduled departures.", nrDeps, actual.size());
+			assertEquals("Incorrect nr. of scheduled departures.", nrDeps, 
+					actual.departuresByStation(stationFrom).size());
 			assertEquals("Scheduled departures not sorted.", expected, actual);
 		}
 	}
@@ -88,14 +89,48 @@ public class TimetableTest {
 		for (int i = 0; i < nrTimetables; i++) {
 			Timetable actual = actualTimetables[i];
 			Timetable expected = expectedTimetables[i];
-			assertEquals("Incorrect nr. of scheduled departures.", nrDeps, actual.size());
+			assertEquals("Incorrect nr. of scheduled departures.", 
+					nrDeps, actual.departuresByStation(stationFrom).size());
 			assertEquals("Scheduled departures not sorted.", expected, actual);
 		}
 	}
 
 	@Test
 	public void testDeparturesByStation() {
-		assertEquals("BOE", 1, 1);
+		Station from1 = new Station("Nwk", 1);
+		Station from2 = new Station("Cps", 2);
+		Station from3 = new Station("Rta", 3);
+		Station to1 = new Station("Cps", 2);
+		Station to2 = new Station("Rta", 3);
+		Station to3 = new Station("Rtd", 4);
+		
+		Composition comp1 = new Composition(TrainType.SLT, 3, 100, 20);
+		
+		LocalTime time1 = LocalTime.parse("12:00:00");
+		ScheduledDeparture sd1 = new ScheduledDeparture(comp1, time1, to1);
+		LocalTime time2 = LocalTime.parse("12:04:00");
+		ScheduledDeparture sd2 = new ScheduledDeparture(comp1, time2, to2);
+		LocalTime time3 = LocalTime.parse("12:09:00");
+		ScheduledDeparture sd3 = new ScheduledDeparture(comp1, time3, to3);
+		
+		Timetable timetable = new Timetable();
+		timetable.addStation(from1, sd1);
+		timetable.addStation(from2, sd2);
+		timetable.addStation(from3, sd3);
+		
+		List<ScheduledDeparture> list1 = new ArrayList<>();
+		list1.add(sd1);
+		List<ScheduledDeparture> list2 = new ArrayList<>();
+		list2.add(sd2);
+		List<ScheduledDeparture> list3 = new ArrayList<>();
+		list3.add(sd3);
+		
+		assertEquals("Incorrect scheduled departures.", 
+				list1, timetable.departuresByStation(from1));
+		assertEquals("Incorrect scheduled departures.", 
+				list2, timetable.departuresByStation(from2));
+		assertEquals("Incorrect scheduled departures.", 
+				list3, timetable.departuresByStation(from3));
 	}
 
 }
