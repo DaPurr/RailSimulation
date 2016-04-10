@@ -1,18 +1,15 @@
 package wagon.network.expanded;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.time.*;
+import java.util.*;
 
+import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 
 import wagon.infrastructure.Station;
 import wagon.network.Edge;
 import wagon.network.Node;
+import wagon.network.WeightedEdge;
 import wagon.rollingstock.Composition;
 import wagon.rollingstock.TrainType;
 import wagon.timetable.ScheduledTrip;
@@ -20,12 +17,16 @@ import wagon.timetable.Timetable;
 
 public class EventActivityNetwork {
 
-	private DefaultDirectedGraph<Node, Edge> graph;
+	private DefaultDirectedGraph<Node, WeightedEdge> graph;
 	private Map<Edge, Double> capacities;
 	
 	private EventActivityNetwork() {
-		graph = new DefaultDirectedGraph<>(Edge.class);
+		graph = new DefaultDirectedGraph<>(WeightedEdge.class);
 		capacities = new HashMap<>();
+	}
+	
+	public Graph<Node, WeightedEdge> graph() {
+		return graph;
 	}
 	
 	/**
@@ -43,19 +44,19 @@ public class EventActivityNetwork {
 		Composition comp2 = new Composition(2, TrainType.SGM, 3, 100, 20);
 		Composition comp3 = new Composition(3, TrainType.SGM, 6, 100, 20);
 		
-		ScheduledTrip sd1 = new ScheduledTrip(comp1, LocalDateTime.parse("06:47"), 
-				LocalDateTime.parse("06:50"), station1, station2);
-		ScheduledTrip sd2 = new ScheduledTrip(comp2, LocalDateTime.parse("07:17"), 
-				LocalDateTime.parse("07:20"), station1, station2);
-		ScheduledTrip sd3 = new ScheduledTrip(comp3, LocalDateTime.parse("07:47"), 
-				LocalDateTime.parse("07:50"), station1, station2);
+		ScheduledTrip sd1 = new ScheduledTrip(comp1, LocalDateTime.parse("2016-04-11T06:47"), 
+				LocalDateTime.parse("2016-04-11T06:50"), station1, station2);
+		ScheduledTrip sd2 = new ScheduledTrip(comp2, LocalDateTime.parse("2016-04-11T07:17"), 
+				LocalDateTime.parse("2016-04-11T07:20"), station1, station2);
+		ScheduledTrip sd3 = new ScheduledTrip(comp3, LocalDateTime.parse("2016-04-11T07:47"), 
+				LocalDateTime.parse("2016-04-11T07:50"), station1, station2);
 		
-		ScheduledTrip sd4 = new ScheduledTrip(comp1, LocalDateTime.parse("06:50"), 
-				LocalDateTime.parse("06:53"), station2, station3);
-		ScheduledTrip sd5 = new ScheduledTrip(comp2, LocalDateTime.parse("07:20"), 
-				LocalDateTime.parse("07:23"), station2, station3);
-		ScheduledTrip sd6 = new ScheduledTrip(comp3, LocalDateTime.parse("07:50"), 
-				LocalDateTime.parse("07:53"), station2, station3);
+		ScheduledTrip sd4 = new ScheduledTrip(comp1, LocalDateTime.parse("2016-04-11T06:50"), 
+				LocalDateTime.parse("2016-04-11T06:53"), station2, station3);
+		ScheduledTrip sd5 = new ScheduledTrip(comp2, LocalDateTime.parse("2016-04-11T07:20"), 
+				LocalDateTime.parse("2016-04-11T07:23"), station2, station3);
+		ScheduledTrip sd6 = new ScheduledTrip(comp3, LocalDateTime.parse("2016-04-11T07:50"), 
+				LocalDateTime.parse("2016-04-11T07:53"), station2, station3);
 		
 		Timetable timetable = new Timetable();
 		timetable.addStation(station1, sd1);
@@ -81,11 +82,37 @@ public class EventActivityNetwork {
 	public static EventActivityNetwork createNetwork(Timetable timetable) {
 		EventActivityNetwork network = new EventActivityNetwork();
 		
+		// temporarily store departure and arrival nodes for each station
+		Map<Station,DepartureNode> departures = new HashMap<>();
+		Map<Station,ArrivalNode> arrivals = new HashMap<>();
+		
+		// loop through the composition routes to create departure and arrival nodes for
+		// each station
+		for (Composition comp : timetable.compositions()) {
+			for (ScheduledTrip trip : timetable.getRoute(comp)) {
+				Station fromStation = trip.fromStation();
+				Station toStation = trip.toStation();
+				DepartureNode dn = new DepartureNode(fromStation, trip.departureTime());
+				ArrivalNode an = new ArrivalNode(toStation, trip.arrivalTime());
+				WeightedEdge tripEdge = new TripEdge(trip, 
+						duration(trip.departureTime(), trip.arrivalTime()));
+				departures.put(fromStation, dn);
+				arrivals.put(toStation, an);
+				
+				// add to network
+				network.graph.addVertex(dn);
+				network.graph.addVertex(an);
+				network.graph.addEdge(dn, an, tripEdge);
+			}
+		}
+		
 		return network;
 	}
 	
 	private static int duration(LocalDateTime time1, LocalDateTime time2) {
-		return (int) Duration.between(time1, time1).toMinutes();
+		Duration duration = Duration.between(time1, time2);
+		int minutes = (int) duration.toMinutes();
+		return minutes;
 	}
 	
 }

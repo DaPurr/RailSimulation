@@ -1,6 +1,6 @@
 package wagon.network.expanded;
 
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 import wagon.infrastructure.Station;
 import wagon.network.Node;
@@ -15,9 +15,9 @@ import wagon.network.Node;
 public abstract class EventNode implements Node {
 	
 	private Station station;
-	private LocalTime time;
+	private LocalDateTime time;
 	
-	public EventNode(Station station, LocalTime time) {
+	public EventNode(Station station, LocalDateTime time) {
 		this.station = station;
 		this.time = time;
 	}
@@ -27,7 +27,7 @@ public abstract class EventNode implements Node {
 	 * of occurrence for this particular <code>Event</code>. Cannot discern time on 
 	 * a higher level (for example occurrences over different days).
 	 */
-	public LocalTime time() {
+	public LocalDateTime time() {
 		return time;
 	}
 	
@@ -36,5 +36,10 @@ public abstract class EventNode implements Node {
 	 */
 	public Station station() {
 		return station;
+	}
+	
+	@Override
+	public String toString() {
+		return station.name();
 	}
 }
