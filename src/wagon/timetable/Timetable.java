@@ -1,29 +1,26 @@
 package wagon.timetable;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import wagon.infrastructure.Station;
+import wagon.rollingstock.Composition;
 
 /**
  * This class represents a train timetable, where we store the departures per station. 
  * It is designed mainly to construct timetable-loyal networks.
  * 
  * @author Nemanja Milovanovic
- *
+ * 
  */
 
 public class Timetable {
 	
-	private Map<Station, List<ScheduledDeparture>> departures;
+	private Map<Station, List<ScheduledTrip>> trips;
+	private Map<Composition,SortedSet<ScheduledTrip>> routes;
 	
 	public Timetable() {
-		departures = new HashMap<>();
+		trips = new HashMap<>();
+		routes = new HashMap<>();
 	}
 	
 	/**
@@ -35,10 +32,10 @@ public class Timetable {
 	 * @param dep		<code>ScheduledDeparture</code> object giving time of 
 	 * 					departure, and destination station.
 	 */
-	public void addStation(Station station, List<ScheduledDeparture> dep) {
-		List<ScheduledDeparture> deps = new ArrayList<>(dep);
+	public void addStation(Station station, List<ScheduledTrip> dep) {
+		List<ScheduledTrip> deps = new ArrayList<>(dep);
 		Collections.sort(deps);
-		departures.put(station, deps);
+		trips.put(station, deps);
 	}
 	
 	/**
@@ -49,35 +46,44 @@ public class Timetable {
 	 * @param departure		<code>ScheduledDeparture</code> object representing 
 	 * 						the actual departure
 	 */
-	public void addStation(Station station, ScheduledDeparture departure) {
-		if (station == null || departure == null)
+	public void addStation(Station station, ScheduledTrip trip) {
+		if (station == null || trip == null)
 			throw new IllegalArgumentException("Arguments can't be null");
-		if (!departures.containsKey(station)) {
-			List<ScheduledDeparture> deps = new ArrayList<>();
-			deps.add(departure);
-			departures.put(station, deps);
+		if (!trips.containsKey(station)) {
+			List<ScheduledTrip> deps = new ArrayList<>();
+			deps.add(trip);
+			trips.put(station, deps);
 		} else {
-			List<ScheduledDeparture> deps = departures.get(station);
-			deps.add(departure);
+			List<ScheduledTrip> deps = trips.get(station);
+			deps.add(trip);
 			Collections.sort(deps);
 		}
+		
+		// add trip to composition route
+		addTrip(trip);
+	}
+	
+	public List<ScheduledTrip> getRoute(Composition comp) {
+		if (!routes.containsKey(comp))
+			return null;
+		return new ArrayList<>(routes.get(comp));
 	}
 	
 	/**
 	 * @param 	station	departure station
-	 * @return	sorted list of departure from <code>station</code>
+	 * @return	sorted list of departures from <code>station</code>
 	 */
-	public List<ScheduledDeparture> departuresByStation(Station station) {
-		if (station == null || !departures.containsKey(station))
+	public List<ScheduledTrip> departuresByStation(Station station) {
+		if (station == null || !trips.containsKey(station))
 			throw new IllegalArgumentException("Station not available: " + station);
-		return new ArrayList<>(departures.get(station));
+		return new ArrayList<>(trips.get(station));
 	}
 	
 	/**
 	 * @return	number of stations
 	 */
 	public int size() {
-		return departures.size();
+		return trips.size();
 	}
 	
 	@Override
@@ -85,30 +91,30 @@ public class Timetable {
 		if (!(other instanceof Timetable))
 			return false;
 		Timetable o = (Timetable) other;
-		return this.departures.equals(o.departures);
+		return this.trips.equals(o.trips) && this.routes.equals(o.routes);
 	}
 	
 	@Override
 	public int hashCode() {
-		return departures.hashCode();
+		return 5*trips.hashCode() + 7*routes.hashCode();
 	}
 	
 	@Override
 	public String toString() {
 		String s = "[\n";
-		for (Station station : departures.keySet()) {
+		for (Station station : trips.keySet()) {
 			s += "  ";
 			s += station.name();
-			if (departures.get(station) == null)
+			if (trips.get(station) == null)
 				continue;
-			List<ScheduledDeparture> deps = departuresByStation(station);
+			List<ScheduledTrip> deps = departuresByStation(station);
 			for (int i = 0; i < deps.size(); i++) {
 				s += "\t";
 				if (i > 0)
 					s += "\t";
-				ScheduledDeparture dep = deps.get(i);
+				ScheduledTrip dep = deps.get(i);
 				s += dep.toStation().name() + " ";
-				s += dep.time() + " ";
+				s += dep.departureTime() + " ";
 				s += dep.composition().type().toString() + "_"
 						+ dep.composition().getNrWagons() + "\n";
 			}
@@ -121,6 +127,18 @@ public class Timetable {
 	 * @return	set of train stations
 	 */
 	public Set<Station> stations() {
-		return new HashSet<>(departures.keySet());
+		return new HashSet<>(trips.keySet());
+	}
+	
+	private void addTrip(ScheduledTrip trip) {
+		Composition comp = trip.composition();
+		if (!routes.containsKey(comp)) {
+			SortedSet<ScheduledTrip> set = new TreeSet<>();
+			set.add(trip);
+			routes.put(comp, set);
+		} else {
+			SortedSet<ScheduledTrip> set = routes.get(comp);
+			set.add(trip);
+		}
 	}
 }
