@@ -83,8 +83,9 @@ public class EventActivityNetwork {
 		EventActivityNetwork network = new EventActivityNetwork();
 		
 		// temporarily store departure and arrival nodes for each station
-		Map<Station,DepartureNode> departures = new HashMap<>();
-		Map<Station,ArrivalNode> arrivals = new HashMap<>();
+		Map<Station,SortedSet<DepartureNode>> departures = new HashMap<>();
+		Map<Station,SortedSet<ArrivalNode>> arrivals = new HashMap<>();
+		Set<Station> stations = new HashSet<>();
 		
 		// loop through the composition routes to create departure and arrival nodes for
 		// each station
@@ -92,17 +93,41 @@ public class EventActivityNetwork {
 			for (ScheduledTrip trip : timetable.getRoute(comp)) {
 				Station fromStation = trip.fromStation();
 				Station toStation = trip.toStation();
+				stations.add(fromStation);
+				stations.add(toStation);
 				DepartureNode dn = new DepartureNode(fromStation, trip.departureTime());
 				ArrivalNode an = new ArrivalNode(toStation, trip.arrivalTime());
 				WeightedEdge tripEdge = new TripEdge(trip, 
 						duration(trip.departureTime(), trip.arrivalTime()));
-				departures.put(fromStation, dn);
-				arrivals.put(toStation, an);
+				addEventNode(fromStation, dn, departures);
+				addEventNode(toStation, an, arrivals);
 				
 				// add to network
 				network.graph.addVertex(dn);
 				network.graph.addVertex(an);
 				network.graph.addEdge(dn, an, tripEdge);
+				network.capacities.put(tripEdge, (double) trip.composition().capacity());
+			}
+		}
+		
+		// loop through each arrival and departure event and insert wait edges
+		for (Station station : stations) {
+			SortedSet<EventNode> events = new TreeSet<>();
+			if (departures.containsKey(station))
+				events.addAll(departures.get(station));
+			if (arrivals.containsKey(station))
+				events.addAll(arrivals.get(station));
+			EventNode prevEvent = null;
+			for (EventNode event : events) {
+				if (prevEvent == null) {
+					prevEvent = event;
+					continue;
+				}
+				int wait = duration(prevEvent.time(), event.time());
+				WeightedEdge waitEdge = new WaitEdge(wait);
+				network.graph.addEdge(prevEvent, event, waitEdge);
+				network.capacities.put(waitEdge, Double.MAX_VALUE);
+				prevEvent = event;
 			}
 		}
 		
@@ -113,6 +138,17 @@ public class EventActivityNetwork {
 		Duration duration = Duration.between(time1, time2);
 		int minutes = (int) duration.toMinutes();
 		return minutes;
+	}
+	
+	private static <T extends EventNode> void addEventNode(Station station, T eventNode, Map<Station,SortedSet<T>> events) {
+		if (!events.containsKey(station)) {
+			SortedSet<T> set = new TreeSet<>();
+			set.add(eventNode);
+			events.put(station, set);
+		} else {
+			SortedSet<T> set = events.get(station);
+			set.add(eventNode);
+		}
 	}
 	
 }
