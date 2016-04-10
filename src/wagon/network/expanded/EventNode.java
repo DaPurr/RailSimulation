@@ -1,9 +1,9 @@
-package wagon.components.network.expanded;
+package wagon.network.expanded;
 
 import java.time.LocalTime;
 
-import wagon.components.infrastructure.Station;
-import wagon.components.network.Node;
+import wagon.infrastructure.Station;
+import wagon.network.Node;
 
 /**
  * Represents an event in an event-activity graph.

@@ -1,4 +1,4 @@
-package wagon.components.infrastructure;
+package wagon.infrastructure;
 
 /**
  * 

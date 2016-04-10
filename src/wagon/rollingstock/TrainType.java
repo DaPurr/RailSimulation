@@ -1,4 +1,4 @@
-package wagon.components.rollingstock;
+package wagon.rollingstock;
 
 /**
  * This enumeration reflects the different type of rolling stock that is operated.

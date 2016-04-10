@@ -1,9 +1,9 @@
-package wagon.components.timetable;
+package wagon.timetable;
 
 import java.time.LocalTime;
 
-import wagon.components.infrastructure.Station;
-import wagon.components.rollingstock.Composition;
+import wagon.infrastructure.Station;
+import wagon.rollingstock.Composition;
 
 /**
  * This class represents a scheduled departure in a timetable, not taking into 

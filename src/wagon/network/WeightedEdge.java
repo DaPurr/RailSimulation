@@ -1,4 +1,4 @@
-package wagon.components.network;
+package wagon.network;
 
 public interface WeightedEdge extends Edge {
 

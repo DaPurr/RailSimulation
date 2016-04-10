@@ -1,4 +1,4 @@
-package wagon.components.rollingstock;
+package wagon.rollingstock;
 
 /**
  * This class is used to model a train composition in the simulation. Most

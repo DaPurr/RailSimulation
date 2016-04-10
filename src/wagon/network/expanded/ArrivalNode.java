@@ -1,8 +1,8 @@
-package wagon.components.network.expanded;
+package wagon.network.expanded;
 
 import java.time.LocalTime;
 
-import wagon.components.infrastructure.Station;
+import wagon.infrastructure.Station;
 
 public class ArrivalNode extends EventNode {
 

@@ -1,4 +1,4 @@
-package wagon.components.timetable;
+package wagon.timetable;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import wagon.components.infrastructure.Station;
+import wagon.infrastructure.Station;
 
 /**
  * This class represents a train timetable, where we store the departures per station. 

@@ -1,4 +1,4 @@
-package wagon.components.network.expanded;
+package wagon.network.expanded;
 
 import java.time.Duration;
 import java.time.LocalTime;
@@ -10,13 +10,13 @@ import java.util.Set;
 
 import org.jgrapht.graph.DefaultDirectedGraph;
 
-import wagon.components.infrastructure.Station;
-import wagon.components.network.Edge;
-import wagon.components.network.Node;
-import wagon.components.rollingstock.Composition;
-import wagon.components.rollingstock.TrainType;
-import wagon.components.timetable.ScheduledDeparture;
-import wagon.components.timetable.Timetable;
+import wagon.infrastructure.Station;
+import wagon.network.Edge;
+import wagon.network.Node;
+import wagon.rollingstock.Composition;
+import wagon.rollingstock.TrainType;
+import wagon.timetable.ScheduledDeparture;
+import wagon.timetable.Timetable;
 
 public class EventActivityNetwork {
 
@@ -29,6 +29,8 @@ public class EventActivityNetwork {
 	}
 	
 	/**
+	 * Creates an event-activity network, used explicitly for testing and debugging purposes.
+	 * 
 	 * @return	test network: Nwk -> Cps -> Rta, three trains
 	 */
 	public static EventActivityNetwork createTestNetwork() {

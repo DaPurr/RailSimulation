@@ -9,11 +9,11 @@ import java.util.List;
 
 import org.junit.Test;
 
-import wagon.components.infrastructure.Station;
-import wagon.components.rollingstock.Composition;
-import wagon.components.rollingstock.TrainType;
-import wagon.components.timetable.ScheduledDeparture;
-import wagon.components.timetable.Timetable;
+import wagon.infrastructure.Station;
+import wagon.rollingstock.Composition;
+import wagon.rollingstock.TrainType;
+import wagon.timetable.ScheduledDeparture;
+import wagon.timetable.Timetable;
 
 public class TimetableTest {
 	
