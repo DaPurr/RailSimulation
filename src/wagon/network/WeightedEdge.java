@@ -1,5 +1,14 @@
 package wagon.network;
 
-public interface WeightedEdge extends Edge {
+public abstract class WeightedEdge implements Edge {
+	
+	private double weight;
+	
+	public WeightedEdge(double weight) {
+		this.weight = weight;
+	}
 
+	public double weight() {
+		return weight;
+	}
 }
