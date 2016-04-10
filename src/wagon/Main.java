@@ -1,9 +1,12 @@
 package wagon;
 
+import wagon.network.expanded.EventActivityNetwork;
+
 public class Main {
 
 	public static void main(String[] args) {
-		System.out.println("Hello World!");
+		EventActivityNetwork network = EventActivityNetwork.createTestNetwork();
+		System.out.println(network);
 	}
 
 }
