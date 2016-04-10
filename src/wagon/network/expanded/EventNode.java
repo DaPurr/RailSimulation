@@ -12,7 +12,7 @@ import wagon.network.Node;
  *
  */
 
-public abstract class EventNode implements Node {
+public abstract class EventNode implements Node, Comparable<EventNode> {
 	
 	private Station station;
 	private LocalDateTime time;
@@ -36,6 +36,14 @@ public abstract class EventNode implements Node {
 	 */
 	public Station station() {
 		return station;
+	}
+	
+	@Override
+	public int compareTo(EventNode other) {
+		int res1 = station.name().compareTo(other.station.name());
+		if (res1 != 0)
+			return res1;
+		return time().compareTo(other.time());
 	}
 	
 	@Override

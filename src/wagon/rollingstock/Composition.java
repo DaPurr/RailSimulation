@@ -54,6 +54,13 @@ public class Composition {
 	public TrainType type() {
 		return type;
 	}
+	
+	/**
+	 * @return	all available capacity
+	 */
+	public int capacity() {
+		return capacity1 + capacity2;
+	}
 
 	/**
 	 * @return	business class passenger capacity

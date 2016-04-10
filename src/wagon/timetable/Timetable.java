@@ -18,6 +18,9 @@ public class Timetable {
 	private Map<Station, List<ScheduledTrip>> departures;
 	private Map<Composition,SortedSet<ScheduledTrip>> routes;
 	
+	/**
+	 * Create an empty <code>Timetable</code> object.
+	 */
 	public Timetable() {
 		departures = new HashMap<>();
 		routes = new HashMap<>();
@@ -32,10 +35,18 @@ public class Timetable {
 	 * @param dep		<code>ScheduledDeparture</code> object giving time of 
 	 * 					departure, and destination station.
 	 */
-	public void addStation(Station station, List<ScheduledTrip> dep) {
-		List<ScheduledTrip> deps = new ArrayList<>(dep);
-		Collections.sort(deps);
-		departures.put(station, deps);
+	public void addStation(Station station, List<ScheduledTrip> trips) {
+		if (station == null || trips == null)
+			throw new IllegalArgumentException("Arguments can't be null");
+		for (ScheduledTrip trip : trips) {
+			addStation(station, trip);
+		}
+		
+		
+//		List<ScheduledTrip> deps = new ArrayList<>(dep);
+//		Collections.sort(deps);
+//		departures.put(station, deps);
+//		stations.add(station);
 	}
 	
 	/**
@@ -128,13 +139,6 @@ public class Timetable {
 		}
 		s += "]";
 		return s;
-	}
-	
-	/**
-	 * @return	set of train stations
-	 */
-	public Set<Station> stations() {
-		return new HashSet<>(departures.keySet());
 	}
 	
 	private void addTrip(ScheduledTrip trip) {
