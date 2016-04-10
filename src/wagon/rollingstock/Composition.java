@@ -15,6 +15,7 @@ public class Composition {
 	private TrainType type;
 	private int capacity1;
 	private int capacity2;
+	private int id;
 
 	/**
 	 * Constructs a <code>Composition</code> object reflecting a simplified 
@@ -25,11 +26,19 @@ public class Composition {
 	 * @param capacity1	capacity for business class
 	 * @param capacity2	capacity for economy class
 	 */
-	public Composition(TrainType type, int nrWagons, int capacity1, int capacity2) {
+	public Composition(int id, TrainType type, int nrWagons, int capacity1, int capacity2) {
 		this.type = type;
 		this.nrWagons = nrWagons;
 		this.capacity1 = capacity1;
 		this.capacity2 = capacity2;
+		this.id = id;
+	}
+	
+	/**
+	 * @return	this composition's ID
+	 */
+	public int id() {
+		return id;
 	}
 
 	/**
