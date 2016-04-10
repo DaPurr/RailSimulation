@@ -74,20 +74,20 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 
 	@Override
 	public int compareTo(ScheduledTrip that) {
-		int res1 = fromStation().name().compareTo(that.fromStation().name());
+		int res1 = departureTime().compareTo(that.departureTime());
 		if (res1 != 0)
 			return res1;
-		int res2 = toStation().name().compareTo(that.toStation().name());
+		int res2 = arrivalTime().compareTo(that.arrivalTime());
 		if (res2 != 0)
-			return res2;
-		int res3 = departureTime().compareTo(that.departureTime());
+			return res2;		
+		int res3 = fromStation().name().compareTo(that.fromStation().name());
 		if (res3 != 0)
 			return res3;
-		return arrivalTime().compareTo(that.arrivalTime());
+		return toStation().name().compareTo(that.toStation().name());
 	}
 	
 	@Override
 	public String toString() {
-		return "[" + depTime + ": " + fromStation + "\t" + toStation + arrTime + "(" + composition.type() + ")]";
+		return "[" + depTime + ": " + fromStation + "\t" + toStation + " " + arrTime + " (" + composition.type() + ")]";
 	}
 }

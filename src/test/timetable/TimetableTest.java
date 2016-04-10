@@ -132,5 +132,58 @@ public class TimetableTest {
 		assertEquals("Incorrect scheduled departures.", 
 				list3, timetable.departuresByStation(from3));
 	}
+	
+	@Test
+	public void testGetRoute() {
+		Station from1 = new Station("Nwk", 1);
+		Station from2 = new Station("Cps", 2);
+		Station from3 = new Station("Rta", 3);
+		Station to1 = new Station("Cps", 2);
+		Station to2 = new Station("Rta", 3);
+		Station to3 = new Station("Rtd", 4);
+		
+		Composition comp1 = new Composition(1, TrainType.SLT, 3, 100, 20);
+		Composition comp2 = new Composition(2, TrainType.SGM, 3, 100, 20);
+		
+		LocalDateTime time1 = LocalDateTime.parse("2016-04-11T12:00:00");
+		ScheduledTrip sd1 = new ScheduledTrip(comp1, time1, time1.plusMinutes(2), from1, to1);
+		LocalDateTime time2 = LocalDateTime.parse("2016-04-11T12:04:00");
+		ScheduledTrip sd2 = new ScheduledTrip(comp1, time2, time2.plusMinutes(2), from2, to2);
+		LocalDateTime time3 = LocalDateTime.parse("2016-04-11T12:09:00");
+		ScheduledTrip sd3 = new ScheduledTrip(comp1, time3, time3.plusMinutes(3), from3, to3);
+		
+		LocalDateTime time4 = LocalDateTime.parse("2016-04-11T15:00:00");
+		ScheduledTrip sd4 = new ScheduledTrip(comp2, time4, time4.plusMinutes(2), from1, to1);
+		LocalDateTime time5 = LocalDateTime.parse("2016-04-11T15:04:00");
+		ScheduledTrip sd5 = new ScheduledTrip(comp2, time5, time5.plusMinutes(2), from2, to2);
+		LocalDateTime time6 = LocalDateTime.parse("2016-04-11T15:09:00");
+		ScheduledTrip sd6 = new ScheduledTrip(comp2, time6, time6.plusMinutes(3), from3, to3);
+		
+		Timetable timetable = new Timetable();
+		timetable.addStation(from1, sd1);
+		timetable.addStation(from2, sd2);
+		timetable.addStation(from3, sd3);
+		timetable.addStation(from1, sd4);
+		timetable.addStation(from3, sd6);
+		timetable.addStation(from2, sd5);
+		
+		List<ScheduledTrip> list1 = new ArrayList<>();
+		list1.add(sd1);
+		list1.add(sd2);
+		list1.add(sd3);
+		
+		List<ScheduledTrip> list2 = new ArrayList<>();
+		list2.add(sd4);
+		list2.add(sd5);
+		list2.add(sd6);
+		
+		assertEquals("Incorrect route length.", list1.size(), timetable.getRoute(comp1).size());
+		assertEquals("Incorrect route length.", list2.size(), timetable.getRoute(comp2).size());
+		
+		List<ScheduledTrip> route1 = timetable.getRoute(comp1);
+		List<ScheduledTrip> route2 = timetable.getRoute(comp2);
+		assertEquals("Incorrect route.", list1, route1);
+		assertEquals("Incorrect route.", list2, route2);
+	}
 
 }

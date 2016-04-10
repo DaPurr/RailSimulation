@@ -15,11 +15,11 @@ import wagon.rollingstock.Composition;
 
 public class Timetable {
 	
-	private Map<Station, List<ScheduledTrip>> trips;
+	private Map<Station, List<ScheduledTrip>> departures;
 	private Map<Composition,SortedSet<ScheduledTrip>> routes;
 	
 	public Timetable() {
-		trips = new HashMap<>();
+		departures = new HashMap<>();
 		routes = new HashMap<>();
 	}
 	
@@ -35,7 +35,7 @@ public class Timetable {
 	public void addStation(Station station, List<ScheduledTrip> dep) {
 		List<ScheduledTrip> deps = new ArrayList<>(dep);
 		Collections.sort(deps);
-		trips.put(station, deps);
+		departures.put(station, deps);
 	}
 	
 	/**
@@ -49,18 +49,25 @@ public class Timetable {
 	public void addStation(Station station, ScheduledTrip trip) {
 		if (station == null || trip == null)
 			throw new IllegalArgumentException("Arguments can't be null");
-		if (!trips.containsKey(station)) {
+		if (!departures.containsKey(station)) {
 			List<ScheduledTrip> deps = new ArrayList<>();
 			deps.add(trip);
-			trips.put(station, deps);
+			departures.put(station, deps);
 		} else {
-			List<ScheduledTrip> deps = trips.get(station);
+			List<ScheduledTrip> deps = departures.get(station);
 			deps.add(trip);
 			Collections.sort(deps);
 		}
 		
 		// add trip to composition route
 		addTrip(trip);
+	}
+	
+	/**
+	 * @return	<code>Set</code> of all compositions in the timetable
+	 */
+	public Set<Composition> compositions() {
+		return new HashSet<>(routes.keySet());
 	}
 	
 	public List<ScheduledTrip> getRoute(Composition comp) {
@@ -74,16 +81,16 @@ public class Timetable {
 	 * @return	sorted list of departures from <code>station</code>
 	 */
 	public List<ScheduledTrip> departuresByStation(Station station) {
-		if (station == null || !trips.containsKey(station))
+		if (station == null || !departures.containsKey(station))
 			throw new IllegalArgumentException("Station not available: " + station);
-		return new ArrayList<>(trips.get(station));
+		return new ArrayList<>(departures.get(station));
 	}
 	
 	/**
 	 * @return	number of stations
 	 */
 	public int size() {
-		return trips.size();
+		return departures.size();
 	}
 	
 	@Override
@@ -91,21 +98,21 @@ public class Timetable {
 		if (!(other instanceof Timetable))
 			return false;
 		Timetable o = (Timetable) other;
-		return this.trips.equals(o.trips) && this.routes.equals(o.routes);
+		return this.departures.equals(o.departures) && this.routes.equals(o.routes);
 	}
 	
 	@Override
 	public int hashCode() {
-		return 5*trips.hashCode() + 7*routes.hashCode();
+		return 5*departures.hashCode() + 7*routes.hashCode();
 	}
 	
 	@Override
 	public String toString() {
 		String s = "[\n";
-		for (Station station : trips.keySet()) {
+		for (Station station : departures.keySet()) {
 			s += "  ";
 			s += station.name();
-			if (trips.get(station) == null)
+			if (departures.get(station) == null)
 				continue;
 			List<ScheduledTrip> deps = departuresByStation(station);
 			for (int i = 0; i < deps.size(); i++) {
@@ -127,7 +134,7 @@ public class Timetable {
 	 * @return	set of train stations
 	 */
 	public Set<Station> stations() {
-		return new HashSet<>(trips.keySet());
+		return new HashSet<>(departures.keySet());
 	}
 	
 	private void addTrip(ScheduledTrip trip) {
