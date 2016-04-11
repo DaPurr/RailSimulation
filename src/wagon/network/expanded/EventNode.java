@@ -43,7 +43,10 @@ public abstract class EventNode implements Node, Comparable<EventNode> {
 		int res1 = station.name().compareTo(other.station.name());
 		if (res1 != 0)
 			return res1;
-		return time().compareTo(other.time());
+		int res2 = time().compareTo(other.time());
+		if (res2 != 0)
+			return res2;
+		return this.getClass().getName().compareTo(other.getClass().getName());
 	}
 	
 	@Override
