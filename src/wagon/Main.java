@@ -12,7 +12,9 @@ public class Main {
 	public static void main(String[] args) {
 //		EventActivityNetwork network = EventActivityNetwork.createTestNetwork();
 		try {
-			Timetable sample = Timetable.importFromExcel("data/sample_schedule.xlsx");
+			Timetable sample = Timetable.importFromExcel("data/smaller_sample_schedule.xlsx");
+			EventActivityNetwork network = EventActivityNetwork.createNetwork(sample);
+			System.out.println(network);
 		} catch (InvalidFormatException | IOException e) {
 			e.printStackTrace();
 		}
