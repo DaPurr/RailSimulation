@@ -29,5 +29,10 @@ public class TripEdge extends WeightedEdge {
 	public ScheduledTrip trip() {
 		return trip;
 	}
+	
+	@Override
+	public String toString() {
+		return "TRIP: " + trip.toString();
+	}
 
 }
