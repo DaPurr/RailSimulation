@@ -1,9 +1,20 @@
 package wagon.timetable;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
+
+import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import wagon.infrastructure.Station;
 import wagon.rollingstock.Composition;
+import wagon.rollingstock.TrainType;
 
 /**
  * This class represents a train timetable, where we store the departures per station. 
@@ -151,5 +162,86 @@ public class Timetable {
 			SortedSet<ScheduledTrip> set = routes.get(comp);
 			set.add(trip);
 		}
+	}
+	
+	/**
+	 * Imports a timetable expressed in an xls(x) file. The file needs to have the same format as
+	 * ComfortNormeringTool_v0.3. If this format is not adhered, undefined behavior will follow.
+	 * 
+	 * @param filename	name of the file containing the timetable
+	 * @return	<code>Timetable</code> object obtained from <code>filename</code>
+	 * 
+	 * @throws InvalidFormatException
+	 * @throws IOException
+	 */
+	public static Timetable importFromExcel(String filename) 
+			throws InvalidFormatException, IOException {
+		// only allow xls(x) files
+		if (!filename.matches(".*\\.xls.?"))
+			throw new IllegalArgumentException("File needs to be excel format.");
+		Timetable timetable = new Timetable();
+		File file = new File(filename);
+		XSSFWorkbook workbook = new XSSFWorkbook(file);
+		XSSFSheet sheet = workbook.getSheetAt(0);
+		Iterator<Row> rowIterator = sheet.rowIterator();
+		while (rowIterator.hasNext()) {
+			Row row = rowIterator.next();
+			Cell cell = row.getCell(0);
+			// skip row if we have a header line
+			if (cell.getCellType() == Cell.CELL_TYPE_STRING)
+				continue;
+			
+			// init variables to store timetable
+			LocalDateTime departureTime = extractDateFromCell(row.getCell(0));
+			LocalDateTime arrivalTime = extractDateFromCell(row.getCell(70));
+			int trainNr = (int) row.getCell(1).getNumericCellValue();
+			Station fromStation = extractStationFromCell(row.getCell(2));
+			Station toStation = extractStationFromCell(row.getCell(3));
+			int nrWagons = (int) row.getCell(46).getNumericCellValue();
+			int capSeats1 = (int) row.getCell(57).getNumericCellValue();
+			int capSeats2= (int) row.getCell(58).getNumericCellValue();
+			int capSeats2Fold= (int) row.getCell(59).getNumericCellValue();
+			int capStand2= (int) row.getCell(60).getNumericCellValue();
+			TrainType trainType = extractTrainTypeFromCell(row.getCell(7));
+			
+			Composition comp = new Composition(trainNr, trainType, nrWagons, 
+					capSeats1, capSeats2 + capSeats2Fold + capStand2);
+			ScheduledTrip trip = new ScheduledTrip(comp, departureTime, arrivalTime, 
+					fromStation, toStation);
+			timetable.addStation(fromStation, trip);
+		}
+		workbook.close();
+		return timetable;
+	}
+	
+	private static LocalDateTime extractDateFromCell(Cell cell) {
+		if (cell.getCellType() != Cell.CELL_TYPE_NUMERIC)
+			throw new IllegalArgumentException("Wrong cell type for dates.");
+		// hopefully we have been supplied a valid timestamp
+		int number = (int) cell.getNumericCellValue();
+		
+		// now we do magic
+		int fourth = number/1000;
+		number -= fourth*1000;
+		int third = number/100;
+		number -= third*100;
+		int second = number/10;
+		number -= second*10;
+		int first = number/1;
+		String date = "2016-04-11T" + fourth + third + ":" + second + first + ":00";
+		LocalDateTime datetime = LocalDateTime.parse(date);
+		return datetime;
+	}
+	
+	private static Station extractStationFromCell(Cell cell) {
+		if (cell.getCellType() != Cell.CELL_TYPE_STRING)
+			throw new IllegalArgumentException("Wrong cell type for stations.");
+		return new Station(cell.getStringCellValue());
+	}
+	
+	private static TrainType extractTrainTypeFromCell(Cell cell) {
+		if (cell.getCellType() != Cell.CELL_TYPE_STRING)
+			throw new IllegalArgumentException("Wrong cell type for train types.");
+		return TrainType.valueOf(cell.getStringCellValue());
 	}
 }
