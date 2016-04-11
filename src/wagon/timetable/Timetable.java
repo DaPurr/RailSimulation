@@ -1,7 +1,6 @@
 package wagon.timetable;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -199,9 +198,9 @@ public class Timetable {
 			Station toStation = extractStationFromCell(row.getCell(3));
 			int nrWagons = (int) row.getCell(46).getNumericCellValue();
 			int capSeats1 = (int) row.getCell(57).getNumericCellValue();
-			int capSeats2= (int) row.getCell(58).getNumericCellValue();
-			int capSeats2Fold= (int) row.getCell(59).getNumericCellValue();
-			int capStand2= (int) row.getCell(60).getNumericCellValue();
+			int capSeats2 = (int) row.getCell(58).getNumericCellValue();
+			int capSeats2Fold = (int) row.getCell(59).getNumericCellValue();
+			int capStand2 = (int) row.getCell(60).getNumericCellValue();
 			TrainType trainType = extractTrainTypeFromCell(row.getCell(7));
 			
 			Composition comp = new Composition(trainNr, trainType, nrWagons, 
@@ -227,7 +226,7 @@ public class Timetable {
 		number -= third*100;
 		int second = number/10;
 		number -= second*10;
-		int first = number/1;
+		int first = number;
 		String date = "2016-04-11T" + fourth + third + ":" + second + first + ":00";
 		LocalDateTime datetime = LocalDateTime.parse(date);
 		return datetime;
