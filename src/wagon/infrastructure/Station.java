@@ -10,17 +10,14 @@ package wagon.infrastructure;
 public class Station {
 	
 	private String name;
-	private int id;
 	
 	/**
 	 * Creates the <code>Station</code> object to represent a real-life railway station
 	 * 
 	 * @param	name	name of the station
-	 * @param	id		unique station id
 	 */
-	public Station(String name, int id) {
+	public Station(String name) {
 		this.name = name;
-		this.id = id;
 	}
 	
 	/**
@@ -28,13 +25,6 @@ public class Station {
 	 */
 	public String name() {
 		return name;
-	}
-	
-	/**
-	 * @return	station id
-	 */
-	public int id() {
-		return id;
 	}
 	
 	@Override

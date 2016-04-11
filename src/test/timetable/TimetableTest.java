@@ -23,8 +23,8 @@ public class TimetableTest {
 		int nrDeps = 4;
 		Timetable[] expectedTimetables = new Timetable[nrTimetables];
 		Timetable[] actualTimetables = new Timetable[nrTimetables];
-		Station stationFrom = new Station("from", 1);
-		Station stationTo = new Station("to", 2);
+		Station stationFrom = new Station("from");
+		Station stationTo = new Station("to");
 		Composition comp = new Composition(1, TrainType.VIRM, 6, 100, 20);
 		
 		for (int i = 0; i < nrTimetables; i++) {
@@ -61,8 +61,8 @@ public class TimetableTest {
 		int nrDeps = 4;
 		Timetable[] expectedTimetables = new Timetable[nrTimetables];
 		Timetable[] actualTimetables = new Timetable[nrTimetables];
-		Station stationFrom = new Station("from", 1);
-		Station stationTo = new Station("to", 2);
+		Station stationFrom = new Station("from");
+		Station stationTo = new Station("to");
 		Composition comp = new Composition(1, TrainType.VIRM, 6, 100, 20);
 		
 		for (int i = 0; i < nrTimetables; i++) {
@@ -97,12 +97,12 @@ public class TimetableTest {
 
 	@Test
 	public void testDeparturesByStation() {
-		Station from1 = new Station("Nwk", 1);
-		Station from2 = new Station("Cps", 2);
-		Station from3 = new Station("Rta", 3);
-		Station to1 = new Station("Cps", 2);
-		Station to2 = new Station("Rta", 3);
-		Station to3 = new Station("Rtd", 4);
+		Station from1 = new Station("Nwk");
+		Station from2 = new Station("Cps");
+		Station from3 = new Station("Rta");
+		Station to1 = new Station("Cps");
+		Station to2 = new Station("Rta");
+		Station to3 = new Station("Rtd");
 		
 		Composition comp1 = new Composition(1, TrainType.SLT, 3, 100, 20);
 		
@@ -135,12 +135,12 @@ public class TimetableTest {
 	
 	@Test
 	public void testGetRoute() {
-		Station from1 = new Station("Nwk", 1);
-		Station from2 = new Station("Cps", 2);
-		Station from3 = new Station("Rta", 3);
-		Station to1 = new Station("Cps", 2);
-		Station to2 = new Station("Rta", 3);
-		Station to3 = new Station("Rtd", 4);
+		Station from1 = new Station("Nwk");
+		Station from2 = new Station("Cps");
+		Station from3 = new Station("Rta");
+		Station to1 = new Station("Cps");
+		Station to2 = new Station("Rta");
+		Station to3 = new Station("Rtd");
 		
 		Composition comp1 = new Composition(1, TrainType.SLT, 3, 100, 20);
 		Composition comp2 = new Composition(2, TrainType.SGM, 3, 100, 20);

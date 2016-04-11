@@ -36,9 +36,9 @@ public class EventActivityNetwork {
 	 */
 	public static EventActivityNetwork createTestNetwork() {
 		EventActivityNetwork network = new EventActivityNetwork();
-		Station station1 = new Station("Nwk", 1);
-		Station station2 = new Station("Cps", 2);
-		Station station3 = new Station("Rta", 3);
+		Station station1 = new Station("Nwk");
+		Station station2 = new Station("Cps");
+		Station station3 = new Station("Rta");
 		
 		Composition comp1 = new Composition(1, TrainType.SGM, 3, 100, 20);
 		Composition comp2 = new Composition(2, TrainType.SGM, 3, 100, 20);
