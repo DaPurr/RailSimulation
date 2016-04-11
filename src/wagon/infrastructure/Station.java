@@ -31,4 +31,17 @@ public class Station {
 	public String toString() {
 		return name();
 	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if (!(other instanceof Station))
+			return false;
+		Station o = (Station) other;
+		return this.name.equals(o.name);
+	}
+	
+	@Override
+	public int hashCode() {
+		return name.hashCode();
+	}
 }
