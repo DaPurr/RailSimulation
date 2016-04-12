@@ -2,6 +2,8 @@ package wagon.network.expanded;
 
 import java.time.*;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
@@ -20,9 +22,12 @@ public class EventActivityNetwork {
 	private DefaultDirectedGraph<Node, WeightedEdge> graph;
 	private Map<Edge, Double> capacities;
 	
+	private Logger log = Logger.getLogger(this.getClass().getName());
+	
 	private EventActivityNetwork() {
 		graph = new DefaultDirectedGraph<>(WeightedEdge.class);
 		capacities = new HashMap<>();
+		//log.setLevel(Level.OFF);
 	}
 	
 	public Graph<Node, WeightedEdge> graph() {
@@ -36,6 +41,7 @@ public class EventActivityNetwork {
 	 */
 	public static EventActivityNetwork createTestNetwork() {
 		EventActivityNetwork network = new EventActivityNetwork();
+		network.log.info("Begin constructing test timetable...");
 		Station station1 = new Station("Nwk");
 		Station station2 = new Station("Cps");
 		Station station3 = new Station("Rta");
@@ -67,6 +73,7 @@ public class EventActivityNetwork {
 		timetable.addStation(station2, sd6);
 		
 		network = createNetwork(timetable);
+		network.log.info("...Constructed test timetable");
 		
 		return network;
 	}
@@ -81,6 +88,7 @@ public class EventActivityNetwork {
 	 */
 	public static EventActivityNetwork createNetwork(Timetable timetable) {
 		EventActivityNetwork network = new EventActivityNetwork();
+		network.log.info("Begin import of timetable...");
 		
 		// temporarily store departure and arrival nodes for each station
 		Map<Station,SortedSet<DepartureNode>> departures = new HashMap<>();
@@ -89,6 +97,8 @@ public class EventActivityNetwork {
 		
 		// loop through the composition routes to create departure and arrival nodes for
 		// each station
+		network.log.info("Begin constructing trip edges...");
+		int countTrips = 0;
 		for (Composition comp : timetable.compositions()) {
 			for (ScheduledTrip trip : timetable.getRoute(comp)) {
 				Station fromStation = trip.fromStation();
@@ -107,10 +117,14 @@ public class EventActivityNetwork {
 				network.graph.addVertex(an);
 				network.graph.addEdge(dn, an, tripEdge);
 				network.capacities.put(tripEdge, (double) trip.composition().capacity());
+				countTrips++;
 			}
 		}
+		network.log.info("...Finished constructing trip edges");
+		network.log.info("Begin constructing wait edges...");
 		
 		// loop through each arrival and departure event and insert wait edges
+		int countWaits = 0;
 		for (Station station : stations) {
 			SortedSet<EventNode> events = new TreeSet<>();
 			if (departures.containsKey(station))
@@ -127,9 +141,20 @@ public class EventActivityNetwork {
 				WeightedEdge waitEdge = new WaitEdge(wait);
 				network.graph.addEdge(prevEvent, event, waitEdge);
 				network.capacities.put(waitEdge, Double.MAX_VALUE);
+				countWaits++;
 				prevEvent = event;
 			}
 		}
+		network.log.info("...Finished constructing wait edges");
+		network.log.info("...Finished importing timetable");
+		
+		// display stats
+		network.log.info("Number of departure nodes: " + departures.size());
+		network.log.info("Number of arrival nodes: " + arrivals.size());
+		network.log.info("Number of trip edges: " + countTrips);
+		network.log.info("Number of wait edges: " + countWaits);
+		network.log.info("Total nr nodes: " + network.graph.vertexSet().size());
+		network.log.info("Total nr edges: " + network.graph.edgeSet().size());
 		
 		return network;
 	}

@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
@@ -28,12 +30,15 @@ public class Timetable {
 	private Map<Station, List<ScheduledTrip>> departures;
 	private Map<Composition,SortedSet<ScheduledTrip>> routes;
 	
+	private Logger log = Logger.getLogger(this.getClass().getName());
+	
 	/**
 	 * Create an empty <code>Timetable</code> object.
 	 */
 	public Timetable() {
 		departures = new HashMap<>();
 		routes = new HashMap<>();
+		//log.setLevel(Level.OFF);
 	}
 	
 	/**
@@ -179,8 +184,12 @@ public class Timetable {
 		if (!filename.matches(".*\\.xls.?"))
 			throw new IllegalArgumentException("File needs to be excel format.");
 		Timetable timetable = new Timetable();
+		timetable.log.info("File: " + filename + " is xls(x).");
 		File file = new File(filename);
+		timetable.log.info("Begin parsing Excel...");
 		XSSFWorkbook workbook = new XSSFWorkbook(file);
+		timetable.log.info("...Finished parsing Excel");
+		timetable.log.info("Begin Excel import...");
 		XSSFSheet sheet = workbook.getSheetAt(0);
 		Iterator<Row> rowIterator = sheet.rowIterator();
 		while (rowIterator.hasNext()) {
@@ -210,6 +219,7 @@ public class Timetable {
 			timetable.addStation(fromStation, trip);
 		}
 		workbook.close();
+		timetable.log.info("...Finished importing Excel");
 		return timetable;
 	}
 	
