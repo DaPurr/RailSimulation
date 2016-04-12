@@ -18,8 +18,9 @@ public class TripEdge extends WeightedEdge {
 	 * @param trip		trip associated to this trip edge
 	 * @param weight	waiting time until next event
 	 */
-	public TripEdge(ScheduledTrip trip, double weight) {
-		super(weight);
+	public TripEdge(EventNode source, EventNode target, 
+			ScheduledTrip trip, double weight) {
+		super(source, target, weight);
 		this.trip = trip;
 	}
 	
