@@ -2,10 +2,8 @@ package wagon.network.expanded;
 
 import java.time.*;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.logging.*;
 
-import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultDirectedGraph;
 
 import wagon.infrastructure.Station;
@@ -30,8 +28,34 @@ public class EventActivityNetwork {
 		//log.setLevel(Level.OFF);
 	}
 	
-	public Graph<Node, WeightedEdge> graph() {
-		return graph;
+	/**
+	 * Return the set of incoming edges of <code>node</code>.
+	 * 
+	 * @param node	candidate node
+	 * @return	<code>Set</code> of incoming edges
+	 */
+	public Set<WeightedEdge> incomingEdges(Node node) {
+		return graph.incomingEdgesOf(node);
+	}
+	
+	/**
+	 * Returns the set of all nodes present in <code>EventActivityNetwork</code>. Only the 
+	 * <code>Node</code> objects in this <code>Set</code> are backed by the graph.
+	 * 
+	 * @return	set of all nodes
+	 */
+	public Set<Node> nodeSet() {
+		return new HashSet<>(graph.vertexSet());
+	}
+	
+	/**
+	 * Return the set of outgoing edges of <code>node</code>.
+	 * 
+	 * @param node	candidate node
+	 * @return	<code>Set</code> of outgoing edges
+	 */
+	public Set<WeightedEdge> outgoingEdges(Node node) {
+		return graph.outgoingEdgesOf(node);
 	}
 	
 	/**
@@ -107,7 +131,7 @@ public class EventActivityNetwork {
 				stations.add(toStation);
 				DepartureNode dn = new DepartureNode(fromStation, trip.departureTime());
 				ArrivalNode an = new ArrivalNode(toStation, trip.arrivalTime());
-				WeightedEdge tripEdge = new TripEdge(trip, 
+				WeightedEdge tripEdge = new TripEdge(dn, an, trip, 
 						duration(trip.departureTime(), trip.arrivalTime()));
 				addEventNode(fromStation, dn, departures);
 				addEventNode(toStation, an, arrivals);
@@ -138,7 +162,7 @@ public class EventActivityNetwork {
 					continue;
 				}
 				int wait = duration(prevEvent.time(), event.time());
-				WeightedEdge waitEdge = new WaitEdge(wait);
+				WeightedEdge waitEdge = new WaitEdge(prevEvent, event, wait);
 				network.graph.addEdge(prevEvent, event, waitEdge);
 				network.capacities.put(waitEdge, Double.MAX_VALUE);
 				countWaits++;
