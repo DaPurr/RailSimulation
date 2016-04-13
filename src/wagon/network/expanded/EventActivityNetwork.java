@@ -123,6 +123,8 @@ public class EventActivityNetwork {
 		// each station
 		network.log.info("Begin constructing trip edges...");
 		int countTrips = 0;
+		int countArrivals = 0;
+		int countDepartures = 0;
 		for (Composition comp : timetable.compositions()) {
 			for (ScheduledTrip trip : timetable.getRoute(comp)) {
 				Station fromStation = trip.fromStation();
@@ -134,7 +136,9 @@ public class EventActivityNetwork {
 				WeightedEdge tripEdge = new TripEdge(dn, an, trip, 
 						duration(trip.departureTime(), trip.arrivalTime()));
 				addEventNode(fromStation, dn, departures);
+				countDepartures++;
 				addEventNode(toStation, an, arrivals);
+				countArrivals++;
 				
 				// add to network
 				network.graph.addVertex(dn);
@@ -173,8 +177,8 @@ public class EventActivityNetwork {
 		network.log.info("...Finished importing timetable");
 		
 		// display stats
-		network.log.info("Number of departure nodes: " + departures.size());
-		network.log.info("Number of arrival nodes: " + arrivals.size());
+		network.log.info("Number of departure nodes: " + countDepartures);
+		network.log.info("Number of arrival nodes: " + countArrivals);
 		network.log.info("Number of trip edges: " + countTrips);
 		network.log.info("Number of wait edges: " + countWaits);
 		network.log.info("Total nr nodes: " + network.graph.vertexSet().size());
