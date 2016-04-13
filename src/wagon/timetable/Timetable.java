@@ -1,7 +1,6 @@
 package wagon.timetable;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Level;
@@ -10,8 +9,11 @@ import java.util.logging.Logger;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import com.monitorjbl.xlsx.StreamingReader;
 
 import wagon.infrastructure.Station;
 import wagon.rollingstock.Composition;
@@ -29,6 +31,7 @@ public class Timetable {
 	
 	private Map<Station, List<ScheduledTrip>> departures;
 	private Map<Composition,SortedSet<ScheduledTrip>> routes;
+	private Set<Station> stations;
 	
 	private Logger log = Logger.getLogger(this.getClass().getName());
 	
@@ -38,6 +41,7 @@ public class Timetable {
 	public Timetable() {
 		departures = new HashMap<>();
 		routes = new HashMap<>();
+		stations = new HashSet<>();
 		//log.setLevel(Level.OFF);
 	}
 	
@@ -186,14 +190,24 @@ public class Timetable {
 		Timetable timetable = new Timetable();
 		timetable.log.info("File: " + filename + " is xls(x).");
 		File file = new File(filename);
+//		InputStream is = new FileInputStream(file);
+		
+		// code from Stack Overflow to stream input
+		StreamingReader reader = StreamingReader.builder()
+				.rowCacheSize(100)
+				.bufferSize(1024)
+				.sheetIndex(0)
+				.read(file);
+		
 		timetable.log.info("Begin parsing Excel...");
-		XSSFWorkbook workbook = new XSSFWorkbook(file);
+//		XSSFWorkbook workbook = new XSSFWorkbook(file);
 		timetable.log.info("...Finished parsing Excel");
 		timetable.log.info("Begin Excel import...");
-		XSSFSheet sheet = workbook.getSheetAt(0);
-		Iterator<Row> rowIterator = sheet.rowIterator();
-		while (rowIterator.hasNext()) {
-			Row row = rowIterator.next();
+		int rowCount = 1;
+//		XSSFSheet sheet = workbook.getSheetAt(0);
+//		Iterator<Row> rowIterator = sheet.rowIterator();
+		for (Row row : reader) {
+//			Row row = rowIterator.next();
 			Cell cell = row.getCell(0);
 			// skip row if we have a header line
 			if (cell.getCellType() == Cell.CELL_TYPE_STRING)
@@ -217,9 +231,20 @@ public class Timetable {
 			ScheduledTrip trip = new ScheduledTrip(comp, departureTime, arrivalTime, 
 					fromStation, toStation);
 			timetable.addStation(fromStation, trip);
+			timetable.stations.add(fromStation);
+			timetable.stations.add(toStation);
+			if (rowCount % 500 == 0)
+				timetable.log.info("...Processed row " + rowCount);
+			rowCount++;
 		}
-		workbook.close();
+//		workbook.close();
+		reader.close();
 		timetable.log.info("...Finished importing Excel");
+		
+		// display some characteristics
+		timetable.log.info("Number of stations (departure): " + timetable.departures.keySet().size());
+		timetable.log.info("Number of stations: (dep & arr) " + timetable.departures.keySet().size());
+		
 		return timetable;
 	}
 	
