@@ -39,6 +39,17 @@ public abstract class EventNode implements Node, Comparable<EventNode> {
 	}
 	
 	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof EventNode))
+			return false;
+		EventNode other = (EventNode) o;
+		boolean b1 = this.station.equals(other.station);
+		boolean b2 = this.time.equals(other.time);
+		boolean b3 = this.getClass().equals(other.getClass());
+		return b1 && b2 && b3;
+	}
+	
+	@Override
 	public int compareTo(EventNode other) {
 		int res1 = station.name().compareTo(other.station.name());
 		if (res1 != 0)
