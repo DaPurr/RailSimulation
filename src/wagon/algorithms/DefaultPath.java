@@ -51,5 +51,18 @@ public class DefaultPath implements Path {
 	public List<WeightedEdge> edges() {
 		return new ArrayList<>(edges);
 	}
+	
+	@Override
+	public String toString() {
+		String s = "[";
+		for (int i = 0; i < edges.size(); i++) {
+			WeightedEdge edge = edges.get(i);
+			if (i != 0)
+				s += ", ";
+			s += edge.source().toString();
+		}
+		s += "]";
+		return s;
+	}
 
 }
