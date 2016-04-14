@@ -20,11 +20,20 @@ public class EventActivityNetwork {
 	private DefaultDirectedGraph<Node, WeightedEdge> graph;
 	private Map<Edge, Double> capacities;
 	
+	// derived data
+	Map<Station, TreeSet<DepartureNode>> departuresByStation;
+	Map<Station, TreeSet<ArrivalNode>> arrivalsByStation;
+	Map<String, Station> stationNameMap;
+	
 	private Logger log = Logger.getLogger(this.getClass().getName());
 	
 	private EventActivityNetwork() {
 		graph = new DefaultDirectedGraph<>(WeightedEdge.class);
 		capacities = new HashMap<>();
+		
+		departuresByStation = new HashMap<>();
+		arrivalsByStation = new HashMap<>();
+		stationNameMap = new HashMap<>();
 		//log.setLevel(Level.OFF);
 	}
 	
@@ -36,6 +45,18 @@ public class EventActivityNetwork {
 	 */
 	public Set<WeightedEdge> incomingEdges(Node node) {
 		return graph.incomingEdgesOf(node);
+	}
+	
+	/**
+	 * Returns the weighted edge of this network where <code>u</code> is the
+	 * source node and <code>v</code> its target.
+	 * 
+	 * @param u	source node
+	 * @param v	target node
+	 * @return	weighted edge with source <code>u</code> and target <code>v</code>
+	 */
+	public WeightedEdge getEdge(Node u, Node v) {
+		return graph.getEdge(u, v);
 	}
 	
 	/**
@@ -102,6 +123,30 @@ public class EventActivityNetwork {
 		return network;
 	}
 	
+	private void addArrival(Station station, ArrivalNode u) {
+		TreeSet<ArrivalNode> set = arrivalsByStation.get(station);
+		stationNameMap.put(station.name(), station);
+		if (set == null) {
+			set = new TreeSet<>();
+			set.add(u);
+			arrivalsByStation.put(station, set);
+		} else {
+			set.add(u);
+		}
+	}
+	
+	private void addDeparture(Station station, DepartureNode u) {
+		TreeSet<DepartureNode> set = departuresByStation.get(station);
+		stationNameMap.put(station.name(), station);
+		if (set == null) {
+			set = new TreeSet<>();
+			set.add(u);
+			departuresByStation.put(station, set);
+		} else {
+			set.add(u);
+		}
+	}
+	
 	/**
 	 * Construct an event-activity network according to a <code>Timetable</code> object. 
 	 * Does not (yet) take into account transfer time. TODO
@@ -136,8 +181,10 @@ public class EventActivityNetwork {
 				WeightedEdge tripEdge = new TripEdge(dn, an, trip, 
 						duration(trip.departureTime(), trip.arrivalTime()));
 				addEventNode(fromStation, dn, departures);
+				network.addDeparture(fromStation, dn);
 				countDepartures++;
 				addEventNode(toStation, an, arrivals);
+				network.addArrival(toStation, an);
 				countArrivals++;
 				
 				// add to network
@@ -193,7 +240,8 @@ public class EventActivityNetwork {
 		return minutes;
 	}
 	
-	private static <T extends EventNode> void addEventNode(Station station, T eventNode, Map<Station,SortedSet<T>> events) {
+	private static <T extends EventNode> void addEventNode(Station station, 
+			T eventNode, Map<Station,SortedSet<T>> events) {
 		if (!events.containsKey(station)) {
 			SortedSet<T> set = new TreeSet<>();
 			set.add(eventNode);
@@ -202,6 +250,56 @@ public class EventActivityNetwork {
 			SortedSet<T> set = events.get(station);
 			set.add(eventNode);
 		}
+	}
+	
+	/**
+	 * Returns the departure node of this event-activity network corresponding to the station 
+	 * with abbreviated name <code>name</code> and departure time <code>time</code>.
+	 * <p>
+	 * If there is no station with abbreviated name <code>name</code> this method returns 
+	 * <code>null</code>. If there is no departure at the station that departs exactly at 
+	 * <code>time</code>, this method returns the departure node corresponding to the 
+	 * earliest departure after <code>time</code> or <code>null</code>, if no such 
+	 * node exists.
+	 * 
+	 * @param name	abbreviated station name
+	 * @param time	departure time
+	 * @return	departure node
+	 */
+	public DepartureNode getStationDepartureNode(String name, LocalDateTime time) {
+		if (name == null || time == null)
+			throw new IllegalArgumentException("Arguments cannot be null");
+		Station station = stationNameMap.get(name);
+		if (station == null)
+			throw new IllegalArgumentException("Station not found: " + name);
+		TreeSet<DepartureNode> set = departuresByStation.get(station);
+		DepartureNode returnNode = set.ceiling(new DepartureNode(station, time));
+		return returnNode;
+	}
+	
+	/**
+	 * Returns the arrival node of this event-activity network corresponding to the station 
+	 * with abbreviated name <code>name</code> and arrival time <code>time</code>.
+	 * <p>
+	 * If there is no station with abbreviated name <code>name</code> this method returns 
+	 * <code>null</code>. If there is no arrival at the station that arrives exactly at 
+	 * <code>time</code>, this method returns the arrival node corresponding to the 
+	 * earliest arrival before <code>time</code> or <code>null</code>, if no such 
+	 * node exists.
+	 * 
+	 * @param name	abbreviated station name
+	 * @param time	departure time
+	 * @return	departure node
+	 */
+	public ArrivalNode getStationArrivalNode(String name, LocalDateTime time) {
+		if (name == null || time == null)
+			throw new IllegalArgumentException("Arguments cannot be null");
+		Station station = stationNameMap.get(name);
+		if (station == null)
+			throw new IllegalArgumentException("Station not found: " + name);
+		TreeSet<ArrivalNode> set = arrivalsByStation.get(station);
+		ArrivalNode returnNode = set.floor(new ArrivalNode(station, time));
+		return returnNode;
 	}
 	
 }
