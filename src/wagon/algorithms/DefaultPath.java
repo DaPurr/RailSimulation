@@ -1,10 +1,15 @@
 package wagon.algorithms;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 import wagon.network.Node;
 import wagon.network.WeightedEdge;
+import wagon.network.expanded.TripEdge;
+import wagon.network.expanded.WaitEdge;
+import wagon.timetable.ScheduledTrip;
 
 public class DefaultPath implements Path {
 
@@ -54,15 +59,24 @@ public class DefaultPath implements Path {
 	
 	@Override
 	public String toString() {
-		String s = "[";
+		String s = "";
 		for (int i = 0; i < edges.size(); i++) {
 			WeightedEdge edge = edges.get(i);
-			if (i != 0)
-				s += ", ";
-			s += edge.source().toString();
+			if (edge instanceof WaitEdge)
+				continue;
+			TripEdge tripEdge = (TripEdge) edge;
+			ScheduledTrip trip = tripEdge.trip();
+			s += "departure:\t" + getClockTime(trip.departureTime()) + "\t" + trip.fromStation().name() + 
+					"\t(" + trip.composition().type() + ")\n";
+			s += "arrival:\t" + getClockTime(trip.arrivalTime()) + "\t" + trip.toStation().name() + 
+					"\t(" + trip.composition().type() + ")\n";
 		}
-		s += "]";
 		return s;
+	}
+	
+	private String getClockTime(LocalDateTime time) {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+		return time.format(formatter);
 	}
 
 }
