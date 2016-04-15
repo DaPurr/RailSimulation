@@ -302,4 +302,24 @@ public class EventActivityNetwork {
 		return returnNode;
 	}
 	
+	/**
+	 * @param station	railway station
+	 * @return	departure nodes associated to <code>station</code>
+	 */
+	public Set<DepartureNode> getDeparturesByStation(Station station) {
+		if (station == null)
+			throw new IllegalArgumentException("Station cannot be null");
+		return new HashSet<>(departuresByStation.get(station));
+	}
+	
+	/**
+	 * @param station	railway station
+	 * @return	arrival nodes associated to <code>station</code>
+	 */
+	public Set<ArrivalNode> getArrivalsByStation(Station station) {
+		if (station == null)
+			throw new IllegalArgumentException("Station cannot be null");
+		return new HashSet<>(arrivalsByStation.get(station));
+	}
+	
 }
