@@ -6,12 +6,10 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.poi.hssf.util.CellReference;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import com.monitorjbl.xlsx.StreamingReader;
 
@@ -213,18 +211,47 @@ public class Timetable {
 			if (cell.getCellType() == Cell.CELL_TYPE_STRING)
 				continue;
 			
+			// TODO: save timetable per day of the week
+//			System.out.println(row.getCell(0).getStringCellValue());
+//			System.out.println(row.getCell(1).getStringCellValue());
+//			System.out.println(row.getCell(2).getStringCellValue());
+//			System.out.println(row.getCell(3).getStringCellValue());
+//			System.out.println(row.getCell(4).getStringCellValue());
+//			System.out.println(row.getCell(5).getStringCellValue());
+//			System.out.println(row.getCell(6).getStringCellValue());
+//			System.out.println(row.getCell(7).getStringCellValue());
+//			System.out.println(row.getCell(8).getStringCellValue());
+			
+			CellReference cellRef = new CellReference("L");
+			
+			int dayOfWeek = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
+			// only save mondays
+			if (dayOfWeek != 1)
+				continue;
+			
 			// init variables to store timetable
-			LocalDateTime departureTime = extractDateFromCell(row.getCell(0));
-			LocalDateTime arrivalTime = extractDateFromCell(row.getCell(70));
-			int trainNr = (int) row.getCell(1).getNumericCellValue();
-			Station fromStation = extractStationFromCell(row.getCell(2));
-			Station toStation = extractStationFromCell(row.getCell(3));
-			int nrWagons = (int) row.getCell(46).getNumericCellValue();
-			int capSeats1 = (int) row.getCell(57).getNumericCellValue();
-			int capSeats2 = (int) row.getCell(58).getNumericCellValue();
-			int capSeats2Fold = (int) row.getCell(59).getNumericCellValue();
-			int capStand2 = (int) row.getCell(60).getNumericCellValue();
-			TrainType trainType = extractTrainTypeFromCell(row.getCell(7));
+			cellRef = new CellReference("A");
+			LocalDateTime departureTime = extractDateFromCell(row.getCell(cellRef.getCol()));
+			cellRef = new CellReference("BS");
+			LocalDateTime arrivalTime = extractDateFromCell(row.getCell(cellRef.getCol()));
+			cellRef = new CellReference("B");
+			int trainNr = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
+			cellRef = new CellReference("C");
+			Station fromStation = extractStationFromCell(row.getCell(cellRef.getCol()));
+			cellRef = new CellReference("D");
+			Station toStation = extractStationFromCell(row.getCell(cellRef.getCol()));
+			cellRef = new CellReference("AU");
+			int nrWagons = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
+			cellRef = new CellReference("BF");
+			int capSeats1 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
+			cellRef = new CellReference("BG");
+			int capSeats2 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
+			cellRef = new CellReference("BH");
+			int capSeats2Fold = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
+			cellRef = new CellReference("BI");
+			int capStand2 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
+			cellRef = new CellReference("H");
+			TrainType trainType = extractTrainTypeFromCell(row.getCell(cellRef.getCol()));
 			
 			Composition comp = new Composition(trainNr, trainType, nrWagons, 
 					capSeats1, capSeats2 + capSeats2Fold + capStand2);
