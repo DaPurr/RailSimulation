@@ -1,11 +1,14 @@
 package wagon.algorithms;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Logger;
 
+import wagon.infrastructure.Station;
 import wagon.network.Node;
 import wagon.network.WeightedEdge;
 import wagon.network.expanded.EventActivityNetwork;
+import wagon.network.expanded.EventNode;
 
 public class DijkstraShortestPath {
 
@@ -36,18 +39,23 @@ public class DijkstraShortestPath {
 	 * @param stop	stop node
 	 * @return	shortest path from <code>start</code> to <code>stop</code>
 	 */
-	public Path shortestPath(Node start, Node stop) {
+	public Path earliestArrivalPath(String from, String to, LocalDateTime departureTime) {
 		
-		if (start == null || stop == null)
-			throw new IllegalArgumentException("Source and/or sink cannot be null");
+		if (from == null || to == null || departureTime == null)
+			throw new IllegalArgumentException("Arguments cannot be null");
 		
 		log.info("Commence shortest-path calculation...");
 		long startTime = System.nanoTime();
 		
+		// get departure node
+		EventNode start = network.getStationDepartureNode(from, departureTime);
+		if (start == null)
+			throw new IllegalStateException("Cannot find a suitable departure node");
+		
 		Map<Node, Double> distance = new HashMap<>();
 		
 		// init queue
-		PriorityQueue<DijkstraNode<Node>> queue = new PriorityQueue<>();
+		PriorityQueue<DijkstraNode<EventNode>> queue = new PriorityQueue<>();
 
 		// init distances
 		for (Node node : network.nodeSet()) {
@@ -55,11 +63,11 @@ public class DijkstraShortestPath {
 		}
 
 		// insert source
-		queue.add(new DijkstraNode<Node>(start, 0.0));
+		queue.add(new DijkstraNode<EventNode>(start, 0.0));
 		
 		while (!queue.isEmpty()) {
-			DijkstraNode<Node> dijkU = queue.poll();
-			if (dijkU.e == stop) {
+			DijkstraNode<EventNode> dijkU = queue.poll();
+			if (dijkU.e.station().name().equals(to)) {
 				long stopTime = System.nanoTime();
 				double duration = (stopTime-startTime)*1e-9;
 				log.info("...Finished calculating shortest path in: " + duration + " s");
@@ -73,11 +81,11 @@ public class DijkstraShortestPath {
 			// traverse neighbors
 			Set<WeightedEdge> outEdges = network.outgoingEdges(dijkU.e);
 			for (WeightedEdge edge : outEdges) {
-				Node v = edge.target();
+				EventNode v = edge.target();
 				if (edge.source() != dijkU.e)
 					throw new IllegalStateException("Inconsistency detected");
 				if (dijkU.weight + edge.weight() < distance.get(v)) {
-					queue.add(new DijkstraNode<Node>(v, dijkU, dijkU.weight + edge.weight()));
+					queue.add(new DijkstraNode<EventNode>(v, dijkU, dijkU.weight + edge.weight()));
 					distance.put(v, dijkU.weight + edge.weight());
 				}
 			}
@@ -85,10 +93,10 @@ public class DijkstraShortestPath {
 		throw new IllegalStateException("Could not find sink node(s)");
 	}
 	
-	private Path constructPath(DijkstraNode<Node> end) {
+	private Path constructPath(DijkstraNode<EventNode> end) {
 		DefaultPath path = new DefaultPath();
 		List<WeightedEdge> reversePath = new ArrayList<>();
-		DijkstraNode<Node> nextNode = end;
+		DijkstraNode<EventNode> nextNode = end;
 		while (nextNode.previous != null) {
 			reversePath.add(network.getEdge(nextNode.previous.e, nextNode.e));
 			nextNode = nextNode.previous;
