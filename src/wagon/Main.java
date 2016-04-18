@@ -7,7 +7,6 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 
 import wagon.algorithms.DijkstraShortestPath;
 import wagon.algorithms.Path;
-import wagon.network.Node;
 import wagon.network.expanded.EventActivityNetwork;
 import wagon.timetable.Timetable;
 
@@ -21,11 +20,8 @@ public class Main {
 //			network.getStationDepartureNode("Rta", LocalDateTime.parse("2016-04-11T06:54"));
 			
 			DijkstraShortestPath dijkstra = new DijkstraShortestPath(network);
-			Node source = network.getStationDepartureNode("Vs", LocalDateTime.parse("2016-04-11T15:30"));
-			Node sink = network.getStationArrivalNode("Gn", LocalDateTime.parse("2016-04-11T20:46"));
-			Path path = dijkstra.shortestPath(source, sink);
+			Path path = dijkstra.earliestArrivalPath("Vs", "Gn", LocalDateTime.parse("2016-04-11T15:30"));
 			System.out.println(path);
-//			System.out.println(network);
 		} catch (InvalidFormatException | IOException e) {
 			e.printStackTrace();
 		}
