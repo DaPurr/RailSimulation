@@ -2,8 +2,8 @@ package wagon.network.expanded;
 
 import java.time.LocalDateTime;
 
-import wagon.infrastructure.Station;
 import wagon.network.Node;
+import wagon.timetable.ScheduledTrip;
 
 /**
  * Represents an event in an event-activity graph.
@@ -14,28 +14,17 @@ import wagon.network.Node;
 
 public abstract class EventNode implements Node, Comparable<EventNode> {
 	
-	private Station station;
-	private LocalDateTime time;
+	private ScheduledTrip trip;
 	
-	public EventNode(Station station, LocalDateTime time) {
-		this.station = station;
-		this.time = time;
+	public EventNode(ScheduledTrip trip) {
+		this.trip = trip;
 	}
 	
 	/**
-	 * @return	Returns <code>LocalTime</code> object representing the scheduled time 
-	 * of occurrence for this particular <code>Event</code>. Cannot discern time on 
-	 * a higher level (for example occurrences over different days).
+	 * @return	Returns the associated trip
 	 */
-	public LocalDateTime time() {
-		return time;
-	}
-	
-	/**
-	 * @return	Returns the (train) station associated with this event.
-	 */
-	public Station station() {
-		return station;
+	public ScheduledTrip trip() {
+		return trip;
 	}
 	
 	@Override
@@ -43,25 +32,50 @@ public abstract class EventNode implements Node, Comparable<EventNode> {
 		if (!(o instanceof EventNode))
 			return false;
 		EventNode other = (EventNode) o;
-		boolean b1 = this.station.equals(other.station);
-		boolean b2 = this.time.equals(other.time);
-		boolean b3 = this.getClass().equals(other.getClass());
-		return b1 && b2 && b3;
+		boolean b1 = this.getClass().equals(other.getClass());
+		boolean b2 = this.trip.equals(other.trip);
+		return b1 && b2;
 	}
 	
 	@Override
 	public int compareTo(EventNode other) {
-		int res1 = station.name().compareTo(other.station.name());
+		LocalDateTime time1 = null;
+		LocalDateTime time2 = null;
+		String name1 = null;
+		String name2 = null;
+		String name3 = null;
+		String name4 = null;
+		if (this instanceof DepartureNode) {
+			time1 = this.trip.departureTime();
+			name1 = this.trip.fromStation().name();
+			name3 = this.trip.toStation().name();
+		} else {
+			time1 = this.trip.arrivalTime();
+			name1 = this.trip.toStation().name();
+			name3 = this.trip.fromStation().name();
+		}
+		if (other instanceof ArrivalNode) {
+			time2 = other.trip.arrivalTime();
+			name2 = other.trip.toStation().name();
+			name4 = other.trip.fromStation().name();
+		} else {
+			time2 = other.trip.departureTime();
+			name2 = other.trip.fromStation().name();
+			name4 = other.trip.toStation().name();
+		}
+		
+		int res1 = name1.compareTo(name2);
+		int res2 = time1.compareTo(time2);
+		int res3 = name3.compareTo(name4);
+		int res4 = this.getClass().getName().compareTo(other.getClass().getName());
 		if (res1 != 0)
 			return res1;
-		int res2 = time().compareTo(other.time());
 		if (res2 != 0)
 			return res2;
-		return this.getClass().getName().compareTo(other.getClass().getName());
-	}
-	
-	@Override
-	public String toString() {
-		return station.name();
+		if (res4 != 0)
+			return res4;
+		if (res3 != 0)
+			return res3;
+		return this.trip.composition().id() - other.trip.composition().id();
 	}
 }
