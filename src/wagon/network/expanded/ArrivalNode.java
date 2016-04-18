@@ -1,13 +1,16 @@
 package wagon.network.expanded;
 
-import java.time.LocalDateTime;
-
-import wagon.infrastructure.Station;
+import wagon.timetable.ScheduledTrip;
 
 public class ArrivalNode extends EventNode {
 
-	public ArrivalNode(Station station, LocalDateTime time) {
-		super(station, time);
+	public ArrivalNode(ScheduledTrip trip) {
+		super(trip);
+	}
+	
+	@Override
+	public String toString() {
+		return "Arrival: " + trip().arrivalTime() + " " + trip().toStation();
 	}
 	
 }
