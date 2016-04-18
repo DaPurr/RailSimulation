@@ -176,14 +176,18 @@ public class EventActivityNetwork {
 				Station toStation = trip.toStation();
 				stations.add(fromStation);
 				stations.add(toStation);
-				DepartureNode dn = new DepartureNode(fromStation, trip.departureTime());
-				ArrivalNode an = new ArrivalNode(toStation, trip.arrivalTime());
+				DepartureNode dn = new DepartureNode(trip);
+				ArrivalNode an = new ArrivalNode(trip);
 				WeightedEdge tripEdge = new TripEdge(dn, an, trip, 
 						duration(trip.departureTime(), trip.arrivalTime()));
-				addEventNode(fromStation, dn, departures);
+				boolean b = addEventNode(fromStation, dn, departures);
+				if (!b)
+					throw new IllegalStateException("Could not add node (before): " + dn);
 				network.addDeparture(fromStation, dn);
 				countDepartures++;
-				addEventNode(toStation, an, arrivals);
+				b = addEventNode(toStation, an, arrivals);
+//				if (!b)
+//					throw new IllegalStateException("Could not add node (before): " + an);
 				network.addArrival(toStation, an);
 				countArrivals++;
 				
@@ -212,7 +216,17 @@ public class EventActivityNetwork {
 					prevEvent = event;
 					continue;
 				}
-				int wait = duration(prevEvent.time(), event.time());
+				LocalDateTime time1 = null;
+				LocalDateTime time2 = null;
+				if (prevEvent instanceof DepartureNode)
+					time1 = prevEvent.trip().departureTime();
+				else
+					time1 = prevEvent.trip().arrivalTime();
+				if (event instanceof DepartureNode)
+					time2 = event.trip().departureTime();
+				else
+					time2 = event.trip().arrivalTime();
+				int wait = duration(time1, time2);
 				WeightedEdge waitEdge = new WaitEdge(prevEvent, event, wait);
 				network.graph.addEdge(prevEvent, event, waitEdge);
 				network.capacities.put(waitEdge, Double.MAX_VALUE);
@@ -240,16 +254,24 @@ public class EventActivityNetwork {
 		return minutes;
 	}
 	
-	private static <T extends EventNode> void addEventNode(Station station, 
+	private static <T extends EventNode> boolean addEventNode(Station station, 
 			T eventNode, Map<Station,SortedSet<T>> events) {
+		boolean b = false;
 		if (!events.containsKey(station)) {
 			SortedSet<T> set = new TreeSet<>();
-			set.add(eventNode);
+			b = set.add(eventNode);
 			events.put(station, set);
 		} else {
 			SortedSet<T> set = events.get(station);
-			set.add(eventNode);
+			b = set.add(eventNode);
 		}
+		if (!b) {
+			for (EventNode node : events.get(station)) {
+				if (node.equals(eventNode) || node.compareTo(eventNode) == 0)
+					System.out.println("Already contains: " + node);
+			}
+		}
+		return b;
 	}
 	
 	/**
@@ -273,7 +295,13 @@ public class EventActivityNetwork {
 		if (station == null)
 			throw new IllegalArgumentException("Station not found: " + name);
 		TreeSet<DepartureNode> set = departuresByStation.get(station);
-		DepartureNode returnNode = set.ceiling(new DepartureNode(station, time));
+		ScheduledTrip dummyTrip = new ScheduledTrip(
+				new Composition(0, TrainType.VIRM, 0, 0, 0), 
+				time, 
+				time, 
+				new Station(name), 
+				new Station(name));
+		DepartureNode returnNode = set.ceiling(new DepartureNode(dummyTrip));
 		return returnNode;
 	}
 	
@@ -298,7 +326,13 @@ public class EventActivityNetwork {
 		if (station == null)
 			throw new IllegalArgumentException("Station not found: " + name);
 		TreeSet<ArrivalNode> set = arrivalsByStation.get(station);
-		ArrivalNode returnNode = set.floor(new ArrivalNode(station, time));
+		ScheduledTrip dummyTrip = new ScheduledTrip(
+				new Composition(0, TrainType.VIRM, 0, 0, 0), 
+				time, 
+				time, 
+				new Station(name), 
+				new Station(name));
+		ArrivalNode returnNode = set.floor(new ArrivalNode(dummyTrip));
 		return returnNode;
 	}
 	
@@ -321,5 +355,24 @@ public class EventActivityNetwork {
 			throw new IllegalArgumentException("Station cannot be null");
 		return new HashSet<>(arrivalsByStation.get(station));
 	}
+	
+//	private static class EventNodeComparatorPerStation implements Comparator<EventNode> {
+//
+//		@Override
+//		public int compare(EventNode o1, EventNode o2) {
+//			LocalDateTime time1 = null;
+//			LocalDateTime time2 = null;
+//			if (o1 instanceof DepartureNode)
+//				time1 = o1.trip().departureTime();
+//			else
+//				time1 = o1.trip().arrivalTime();
+//			if (o2 instanceof ArrivalNode)
+//				time2 = o2.trip().arrivalTime();
+//			else
+//				time2 = o2.trip().departureTime();
+//			return time1.compareTo(time2);
+//		}
+//		
+//	}
 	
 }
