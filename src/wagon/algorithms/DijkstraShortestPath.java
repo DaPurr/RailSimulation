@@ -4,9 +4,9 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Logger;
 
-import wagon.infrastructure.Station;
 import wagon.network.Node;
 import wagon.network.WeightedEdge;
+import wagon.network.expanded.ArrivalNode;
 import wagon.network.expanded.EventActivityNetwork;
 import wagon.network.expanded.EventNode;
 
@@ -67,7 +67,7 @@ public class DijkstraShortestPath {
 		
 		while (!queue.isEmpty()) {
 			DijkstraNode<EventNode> dijkU = queue.poll();
-			if (dijkU.e.station().name().equals(to)) {
+			if ((dijkU.e instanceof ArrivalNode) && dijkU.e.trip().toStation().name().equals(to)) {
 				long stopTime = System.nanoTime();
 				double duration = (stopTime-startTime)*1e-9;
 				log.info("...Finished calculating shortest path in: " + duration + " s");
