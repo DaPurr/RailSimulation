@@ -71,6 +71,19 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 	public Station fromStation() {
 		return fromStation;
 	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if (!(other instanceof ScheduledTrip))
+			return false;
+		ScheduledTrip o = (ScheduledTrip) other;
+		boolean b1 = this.arrTime.equals(o.arrTime);
+//		boolean b2 = this.composition.equals(o.composition);
+		boolean b3 = this.depTime.equals(o.depTime);
+		boolean b4 = this.fromStation.equals(o.fromStation);
+		boolean b5 = this.toStation.equals(o.toStation);
+		return b1 && b3 && b4 && b5;
+	}
 
 	@Override
 	public int compareTo(ScheduledTrip that) {
