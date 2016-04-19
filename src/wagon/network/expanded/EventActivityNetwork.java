@@ -34,7 +34,7 @@ public class EventActivityNetwork {
 		departuresByStation = new HashMap<>();
 		arrivalsByStation = new HashMap<>();
 		stationNameMap = new HashMap<>();
-		//log.setLevel(Level.OFF);
+		log.setLevel(Level.ALL);
 	}
 	
 	/**
@@ -84,9 +84,9 @@ public class EventActivityNetwork {
 	 * 
 	 * @return	test network: Nwk -> Cps -> Rta, three consecutive trains
 	 */
-	public static EventActivityNetwork createTestNetwork() {
+	public static EventActivityNetwork createTestNetwork1() {
 		EventActivityNetwork network = new EventActivityNetwork();
-		network.log.info("Begin constructing test timetable...");
+		network.log.info("Begin constructing test timetable 1...");
 		Station station1 = new Station("Nwk");
 		Station station2 = new Station("Cps");
 		Station station3 = new Station("Rta");
@@ -95,19 +95,31 @@ public class EventActivityNetwork {
 		Composition comp2 = new Composition(2, TrainType.SGM, 3, 100, 20);
 		Composition comp3 = new Composition(3, TrainType.SGM, 6, 100, 20);
 		
-		ScheduledTrip sd1 = new ScheduledTrip(comp1, LocalDateTime.parse("2016-04-11T06:47"), 
-				LocalDateTime.parse("2016-04-11T06:50"), station1, station2);
-		ScheduledTrip sd2 = new ScheduledTrip(comp2, LocalDateTime.parse("2016-04-11T07:17"), 
-				LocalDateTime.parse("2016-04-11T07:20"), station1, station2);
-		ScheduledTrip sd3 = new ScheduledTrip(comp3, LocalDateTime.parse("2016-04-11T07:47"), 
-				LocalDateTime.parse("2016-04-11T07:50"), station1, station2);
+		ScheduledTrip sd1 = new ScheduledTrip(comp1, 
+				LocalDateTime.parse("2016-04-11T06:47"), 
+				LocalDateTime.parse("2016-04-11T06:50"), 
+				station1, station2);
+		ScheduledTrip sd2 = new ScheduledTrip(comp2, 
+				LocalDateTime.parse("2016-04-11T07:17"), 
+				LocalDateTime.parse("2016-04-11T07:20"), 
+				station1, station2);
+		ScheduledTrip sd3 = new ScheduledTrip(comp3, 
+				LocalDateTime.parse("2016-04-11T07:47"), 
+				LocalDateTime.parse("2016-04-11T07:50"), 
+				station1, station2);
 		
-		ScheduledTrip sd4 = new ScheduledTrip(comp1, LocalDateTime.parse("2016-04-11T06:50"), 
-				LocalDateTime.parse("2016-04-11T06:53"), station2, station3);
-		ScheduledTrip sd5 = new ScheduledTrip(comp2, LocalDateTime.parse("2016-04-11T07:20"), 
-				LocalDateTime.parse("2016-04-11T07:23"), station2, station3);
-		ScheduledTrip sd6 = new ScheduledTrip(comp3, LocalDateTime.parse("2016-04-11T07:50"), 
-				LocalDateTime.parse("2016-04-11T07:53"), station2, station3);
+		ScheduledTrip sd4 = new ScheduledTrip(comp1, 
+				LocalDateTime.parse("2016-04-11T06:50"), 
+				LocalDateTime.parse("2016-04-11T06:53"), 
+				station2, station3);
+		ScheduledTrip sd5 = new ScheduledTrip(comp2, 
+				LocalDateTime.parse("2016-04-11T07:20"), 
+				LocalDateTime.parse("2016-04-11T07:23"), 
+				station2, station3);
+		ScheduledTrip sd6 = new ScheduledTrip(comp3, 
+				LocalDateTime.parse("2016-04-11T07:50"), 
+				LocalDateTime.parse("2016-04-11T07:53"), 
+				station2, station3);
 		
 		Timetable timetable = new Timetable();
 		timetable.addStation(station1, sd1);
@@ -119,6 +131,40 @@ public class EventActivityNetwork {
 		
 		network = createNetwork(timetable);
 		network.log.info("...Constructed test timetable");
+		
+		return network;
+	}
+	
+	public static EventActivityNetwork createTestNetwork2() {
+		EventActivityNetwork network = new EventActivityNetwork();
+		network.log.info("Begin constructing test timetable 2...");
+		Station stationA = new Station("A");
+		Station stationB = new Station("B");
+		Station stationC = new Station("C");
+		
+		Composition comp1 = new Composition(1, TrainType.SLT, 3, 100, 20);
+		Composition comp2 = new Composition(2, TrainType.SLT, 6, 100, 20);
+		
+		ScheduledTrip trip1 = new ScheduledTrip(comp1, 
+				LocalDateTime.parse("2016-04-19T10:53"), 
+				LocalDateTime.parse("2016-04-19T11:00"), 
+				stationA, stationB);
+		ScheduledTrip trip2 = new ScheduledTrip(comp1, 
+				LocalDateTime.parse("2016-04-19T11:00"), 
+				LocalDateTime.parse("2016-04-19T11:30"), 
+				stationB, stationC);
+		ScheduledTrip trip3 = new ScheduledTrip(comp2, 
+				LocalDateTime.parse("2016-04-19T11:10"), 
+				LocalDateTime.parse("2016-04-19T11:30"), 
+				stationB, stationC);
+		
+		Timetable timetable = new Timetable();
+		timetable.addStation(stationA, trip1);
+		timetable.addStation(stationB, trip2);
+		timetable.addStation(stationB, trip3);
+		
+		network = createNetwork(timetable);
+		network.log.info("...Finished constructing test timetable2");
 		
 		return network;
 	}
