@@ -3,6 +3,7 @@ package wagon.algorithms;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import wagon.network.Node;
@@ -18,6 +19,14 @@ public class DefaultPath implements Path {
 	
 	DefaultPath() {
 		edges = new ArrayList<>();
+	}
+	
+	DefaultPath(DefaultPath path) {
+		totalCost = 0;
+		edges = new ArrayList<>();
+		for (WeightedEdge edge : path.edges) {
+			addEdge(edge);
+		}
 	}
 	
 	void addEdge(WeightedEdge e) {
@@ -74,9 +83,25 @@ public class DefaultPath implements Path {
 		return s;
 	}
 	
+	/**
+	 * Reverses this path.
+	 */
+	public void reverse() {
+		Collections.reverse(edges);
+	}
+	
 	private String getClockTime(LocalDateTime time) {
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
 		return time.format(formatter);
+	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if (!(other instanceof DefaultPath))
+			return false;
+		DefaultPath o = (DefaultPath) other;
+		return this.edges.equals(o.edges) &&
+				this.weight() == o.weight();
 	}
 
 }
