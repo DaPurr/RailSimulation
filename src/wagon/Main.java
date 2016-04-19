@@ -17,11 +17,15 @@ public class Main {
 		try {
 			Timetable sample = Timetable.importFromExcel("data/full_dataset.xlsx");
 			EventActivityNetwork network = EventActivityNetwork.createNetwork(sample);
-//			network.getStationDepartureNode("Rta", LocalDateTime.parse("2016-04-11T06:54"));
-			
 			DijkstraShortestPath dijkstra = new DijkstraShortestPath(network);
-			Path path = dijkstra.earliestArrivalPath("Vs", "Gn", LocalDateTime.parse("2016-04-11T15:30"));
-			System.out.println(path);
+			Path path1 = dijkstra.earliestArrivalPath("Vs", "Gn", LocalDateTime.parse("2016-04-11T15:30"));
+			
+//			EventActivityNetwork network = EventActivityNetwork.createTestNetwork2();
+//			DijkstraShortestPath dijkstra = new DijkstraShortestPath(network);
+//			Path path2 = dijkstra.earliestArrivalPath("A", "C", LocalDateTime.parse("2016-04-19T10:50"));
+			
+//			System.out.println(path1);
+//			System.out.println(path2);
 		} catch (InvalidFormatException | IOException e) {
 			e.printStackTrace();
 		}
