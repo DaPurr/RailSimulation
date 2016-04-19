@@ -40,7 +40,7 @@ public class Timetable {
 		departures = new HashMap<>();
 		routes = new HashMap<>();
 		stations = new HashSet<>();
-		//log.setLevel(Level.OFF);
+		log.setLevel(Level.ALL);
 	}
 	
 	/**
@@ -58,12 +58,6 @@ public class Timetable {
 		for (ScheduledTrip trip : trips) {
 			addStation(station, trip);
 		}
-		
-		
-//		List<ScheduledTrip> deps = new ArrayList<>(dep);
-//		Collections.sort(deps);
-//		departures.put(station, deps);
-//		stations.add(station);
 	}
 	
 	/**
