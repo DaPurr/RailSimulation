@@ -4,11 +4,9 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Logger;
 
-import wagon.network.Node;
-import wagon.network.WeightedEdge;
-import wagon.network.expanded.ArrivalNode;
-import wagon.network.expanded.EventActivityNetwork;
-import wagon.network.expanded.EventNode;
+import wagon.infrastructure.Station;
+import wagon.network.*;
+import wagon.network.expanded.*;
 
 public class DijkstraShortestPath {
 
@@ -67,6 +65,8 @@ public class DijkstraShortestPath {
 		DijkstraNode<EventNode> dijkSource = new DijkstraNode<EventNode>(start, 0.0);
 		eventToDijkstra.put(start, dijkSource);
 		queue.add(dijkSource);
+		
+		// used to identify nodes with least cost
 		double minimumCost = Double.POSITIVE_INFINITY;
 		
 		while (!queue.isEmpty()) {
@@ -103,14 +103,15 @@ public class DijkstraShortestPath {
 				if (edge.source() != dijkU.e)
 					throw new IllegalStateException("Inconsistency detected");
 				double distV = distance.get(v);
-				if (dijkU.weight + edge.weight() < distV) {
+				double edgeWeight = edge.weight();
+				if (dijkU.weight + edgeWeight < distV) {
 					List<DijkstraNode<EventNode>> nodes = new ArrayList<>();
 					nodes.add(dijkU);
-					DijkstraNode<EventNode> newNode = new DijkstraNode<EventNode>(v, nodes, dijkU.weight + edge.weight());
+					DijkstraNode<EventNode> newNode = new DijkstraNode<EventNode>(v, nodes, dijkU.weight + edgeWeight);
 					queue.add(newNode);
-					distance.put(v, dijkU.weight + edge.weight());
+					distance.put(v, dijkU.weight + edgeWeight);
 					eventToDijkstra.put(newNode.e, newNode);
-				} else if (dijkU.weight + edge.weight() == distV) {
+				} else if (dijkU.weight + edgeWeight == distV) {
 					DijkstraNode<EventNode> dijkV = eventToDijkstra.get(v);
 					if (dijkV == null)
 						throw new IllegalStateException("Could not find node v.");
@@ -121,12 +122,90 @@ public class DijkstraShortestPath {
 		throw new IllegalStateException("Could not find sink node(s)");
 	}
 	
+	private List<Path> removeSpaceCycles(List<Path> paths) {
+		if (paths == null)
+			throw new IllegalArgumentException("Paths cannot be null");
+		
+		List<Path> newPaths = new ArrayList<>();
+		for (int i = 0; i < paths.size(); i++) {
+			if (!hasSpaceCycle(paths.get(i)))
+				newPaths.add(paths.get(i));
+		}
+		return newPaths;
+	}
+	
+	private Station associatedStation(EventNode event) {
+		if (event instanceof ArrivalNode)
+			return event.trip().toStation();
+		if (event instanceof DepartureNode)
+			return event.trip().fromStation();
+		throw new IllegalArgumentException("Event can only be arrival or departure");
+	}
+	
+	private boolean hasSpaceCycle(Path path) {
+		if (path == null)
+			throw new IllegalArgumentException("Path cannot be null");
+		Set<Station> visited = new HashSet<>();
+		List<WeightedEdge> edges = path.edges();
+		visited.add(edges.get(0).source().trip().fromStation());
+		for (int i = 0; i < edges.size(); i++) {
+			EventNode current = edges.get(i).source();
+			EventNode next = edges.get(i).target();
+			Station currStation = associatedStation(current);
+			Station nextStation = associatedStation(next);
+			if (!currStation.equals(nextStation) &&
+					!visited.add(nextStation))
+				return true;
+		}
+		return false;
+	}
+	
+	private List<Path> filterLeastTransfers(List<Path> paths) {
+		List<Path> newPaths = new ArrayList<>();
+		int minTransfers = Integer.MAX_VALUE;
+		for (Path path : paths) {
+			int nrTransfers = countTransfers(path);
+			if (nrTransfers < minTransfers) {
+				newPaths = new ArrayList<>();
+				newPaths.add(path);
+				minTransfers = nrTransfers;
+			} else if (nrTransfers == minTransfers)
+				newPaths.add(path);
+		}
+		return newPaths;
+	}
+	
+	private int countTransfers(Path path) {
+		List<WeightedEdge> edges = path.edges();
+		int count = 0;
+		
+		int prevID = -1;
+		for (WeightedEdge edge : edges) {
+			if (edge instanceof WaitEdge)
+				continue;
+			EventNode target = edge.target();
+			int targetID = target.trip().composition().id();
+			if (prevID == -1) {
+				prevID = targetID;
+				continue;
+			}
+			if (target instanceof ArrivalNode &&
+					targetID != prevID) {
+				count++;
+				prevID = targetID;
+			}
+		}
+		return count;
+	}
+	
 	private Path constructPath(List<DijkstraNode<EventNode>> endNodes) {
 		List<Path> paths = new ArrayList<>();
 		for (DijkstraNode<EventNode> node : endNodes) {
 			List<Path> dfsPaths = depthFirstSearch(node);
 			paths.addAll(dfsPaths);
 		}
+		paths = removeSpaceCycles(paths);
+		paths = filterLeastTransfers(paths);
 		Set<Path> setPaths = new HashSet<>();
 		for (Path path : paths)
 			setPaths.add(path);
@@ -137,35 +216,6 @@ public class DijkstraShortestPath {
 	
 	// employ depth-first search to find all shortest paths
 	private List<Path> depthFirstSearch(DijkstraNode<EventNode> u) {
-//		List<Path> paths = new ArrayList<>();
-//		Stack<DijkstraNode<EventNode>> stack = new Stack<>();
-//		List<WeightedEdge> reversePath = new ArrayList<>();
-//		EventNode previous = u.e;
-//		for (DijkstraNode<EventNode> node : u.previous)
-//			stack.push(node);
-//		while (!stack.isEmpty()) {
-//			DijkstraNode<EventNode> v = stack.pop();
-//			EventNode current = v.e;
-//			WeightedEdge edge = network.getEdge(current, previous);
-//			if (edge == null)
-//				throw new IllegalStateException("Could not find edge (previous,current).");
-//			reversePath.add(edge);
-//			previous = v.e;
-//			if (v.previous == null) {
-//				DefaultPath path = new DefaultPath();
-//				Collections.reverse(reversePath);
-//				for (WeightedEdge e : reversePath)
-//					path.addEdge(e);
-//				paths.add(path);
-//				reversePath = new ArrayList<>();
-//				previous = u.e;
-//				continue;
-//			}
-//			for (DijkstraNode<EventNode> node : v.previous)
-//				stack.push(node);
-//		}
-//		return paths;
-		
 		List<Path> paths = new ArrayList<>();
 		Stack<List<DijkstraNode<EventNode>>> stack = new Stack<>();
 		
