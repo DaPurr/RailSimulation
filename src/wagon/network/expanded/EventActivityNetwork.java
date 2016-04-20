@@ -135,6 +135,9 @@ public class EventActivityNetwork {
 		return network;
 	}
 	
+	/**
+	 * @return	Returns a test network with two shortest paths
+	 */
 	public static EventActivityNetwork createTestNetwork2() {
 		EventActivityNetwork network = new EventActivityNetwork();
 		network.log.info("Begin constructing test timetable 2...");
@@ -164,7 +167,49 @@ public class EventActivityNetwork {
 		timetable.addStation(stationB, trip3);
 		
 		network = createNetwork(timetable);
-		network.log.info("...Finished constructing test timetable2");
+		network.log.info("...Finished constructing test timetable 2");
+		
+		return network;
+	}
+	
+	/**
+	 * @return	Returns a test network with a space loop.
+	 */
+	public static EventActivityNetwork createTestNetwork3() {
+		EventActivityNetwork network = new EventActivityNetwork();
+		network.log.info("Begin constructing test timetable 3...");
+		Station stationA = new Station("A");
+		Station stationB = new Station("B");
+		Station stationC = new Station("C");
+		
+		Composition comp1 = new Composition(1, TrainType.SLT, 3, 100, 20);
+		Composition comp2 = new Composition(2, TrainType.SLT, 6, 100, 20);
+		
+		ScheduledTrip trip1 = new ScheduledTrip(comp1, 
+				LocalDateTime.parse("2016-04-19T12:00"), 
+				LocalDateTime.parse("2016-04-19T12:01"), 
+				stationA, stationB);
+		ScheduledTrip trip2 = new ScheduledTrip(comp1, 
+				LocalDateTime.parse("2016-04-19T12:01"), 
+				LocalDateTime.parse("2016-04-19T12:02"), 
+				stationB, stationA);
+		ScheduledTrip trip3 = new ScheduledTrip(comp2, 
+				LocalDateTime.parse("2016-04-19T12:02"), 
+				LocalDateTime.parse("2016-04-19T12:03"), 
+				stationA, stationB);
+		ScheduledTrip trip4 = new ScheduledTrip(comp2, 
+				LocalDateTime.parse("2016-04-19T12:03"), 
+				LocalDateTime.parse("2016-04-19T12:04"), 
+				stationB, stationC);
+		
+		Timetable timetable = new Timetable();
+		timetable.addStation(stationA, trip1);
+		timetable.addStation(stationB, trip2);
+		timetable.addStation(stationA, trip3);
+		timetable.addStation(stationB, trip4);
+		
+		network = createNetwork(timetable);
+		network.log.info("...Finished constructing test timetable 3");
 		
 		return network;
 	}
