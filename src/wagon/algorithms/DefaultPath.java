@@ -103,5 +103,10 @@ public class DefaultPath implements Path {
 		return this.edges.equals(o.edges) &&
 				this.weight() == o.weight();
 	}
+	
+	@Override
+	public int hashCode() {
+		return 7*edges.hashCode() + 13*Double.valueOf(totalCost).hashCode();
+	}
 
 }

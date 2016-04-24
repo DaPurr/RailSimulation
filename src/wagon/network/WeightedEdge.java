@@ -14,4 +14,13 @@ public abstract class WeightedEdge extends Edge {
 	public double weight() {
 		return weight;
 	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if (!(other instanceof WeightedEdge))
+			return false;
+		WeightedEdge o = (WeightedEdge) other;
+		return this.weight == o.weight &&
+				super.equals(o);
+	}
 }

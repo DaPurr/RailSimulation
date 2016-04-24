@@ -19,4 +19,13 @@ public abstract class Edge {
 	public EventNode target() {
 		return target;
 	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if (!(other instanceof Edge))
+			return false;
+		Edge o = (Edge) other;
+		return this.source.equals(o.source) &&
+				this.target.equals(o.target);
+	}
 }
