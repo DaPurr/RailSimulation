@@ -33,8 +33,9 @@ public class DijkstraShortestPath {
 	 * 
 	 * It is entirely possible to perform multiple queries using this method.
 	 * 
-	 * @param start	start node
-	 * @param stop	stop node
+	 * @param from			abbreviated name of the origin station
+	 * @param to			abbreviated name of the destination station
+	 * @param departureTime	time of departure
 	 * @return	shortest path from <code>start</code> to <code>stop</code>
 	 */
 	public Path earliestArrivalPath(String from, String to, LocalDateTime departureTime) {
