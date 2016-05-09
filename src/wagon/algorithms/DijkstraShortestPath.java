@@ -38,18 +38,35 @@ public class DijkstraShortestPath {
 	 * @param departureTime	time of departure
 	 * @return	shortest path from <code>start</code> to <code>stop</code>
 	 */
-	public Path earliestArrivalPath(String from, String to, LocalDateTime departureTime) {
+	public List<Path> earliestArrivalPath(String from, String to, LocalDateTime departureTime) {
+		DepartureNode start = network.getStationDepartureNode(from, departureTime);
+		if (start == null)
+			throw new IllegalStateException("Cannot find a suitable departure node");
+		return earliestArrivalPath(start, to);
+	}
+	
+	/**
+	 * Constructs a single shortest path from <code>start</code> to <code>stop</code>.
+	 * 
+	 * It is possible to perform multiple queries using this method.
+	 * 
+	 * @param from			departure node
+	 * @param to			abbreviated name of the destination station
+	 * @return	earliest arrival path from <code>from</code> to <code>to</code>
+	 */
+	public List<Path> earliestArrivalPath(DepartureNode from, String to) {
 		
-		if (from == null || to == null || departureTime == null)
+		if (from == null || to == null)
 			throw new IllegalArgumentException("Arguments cannot be null");
 		
 		log.info("Commence shortest-path calculation...");
 		long startTime = System.nanoTime();
 		
+		DepartureNode start = from;
 		// get departure node
-		EventNode start = network.getStationDepartureNode(from, departureTime);
-		if (start == null)
-			throw new IllegalStateException("Cannot find a suitable departure node");
+//		EventNode start = network.getStationDepartureNode(from, departureTime);
+//		if (start == null)
+//			throw new IllegalStateException("Cannot find a suitable departure node");
 		
 		Map<Node, Double> distance = new HashMap<>();
 		Map<EventNode, DijkstraNode<EventNode>> eventToDijkstra = new HashMap<>();
@@ -199,20 +216,20 @@ public class DijkstraShortestPath {
 		return count;
 	}
 	
-	private Path constructPath(List<DijkstraNode<EventNode>> endNodes) {
+	private List<Path> constructPath(List<DijkstraNode<EventNode>> endNodes) {
 		List<Path> paths = new ArrayList<>();
 		for (DijkstraNode<EventNode> node : endNodes) {
 			List<Path> dfsPaths = depthFirstSearch(node);
 			paths.addAll(dfsPaths);
 		}
 		paths = removeSpaceCycles(paths);
-		paths = filterLeastTransfers(paths);
-		Set<Path> setPaths = new HashSet<>();
-		for (Path path : paths)
-			setPaths.add(path);
-		Path path = paths.get(0);
+//		paths = filterLeastTransfers(paths);
+//		Set<Path> setPaths = new HashSet<>();
+//		for (Path path : paths)
+//			setPaths.add(path);
+//		Path path = paths.get(0);
 		System.out.println(paths);
-		return path;
+		return paths;
 	}
 	
 	// employ depth-first search to find all shortest paths
