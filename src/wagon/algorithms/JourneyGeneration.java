@@ -4,7 +4,8 @@ import java.time.*;
 import java.util.*;
 import java.util.logging.Logger;
 
-import wagon.network.expanded.EventActivityNetwork;
+import wagon.infrastructure.*;
+import wagon.network.expanded.*;
 
 /**
  * This class employs shortest-path queries in order to generate a set of journeys, 
@@ -41,6 +42,24 @@ public class JourneyGeneration {
 	public List<Path> generateJourneys(String from, String to, 
 			LocalDateTime checkIn, LocalDateTime checkOut) {
 		List<Path> paths = new ArrayList<>();
+		log.info("Start extracting departure nodes...");
+		List<DepartureNode> departureNodes = new ArrayList<>(network.getDeparturesByStation(new Station(from)));
+		Collections.sort(departureNodes);
+		log.info("...Finished extracting departure nodes");
+		
+		DijkstraShortestPath dijkstra = new DijkstraShortestPath(network);
+		
+		log.info("Start generating journeys...");
+		for (DepartureNode departure : departureNodes) {
+			if (departure.trip().departureTime().compareTo(checkIn) < 0)
+				continue;
+			// departure time is after check-in time, so process
+			List<Path> journeys = dijkstra.earliestArrivalPath(departure, to);
+			if (journeys.get(0).arrivalTime().compareTo(checkOut) > 0)
+				break;
+			paths.addAll(journeys);
+		}
+		log.info("...Finish generating journeys");
 		
 		return paths;
 	}
