@@ -1,5 +1,6 @@
 package wagon.algorithms;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import wagon.network.Node;
@@ -11,4 +12,6 @@ public interface Path {
 	public Node startNode();
 	public Node endNode();
 	public List<WeightedEdge> edges();
+	public LocalDateTime departureTime();
+	public LocalDateTime arrivalTime();
 }

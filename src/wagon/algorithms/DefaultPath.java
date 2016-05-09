@@ -109,4 +109,14 @@ public class DefaultPath implements Path {
 		return 7*edges.hashCode() + 13*Double.valueOf(totalCost).hashCode();
 	}
 
+	@Override
+	public LocalDateTime departureTime() {
+		return edges.get(0).source().trip().departureTime();
+	}
+
+	@Override
+	public LocalDateTime arrivalTime() {
+		return edges.get(edges.size()-1).target().trip().arrivalTime();
+	}
+
 }
