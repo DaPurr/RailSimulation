@@ -447,23 +447,4 @@ public class EventActivityNetwork {
 		return new HashSet<>(arrivalsByStation.get(station));
 	}
 	
-//	private static class EventNodeComparatorPerStation implements Comparator<EventNode> {
-//
-//		@Override
-//		public int compare(EventNode o1, EventNode o2) {
-//			LocalDateTime time1 = null;
-//			LocalDateTime time2 = null;
-//			if (o1 instanceof DepartureNode)
-//				time1 = o1.trip().departureTime();
-//			else
-//				time1 = o1.trip().arrivalTime();
-//			if (o2 instanceof ArrivalNode)
-//				time2 = o2.trip().arrivalTime();
-//			else
-//				time2 = o2.trip().departureTime();
-//			return time1.compareTo(time2);
-//		}
-//		
-//	}
-	
 }
