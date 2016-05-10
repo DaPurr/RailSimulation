@@ -6,10 +6,18 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.poi.hssf.util.CellReference;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import com.monitorjbl.xlsx.StreamingReader;
 
@@ -265,6 +273,51 @@ public class Timetable {
 		// display some characteristics
 		timetable.log.info("Number of stations (departure): " + timetable.departures.keySet().size());
 		timetable.log.info("Number of stations: (dep & arr) " + timetable.departures.keySet().size());
+		
+		return timetable;
+	}
+	
+	public static Timetable importFromXML(String file_name) throws SAXException, IOException, ParserConfigurationException {
+		if (!file_name.matches(".*\\.xml"))
+			throw new IllegalArgumentException("File needs to be XML format.");
+		Timetable timetable = new Timetable();
+		
+		// initialize
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		DocumentBuilder db = dbf.newDocumentBuilder(); 
+		Document doc = db.parse(new File(file_name));
+		
+		// parse the document
+		NodeList trips = doc.getElementsByTagName("trip");
+		int nrTrips = trips.getLength();
+		for (int i = 0; i < nrTrips; i++) {
+			// parse trip
+			Element trip = (Element) trips.item(i);
+			
+			Element composition = (Element) trip.getElementsByTagName("composition").item(0);
+			String id = composition.getAttribute("id");
+			String type = composition.getAttribute("type");
+			String nrUnits = composition.getAttribute("nrUnits");
+			String cap1 = composition.getAttribute("cap1");
+			String cap2 = composition.getAttribute("cap2");
+			Composition comp = new Composition(Integer.parseInt(id), 
+					TrainType.valueOf(type), 
+					Integer.valueOf(nrUnits), 
+					Integer.valueOf(cap1), 
+					Integer.valueOf(cap2));
+			
+			String departureDate = trip.getAttribute("departureTime");
+			String arrivalDate = trip.getAttribute("arrivalTime");
+			String from = trip.getAttribute("from");
+			String to = trip.getAttribute("to");
+			Station fromStation = new Station(from);
+			ScheduledTrip st = new ScheduledTrip(comp, 
+					LocalDateTime.parse(departureDate), 
+					LocalDateTime.parse(arrivalDate), 
+					fromStation, new Station(to));
+			
+			timetable.addStation(fromStation, st);
+		}
 		
 		return timetable;
 	}
