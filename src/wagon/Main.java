@@ -18,8 +18,10 @@ public class Main {
 		try {
 			Timetable sample = Timetable.importFromExcel("data/full_dataset.xlsx");
 			EventActivityNetwork network = EventActivityNetwork.createNetwork(sample);
-			DijkstraShortestPath dijkstra = new DijkstraShortestPath(network);
-			List<Path> paths1 = dijkstra.earliestArrivalPath("Vs", "Gn", LocalDateTime.parse("2016-04-11T15:30"));
+			sample.export("data/processed/full_dataset_export.xml");
+			
+//			DijkstraShortestPath dijkstra = new DijkstraShortestPath(network);
+//			List<Path> paths1 = dijkstra.earliestArrivalPath("Vs", "Gn", LocalDateTime.parse("2016-04-11T15:30"));
 			
 //			EventActivityNetwork network = EventActivityNetwork.createTestNetwork2();
 //			DijkstraShortestPath dijkstra = new DijkstraShortestPath(network);
