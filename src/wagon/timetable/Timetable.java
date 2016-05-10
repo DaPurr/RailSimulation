@@ -269,6 +269,46 @@ public class Timetable {
 		return timetable;
 	}
 	
+	public void export(String file_name) throws IOException {
+		File file = new File(file_name);
+		BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+		bw.write("<timetable>");
+		bw.newLine();
+		for (SortedSet<ScheduledTrip> set : routes.values()) {
+			for (ScheduledTrip trip : set) {
+				bw.write(tripToXML(trip, 1));
+				bw.newLine();
+			}
+		}
+		bw.write("</timetable>");
+		bw.flush();
+		bw.close();
+	}
+	
+	private String tripToXML(ScheduledTrip trip, int indentLevel) {
+		String s = indent(indentLevel) + "<trip ";
+		s += "from=\"" + trip.fromStation().name() + "\" ";
+		s += "to=\"" + trip.toStation().name() + "\" ";
+		s += "departureTime=\"" + trip.departureTime().toString() + "\" ";
+		s += "arrivalTime=\"" + trip.arrivalTime().toString() + "\">" + System.lineSeparator();
+		s += indent(indentLevel + 1) + "<composition ";
+		Composition comp = trip.composition();
+		s += "id=\"" + comp.id() + "\" ";
+		s += "type=\"" + comp.type().toString() + "\" ";
+		s += "nrUnits=\"" + comp.getNrWagons() + "\" ";
+		s += "cap1=\"" + comp.capacity1() + "\" ";
+		s += "cap2=\"" + comp.capacity2() + "\" />" + System.lineSeparator();
+		s += indent(indentLevel) + "</trip>";
+		return s;
+	}
+	
+	private String indent(int n) {
+		String s = "";
+		for (int i = 0; i < n; i++)
+			s += "   ";
+		return s;
+	}
+	
 	private static LocalDateTime extractDateFromCell(Cell cell) {
 		if (cell.getCellType() != Cell.CELL_TYPE_NUMERIC)
 			throw new IllegalArgumentException("Wrong cell type for dates.");
