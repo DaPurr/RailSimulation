@@ -15,7 +15,7 @@ import wagon.network.expanded.*;
  * @author Nemanja Milovanovic
  *
  */
-public class JourneyGeneration {
+public class RouteGeneration {
 
 	private EventActivityNetwork network;
 	
@@ -28,7 +28,7 @@ public class JourneyGeneration {
 	 * @param network	The <code>EventActivityNetwork</code> in which the journeys are 
 	 * 					to be generated in.
 	 */
-	public JourneyGeneration(EventActivityNetwork network) {
+	public RouteGeneration(EventActivityNetwork network) {
 		this.network = network;
 	}
 	
