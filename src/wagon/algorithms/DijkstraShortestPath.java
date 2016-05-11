@@ -228,7 +228,7 @@ public class DijkstraShortestPath {
 //		for (Path path : paths)
 //			setPaths.add(path);
 //		Path path = paths.get(0);
-		System.out.println(paths);
+//		System.out.println(paths);
 		return paths;
 	}
 	
