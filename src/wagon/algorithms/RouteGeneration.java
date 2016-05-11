@@ -39,7 +39,7 @@ public class RouteGeneration {
 	 * @param checkOut	check-out time
 	 * @return			set of earliest arriving journeys
 	 */
-	public List<Path> generateJourneys(String from, String to, 
+	public List<Path> generateRoutes(String from, String to, 
 			LocalDateTime checkIn, LocalDateTime checkOut) {
 		List<Path> paths = new ArrayList<>();
 		log.info("Start extracting departure nodes...");
@@ -59,7 +59,7 @@ public class RouteGeneration {
 				break;
 			paths.addAll(journeys);
 		}
-		log.info("...Finish generating journeys");
+		log.info("...Finish generating routes");
 		
 		return paths;
 	}
