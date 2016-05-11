@@ -14,4 +14,5 @@ public interface Path {
 	public List<WeightedEdge> edges();
 	public LocalDateTime departureTime();
 	public LocalDateTime arrivalTime();
+	public int countTransfers();
 }

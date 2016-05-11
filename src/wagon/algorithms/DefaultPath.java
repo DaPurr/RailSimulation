@@ -2,14 +2,11 @@ package wagon.algorithms;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import wagon.network.Node;
 import wagon.network.WeightedEdge;
-import wagon.network.expanded.TripEdge;
-import wagon.network.expanded.WaitEdge;
+import wagon.network.expanded.*;
 import wagon.timetable.ScheduledTrip;
 
 public class DefaultPath implements Path {
@@ -117,6 +114,21 @@ public class DefaultPath implements Path {
 	@Override
 	public LocalDateTime arrivalTime() {
 		return edges.get(edges.size()-1).target().trip().arrivalTime();
+	}
+
+	@Override
+	public int countTransfers() {
+		int currentID = Integer.MIN_VALUE;
+		int count = 0;
+		for (WeightedEdge e : edges) {
+			EventNode event = e.source();
+			int compID = event.trip().composition().id();
+			if (compID != currentID) {
+				count++;
+				currentID = compID;
+			}
+		}
+		return count;
 	}
 
 }
