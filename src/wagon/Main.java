@@ -10,7 +10,9 @@ import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.xml.sax.SAXException;
 
 import wagon.algorithms.DijkstraShortestPath;
-import wagon.algorithms.JourneyGeneration;
+import wagon.algorithms.RouteGeneration;
+import wagon.algorithms.RouteSelection;
+import wagon.algorithms.SLTLARouteSelection;
 import wagon.algorithms.Path;
 import wagon.network.expanded.EventActivityNetwork;
 import wagon.timetable.Timetable;
@@ -19,8 +21,9 @@ public class Main {
 
 	public static void main(String[] args) {
 		try {
+//			Timetable sample = Timetable.importFromXML("data/processed/smaller_sample_schedule1_export.xml");
 			Timetable sample = Timetable.importFromXML("data/processed/full_dataset_export.xml");
-			sample.export("data/processed/full_dataset_export2.xml");
+//			sample.export("data/processed/smaller_sample_schedule1_export.xml");
 			EventActivityNetwork network = EventActivityNetwork.createNetwork(sample);
 			
 //			DijkstraShortestPath dijkstra = new DijkstraShortestPath(network);
@@ -34,21 +37,55 @@ public class Main {
 //			DijkstraShortestPath dijkstra = new DijkstraShortestPath(network);
 //			List<Path> paths3 = dijkstra.earliestArrivalPath("A", "C", LocalDateTime.parse("2016-04-19T11:59"));
 			
-			JourneyGeneration jgen = new JourneyGeneration(network);
-			jgen.generateJourneys("Vs", "Gn", LocalDateTime.parse("2016-04-11T15:30"), 
-					LocalDateTime.parse("2016-04-11T20:17"));
+//			RouteGeneration rgen = new RouteGeneration(network);
+//			List<Path> paths3 = rgen.generateJourneys(
+//					"Vs", 
+//					"Gn", 
+//					LocalDateTime.parse("2016-04-11T15:30"), 
+//					LocalDateTime.parse("2016-04-11T20:17"));
+//			RouteSelection selectedLTLA = new SLTLARouteSelection(
+//					LocalDateTime.parse("2016-04-11T15:30"),
+//					LocalDateTime.parse("2016-04-11T20:17"),
+//					10);
+//			Path path3 = selectedLTLA.selectPath(paths3);
+			
+			RouteGeneration rgen = new RouteGeneration(network);
+			List<Path> paths4 = rgen.generateJourneys(
+					"Rta", 
+					"Dt", 
+					LocalDateTime.parse("2016-04-11T07:55"), 
+					LocalDateTime.parse("2016-04-11T08:33"));
+			RouteSelection selectedLTLA = new SLTLARouteSelection(
+					LocalDateTime.parse("2016-04-11T08:00"),
+					LocalDateTime.parse("2016-04-11T08:45"),
+					10);
+			Path path4 = selectedLTLA.selectPath(paths4);
+			
+//			RouteGeneration rgen = new JourneyGeneration(network);
+//			List<Path> paths4 = rgen.generateJourneys("Nwk", "Rtd", LocalDateTime.parse("2016-04-11T06:40"), 
+//					LocalDateTime.parse("2016-04-11T07:10"));
 			
 //			System.out.println(paths1);
 //			System.out.println(paths2);
+//			System.out.println(paths3);
+//			System.out.println(paths4);
+					
+//			System.out.println(path3);
+			System.out.println(path4);
 		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (SAXException e) {
+		} 
+		catch (SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ParserConfigurationException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		} 
+//		catch (InvalidFormatException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 
 }
