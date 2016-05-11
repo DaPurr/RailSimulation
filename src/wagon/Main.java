@@ -38,7 +38,7 @@ public class Main {
 //			List<Path> paths3 = dijkstra.earliestArrivalPath("A", "C", LocalDateTime.parse("2016-04-19T11:59"));
 			
 //			RouteGeneration rgen = new RouteGeneration(network);
-//			List<Path> paths3 = rgen.generateJourneys(
+//			List<Path> paths3 = rgen.generateRoutes(
 //					"Vs", 
 //					"Gn", 
 //					LocalDateTime.parse("2016-04-11T15:30"), 
@@ -50,14 +50,14 @@ public class Main {
 //			Path path3 = selectedLTLA.selectPath(paths3);
 			
 			RouteGeneration rgen = new RouteGeneration(network);
-			List<Path> paths4 = rgen.generateJourneys(
+			List<Path> paths4 = rgen.generateRoutes(
 					"Rta", 
 					"Dt", 
 					LocalDateTime.parse("2016-04-11T07:55"), 
 					LocalDateTime.parse("2016-04-11T08:33"));
 			RouteSelection selectedLTLA = new SLTLARouteSelection(
-					LocalDateTime.parse("2016-04-11T08:00"),
-					LocalDateTime.parse("2016-04-11T08:45"),
+					LocalDateTime.parse("2016-04-11T07:55"),
+					LocalDateTime.parse("2016-04-11T08:33"),
 					10);
 			Path path4 = selectedLTLA.selectPath(paths4);
 			
