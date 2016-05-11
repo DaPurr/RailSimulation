@@ -282,6 +282,8 @@ public class Timetable {
 			throw new IllegalArgumentException("File needs to be XML format.");
 		Timetable timetable = new Timetable();
 		
+		timetable.log.info("Begin import XML timetable...");
+		
 		// initialize
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder db = dbf.newDocumentBuilder(); 
@@ -290,7 +292,10 @@ public class Timetable {
 		// parse the document
 		NodeList trips = doc.getElementsByTagName("trip");
 		int nrTrips = trips.getLength();
+		int tripCount = 0;
+		timetable.log.info("Begin parsing trips...");
 		for (int i = 0; i < nrTrips; i++) {
+			
 			// parse trip
 			Element trip = (Element) trips.item(i);
 			
@@ -317,7 +322,13 @@ public class Timetable {
 					fromStation, new Station(to));
 			
 			timetable.addStation(fromStation, st);
+			tripCount++;
+			if (tripCount % 5000 == 0)
+				timetable.log.info("...Parsed " + tripCount + " trips");
 		}
+		
+		timetable.log.info("...Finished parsing trips");
+		timetable.log.info("...Finished import of XML timetable");
 		
 		return timetable;
 	}
