@@ -223,12 +223,6 @@ public class DijkstraShortestPath {
 			paths.addAll(dfsPaths);
 		}
 		paths = removeSpaceCycles(paths);
-//		paths = filterLeastTransfers(paths);
-//		Set<Path> setPaths = new HashSet<>();
-//		for (Path path : paths)
-//			setPaths.add(path);
-//		Path path = paths.get(0);
-//		System.out.println(paths);
 		return paths;
 	}
 	
