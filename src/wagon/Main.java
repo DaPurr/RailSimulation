@@ -13,6 +13,7 @@ import wagon.algorithms.DijkstraShortestPath;
 import wagon.algorithms.RouteGeneration;
 import wagon.algorithms.RouteSelection;
 import wagon.algorithms.SLTLARouteSelection;
+import wagon.infrastructure.GPSLocation;
 import wagon.algorithms.Path;
 import wagon.network.expanded.EventActivityNetwork;
 import wagon.timetable.Timetable;
@@ -49,6 +50,7 @@ public class Main {
 //					10);
 //			Path path3 = selectedLTLA.selectPath(paths3);
 			
+			long begin = System.nanoTime();
 			RouteGeneration rgen = new RouteGeneration(network);
 			List<Path> paths4 = rgen.generateRoutes(
 					"Rta", 
@@ -60,6 +62,9 @@ public class Main {
 					LocalDateTime.parse("2016-04-11T08:33"),
 					10);
 			Path path4 = selectedLTLA.selectPath(paths4);
+			long end = System.nanoTime();
+			double duration = (end-begin)*1e-9;
+			System.out.println("Time: " + duration);
 			
 //			RouteGeneration rgen = new JourneyGeneration(network);
 //			List<Path> paths4 = rgen.generateJourneys("Nwk", "Rtd", LocalDateTime.parse("2016-04-11T06:40"), 
