@@ -10,14 +10,21 @@ package wagon.infrastructure;
 public class Station {
 	
 	private String name;
+	private GPSLocation location;
 	
 	/**
 	 * Creates the <code>Station</code> object to represent a real-life railway station
 	 * 
 	 * @param	name	name of the station
 	 */
+	public Station(String name, GPSLocation location) {
+		this.name = name;
+		this.location = location;
+	}
+	
 	public Station(String name) {
 		this.name = name;
+		this.location = null;
 	}
 	
 	/**
@@ -29,7 +36,11 @@ public class Station {
 	
 	@Override
 	public String toString() {
-		return name();
+		String s = "";
+		s += name;
+		if (location != null)
+			s += ": " + location.toString();
+		return s;
 	}
 	
 	@Override

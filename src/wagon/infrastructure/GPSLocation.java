@@ -52,7 +52,19 @@ public class GPSLocation {
 	 * @return	distance between the two GPS locations
 	 */
 	public double distance(GPSLocation other) {
-		return 0;
+		double phi1 = Math.toRadians(this.latitude);
+		double phi2 = Math.toRadians(other.latitude);
+		double lambda1 = Math.toRadians(this.longitude);
+		double lambda2 = Math.toRadians(other.longitude);
+		double delta_phi = phi2 - phi1;
+		double delta_lambda = lambda2 - lambda1;
+		double earthRadius = 6371008.8;
+		
+		double a = Math.sin(delta_phi/2)*Math.sin(delta_phi/2) + 
+				Math.cos(phi1) * Math.cos(phi2) *
+				Math.sin(delta_lambda/2)*Math.sin(delta_lambda/2);
+		double c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+		return earthRadius * c;
 	}
 	
 	@Override
