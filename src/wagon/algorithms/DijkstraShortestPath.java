@@ -56,6 +56,11 @@ public class DijkstraShortestPath {
 	 */
 	public List<Path> earliestArrivalPath(DepartureNode from, String to) {
 		
+		/* TODO: Now, we do forward searches until we find a path where the passenger
+		 * arrives after his check-out. It is then possible for a train departing after this
+		 * last departure to arrive earlier. So, we would also like to construct a latest 
+		 * departure path so we know when to stop generating paths. */
+		
 		if (from == null || to == null)
 			throw new IllegalArgumentException("Arguments cannot be null");
 		
@@ -63,11 +68,8 @@ public class DijkstraShortestPath {
 		long startTime = System.nanoTime();
 		
 		DepartureNode start = from;
-		// get departure node
-//		EventNode start = network.getStationDepartureNode(from, departureTime);
-//		if (start == null)
-//			throw new IllegalStateException("Cannot find a suitable departure node");
 		
+		// sparse representation; only add when necessary
 		Map<Node, Double> distance = new HashMap<>();
 		Map<EventNode, DijkstraNode<EventNode>> eventToDijkstra = new HashMap<>();
 		
@@ -75,9 +77,9 @@ public class DijkstraShortestPath {
 		PriorityQueue<DijkstraNode<EventNode>> queue = new PriorityQueue<>();
 
 		// init distances
-		for (Node node : network.nodeSet()) {
-			distance.put(node, Double.POSITIVE_INFINITY);
-		}
+//		for (Node node : network.nodeSet()) {
+//			distance.put(node, Double.POSITIVE_INFINITY);
+//		}
 
 		// insert source
 		DijkstraNode<EventNode> dijkSource = new DijkstraNode<EventNode>(start, 0.0);
@@ -109,7 +111,9 @@ public class DijkstraShortestPath {
 				log.info("...Finished calculating shortest path in: " + duration + " s");
 				return constructPath(endNodes);
 			}
-			double oldLabel = distance.get(dijkU.e);
+			Double oldLabel = distance.get(dijkU.e);
+			if (oldLabel == null)
+				oldLabel = Double.POSITIVE_INFINITY;
 			if (dijkU.weight < oldLabel) {
 				distance.put(dijkU.e, dijkU.weight);
 			}
@@ -120,7 +124,9 @@ public class DijkstraShortestPath {
 				EventNode v = edge.target();
 				if (edge.source() != dijkU.e)
 					throw new IllegalStateException("Inconsistency detected");
-				double distV = distance.get(v);
+				Double distV = distance.get(v);
+				if (distV == null)
+					distV = Double.POSITIVE_INFINITY;
 				double edgeWeight = edge.weight();
 				if (dijkU.weight + edgeWeight < distV) {
 					List<DijkstraNode<EventNode>> nodes = new ArrayList<>();
@@ -222,7 +228,7 @@ public class DijkstraShortestPath {
 			List<Path> dfsPaths = depthFirstSearch(node);
 			paths.addAll(dfsPaths);
 		}
-		paths = removeSpaceCycles(paths);
+//		paths = removeSpaceCycles(paths);
 		return paths;
 	}
 	
