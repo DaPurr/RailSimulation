@@ -318,10 +318,12 @@ public class EventActivityNetwork {
 				else
 					time2 = event.trip().arrivalTime();
 				int wait = duration(time1, time2);
-				WeightedEdge waitEdge = new WaitEdge(prevEvent, event, wait);
-				network.graph.addEdge(prevEvent, event, waitEdge);
-				network.capacities.put(waitEdge, Double.MAX_VALUE);
-				countWaits++;
+//				if (wait > 0) {
+					WeightedEdge waitEdge = new WaitEdge(prevEvent, event, wait);
+					network.graph.addEdge(prevEvent, event, waitEdge);
+					network.capacities.put(waitEdge, Double.MAX_VALUE);
+					countWaits++;
+//				}
 				prevEvent = event;
 			}
 		}
