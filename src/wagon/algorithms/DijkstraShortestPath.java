@@ -76,11 +76,6 @@ public class DijkstraShortestPath {
 		// init queue
 		PriorityQueue<DijkstraNode<EventNode>> queue = new PriorityQueue<>();
 
-		// init distances
-//		for (Node node : network.nodeSet()) {
-//			distance.put(node, Double.POSITIVE_INFINITY);
-//		}
-
 		// insert source
 		DijkstraNode<EventNode> dijkSource = new DijkstraNode<EventNode>(start, 0.0);
 		eventToDijkstra.put(start, dijkSource);
