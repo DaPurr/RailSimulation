@@ -15,4 +15,5 @@ public interface Path {
 	public LocalDateTime departureTime();
 	public LocalDateTime arrivalTime();
 	public int countTransfers();
+	public String representation();
 }

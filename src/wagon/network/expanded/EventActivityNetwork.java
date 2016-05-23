@@ -6,6 +6,8 @@ import java.util.logging.*;
 
 import org.jgrapht.graph.DefaultDirectedGraph;
 
+import wagon.algorithms.DefaultPath;
+import wagon.algorithms.Path;
 import wagon.infrastructure.Station;
 import wagon.network.Edge;
 import wagon.network.Node;
@@ -16,6 +18,8 @@ import wagon.timetable.ScheduledTrip;
 import wagon.timetable.Timetable;
 
 public class EventActivityNetwork {
+	
+	private final int timeLength = 16;
 
 	private DefaultDirectedGraph<Node, WeightedEdge> graph;
 	private Map<Edge, Double> capacities;
@@ -221,6 +225,7 @@ public class EventActivityNetwork {
 			set = new TreeSet<>();
 			set.add(u);
 			arrivalsByStation.put(station, set);
+			departuresByStation.put(station, new TreeSet<>());
 		} else {
 			set.add(u);
 		}
@@ -232,6 +237,7 @@ public class EventActivityNetwork {
 		if (set == null) {
 			set = new TreeSet<>();
 			set.add(u);
+			arrivalsByStation.put(station, new TreeSet<>());
 			departuresByStation.put(station, set);
 		} else {
 			set.add(u);
@@ -318,12 +324,10 @@ public class EventActivityNetwork {
 				else
 					time2 = event.trip().arrivalTime();
 				int wait = duration(time1, time2);
-//				if (wait > 0) {
 					WeightedEdge waitEdge = new WaitEdge(prevEvent, event, wait);
 					network.graph.addEdge(prevEvent, event, waitEdge);
 					network.capacities.put(waitEdge, Double.MAX_VALUE);
 					countWaits++;
-//				}
 				prevEvent = event;
 			}
 		}
@@ -447,6 +451,110 @@ public class EventActivityNetwork {
 		if (station == null)
 			throw new IllegalArgumentException("Station cannot be null");
 		return new HashSet<>(arrivalsByStation.get(station));
+	}
+	
+	public Set<EventNode> getEventsByStation(Station station) {
+		if (station == null)
+			throw new IllegalArgumentException("Station cannot be null");
+		Set<DepartureNode> departures = getDeparturesByStation(station);
+		Set<ArrivalNode> arrivals = getArrivalsByStation(station);
+		Set<EventNode> events = new HashSet<>(departures);
+		events.addAll(arrivals);
+		return events;
+	}
+	
+	public Path textToPath(String s) {
+		String[] pieces = s.split(",");
+		
+		// check if format is valid
+		char firstEventType = pieces[0].charAt(0);
+		if (firstEventType != 'A' && 
+				firstEventType != 'D')
+			throw new IllegalStateException("Invalid path format.");
+		
+		// get trip information
+		Station eventFromStation = pieceToStation(pieces[0]);
+		Station eventToStation = pieceToStation(pieces[1]);
+		LocalDateTime eventDepartureTime = pieceToTime(pieces[0]);
+		LocalDateTime eventArrivalTime = pieceToTime(pieces[1]);
+		Set<DepartureNode> departures = getDeparturesByStation(eventFromStation);
+		DepartureNode realDeparture = null;
+		for (DepartureNode departure : departures) {
+			ScheduledTrip trip = departure.trip();
+			if (trip.toStation().equals(eventToStation) &&
+					trip.fromStation().equals(eventFromStation) &&
+					trip.arrivalTime().equals(eventArrivalTime) &&
+					trip.departureTime().equals(eventDepartureTime)) {
+				realDeparture = departure;
+				break;
+			}
+		}
+		
+		if (realDeparture == null)
+			throw new IllegalStateException("Real departure not found.");
+		
+		Set<WeightedEdge> outgoingEdges = graph.outgoingEdgesOf(realDeparture);
+		
+		// perform a search through all connecting edges to
+		// reconstruct the path
+		DefaultPath path = new DefaultPath();
+		int piecePointer = 0;
+		while (piecePointer+1 < pieces.length) {
+			String currentPiece = pieces[piecePointer];
+			String nextPiece = pieces[piecePointer+1];
+			
+			if (currentPiece.charAt(0) == 'D' &&
+					nextPiece.charAt(0) == 'A') {
+				Station fromStation = pieceToStation(currentPiece);
+				Station toStation = pieceToStation(nextPiece);
+				LocalDateTime departureTime = pieceToTime(currentPiece);
+				LocalDateTime arrivalTime = pieceToTime(nextPiece);
+				
+				for (WeightedEdge edge : outgoingEdges) {
+					if (!(edge instanceof TripEdge))
+						continue;
+					ScheduledTrip trip = ((TripEdge) edge).trip();
+					
+					if (fromStation.equals(trip.fromStation()) &&
+							toStation.equals(trip.toStation()) &&
+							arrivalTime.equals(trip.arrivalTime()) &&
+							departureTime.equals(trip.departureTime())) {
+						// bingo!
+						path.addEdge(edge);
+						piecePointer += 2;
+						outgoingEdges = graph.outgoingEdgesOf(edge.target());
+					}
+				}
+			} else if (currentPiece.charAt(0) == 'W') {
+				for (WeightedEdge edge : outgoingEdges) {
+					if (!(edge instanceof WaitEdge))
+						continue;
+					WaitEdge wait = (WaitEdge) edge;
+					double waitDuration = Double.parseDouble(currentPiece.substring(1));
+					if (waitDuration == wait.weight()) {
+						path.addEdge(edge);
+						piecePointer++;
+						outgoingEdges = graph.outgoingEdgesOf(edge.target());
+					}
+				}
+			} else
+				throw new IllegalStateException("Invalid format.");
+		}
+		
+		return path;
+	}
+	
+	private Station pieceToStation(String piece) {
+		if (piece == null || 
+				(piece.charAt(0) != 'D' &&	piece.charAt(0) != 'A'))
+			throw new IllegalArgumentException("Piece is nor arrival nor departure.");
+		return new Station(piece.substring(1, piece.length()-timeLength));
+	}
+	
+	private LocalDateTime pieceToTime(String piece) {
+		if (piece == null)
+			throw new IllegalArgumentException("Piece cannot be null.");
+		return LocalDateTime.parse(piece.substring(piece.length()-timeLength, piece.length()));
 	}
 	
 }

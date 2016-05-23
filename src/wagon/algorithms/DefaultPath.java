@@ -14,11 +14,11 @@ public class DefaultPath implements Path {
 	private double totalCost;
 	private List<WeightedEdge> edges;
 	
-	DefaultPath() {
+	public DefaultPath() {
 		edges = new ArrayList<>();
 	}
 	
-	DefaultPath(DefaultPath path) {
+	public DefaultPath(DefaultPath path) {
 		totalCost = 0;
 		edges = new ArrayList<>();
 		for (WeightedEdge edge : path.edges) {
@@ -26,12 +26,12 @@ public class DefaultPath implements Path {
 		}
 	}
 	
-	void addEdge(WeightedEdge e) {
+	public void addEdge(WeightedEdge e) {
 		edges.add(e);
 		totalCost += e.weight();
 	}
 	
-	void removeEdge(WeightedEdge e) {
+	public void removeEdge(WeightedEdge e) {
 		edges.remove(e);
 		totalCost -= e.weight();
 	}
@@ -129,6 +129,42 @@ public class DefaultPath implements Path {
 			}
 		}
 		return count;
+	}
+
+	@Override
+	public String representation() {
+		String s = "";
+		boolean b = false;
+		for (WeightedEdge edge : edges) {
+			if (b) {
+				s += ",";
+			}
+			if (edge instanceof WaitEdge) {
+				s += parseWaitEdge((WaitEdge) edge);
+			} else {
+				s += parseTripEdge((TripEdge) edge);
+			}
+			b = true;
+		}
+		return s;
+	}
+	
+	private String parseWaitEdge(WaitEdge e) {
+		String s = "W";
+		s += e.weight();
+		return s;
+	}
+	
+	private String parseTripEdge(TripEdge e) {
+		String s = "D";
+		ScheduledTrip trip = e.trip();
+		s += trip.fromStation().name();
+		s += trip.departureTime().toString();
+		s += ",A";
+		s += trip.toStation().name();
+		s += trip.arrivalTime().toString();
+		
+		return s;
 	}
 
 }
