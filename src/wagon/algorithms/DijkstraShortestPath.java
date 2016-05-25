@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Logger;
 
-import wagon.infrastructure.Station;
+//import wagon.infrastructure.Station;
 import wagon.network.*;
 import wagon.network.expanded.*;
 
@@ -141,81 +141,81 @@ public class DijkstraShortestPath {
 		throw new IllegalStateException("Could not find sink node(s)");
 	}
 	
-	private List<Path> removeSpaceCycles(List<Path> paths) {
-		if (paths == null)
-			throw new IllegalArgumentException("Paths cannot be null");
-		
-		List<Path> newPaths = new ArrayList<>();
-		for (int i = 0; i < paths.size(); i++) {
-			if (!hasSpaceCycle(paths.get(i)))
-				newPaths.add(paths.get(i));
-		}
-		return newPaths;
-	}
+//	private List<Path> removeSpaceCycles(List<Path> paths) {
+//		if (paths == null)
+//			throw new IllegalArgumentException("Paths cannot be null");
+//		
+//		List<Path> newPaths = new ArrayList<>();
+//		for (int i = 0; i < paths.size(); i++) {
+//			if (!hasSpaceCycle(paths.get(i)))
+//				newPaths.add(paths.get(i));
+//		}
+//		return newPaths;
+//	}
 	
-	private Station associatedStation(EventNode event) {
-		if (event instanceof ArrivalNode)
-			return event.trip().toStation();
-		if (event instanceof DepartureNode)
-			return event.trip().fromStation();
-		throw new IllegalArgumentException("Event can only be arrival or departure");
-	}
+//	private Station associatedStation(EventNode event) {
+//		if (event instanceof ArrivalNode)
+//			return event.trip().toStation();
+//		if (event instanceof DepartureNode)
+//			return event.trip().fromStation();
+//		throw new IllegalArgumentException("Event can only be arrival or departure");
+//	}
 	
-	private boolean hasSpaceCycle(Path path) {
-		if (path == null)
-			throw new IllegalArgumentException("Path cannot be null");
-		Set<Station> visited = new HashSet<>();
-		List<WeightedEdge> edges = path.edges();
-		visited.add(edges.get(0).source().trip().fromStation());
-		for (int i = 0; i < edges.size(); i++) {
-			EventNode current = edges.get(i).source();
-			EventNode next = edges.get(i).target();
-			Station currStation = associatedStation(current);
-			Station nextStation = associatedStation(next);
-			if (!currStation.equals(nextStation) &&
-					!visited.add(nextStation))
-				return true;
-		}
-		return false;
-	}
+//	private boolean hasSpaceCycle(Path path) {
+//		if (path == null)
+//			throw new IllegalArgumentException("Path cannot be null");
+//		Set<Station> visited = new HashSet<>();
+//		List<WeightedEdge> edges = path.edges();
+//		visited.add(edges.get(0).source().trip().fromStation());
+//		for (int i = 0; i < edges.size(); i++) {
+//			EventNode current = edges.get(i).source();
+//			EventNode next = edges.get(i).target();
+//			Station currStation = associatedStation(current);
+//			Station nextStation = associatedStation(next);
+//			if (!currStation.equals(nextStation) &&
+//					!visited.add(nextStation))
+//				return true;
+//		}
+//		return false;
+//	}
 	
-	private List<Path> filterLeastTransfers(List<Path> paths) {
-		List<Path> newPaths = new ArrayList<>();
-		int minTransfers = Integer.MAX_VALUE;
-		for (Path path : paths) {
-			int nrTransfers = countTransfers(path);
-			if (nrTransfers < minTransfers) {
-				newPaths = new ArrayList<>();
-				newPaths.add(path);
-				minTransfers = nrTransfers;
-			} else if (nrTransfers == minTransfers)
-				newPaths.add(path);
-		}
-		return newPaths;
-	}
+//	private List<Path> filterLeastTransfers(List<Path> paths) {
+//		List<Path> newPaths = new ArrayList<>();
+//		int minTransfers = Integer.MAX_VALUE;
+//		for (Path path : paths) {
+//			int nrTransfers = countTransfers(path);
+//			if (nrTransfers < minTransfers) {
+//				newPaths = new ArrayList<>();
+//				newPaths.add(path);
+//				minTransfers = nrTransfers;
+//			} else if (nrTransfers == minTransfers)
+//				newPaths.add(path);
+//		}
+//		return newPaths;
+//	}
 	
-	private int countTransfers(Path path) {
-		List<WeightedEdge> edges = path.edges();
-		int count = 0;
-		
-		int prevID = -1;
-		for (WeightedEdge edge : edges) {
-			if (edge instanceof WaitEdge)
-				continue;
-			EventNode target = edge.target();
-			int targetID = target.trip().composition().id();
-			if (prevID == -1) {
-				prevID = targetID;
-				continue;
-			}
-			if (target instanceof ArrivalNode &&
-					targetID != prevID) {
-				count++;
-				prevID = targetID;
-			}
-		}
-		return count;
-	}
+//	private int countTransfers(Path path) {
+//		List<WeightedEdge> edges = path.edges();
+//		int count = 0;
+//		
+//		int prevID = -1;
+//		for (WeightedEdge edge : edges) {
+//			if (edge instanceof WaitEdge)
+//				continue;
+//			EventNode target = edge.target();
+//			int targetID = target.trip().composition().id();
+//			if (prevID == -1) {
+//				prevID = targetID;
+//				continue;
+//			}
+//			if (target instanceof ArrivalNode &&
+//					targetID != prevID) {
+//				count++;
+//				prevID = targetID;
+//			}
+//		}
+//		return count;
+//	}
 	
 	private List<Path> constructPath(List<DijkstraNode<EventNode>> endNodes) {
 		List<Path> paths = new ArrayList<>();
