@@ -1,24 +1,34 @@
 package wagon.simulation;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
+import wagon.rollingstock.Composition;
+import wagon.timetable.ScheduledTrip;
 
 public class BoardingEvent extends Event {
+	
+	private LocalDateTime time;
+	private List<PassengerGroup> groups;
+	private ScheduledTrip trip;
 
-	public BoardingEvent(SystemState state) {
-		super(state);
-		// TODO Auto-generated constructor stub
+	public BoardingEvent(ScheduledTrip trip, List<PassengerGroup> groups, LocalDateTime time) {
+		super();
+		this.time = time;
+		this.groups = groups;
+		this.time = time;
 	}
 
 	@Override
 	public LocalDateTime time() {
-		// TODO Auto-generated method stub
-		return null;
+		return time;
 	}
 
 	@Override
-	public void process() {
-		// TODO Auto-generated method stub
-		
+	public void process(SystemState state) {
+		Composition composition = trip.composition();
+		int trainID = composition.id();
+		double currentOccupation = state.getOccupation(trainID);
 	}
 
 }

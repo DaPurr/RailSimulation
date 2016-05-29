@@ -10,22 +10,22 @@ import java.time.LocalDateTime;
  */
 public abstract class Event implements Comparable<Event> {
 	
-	private SystemState state;
-	
 	/**
 	 * Constructs an <code>Event</code> object.
 	 * 
 	 * @param	the current state the system state
 	 */
-	public Event(SystemState state) {
-		this.state = state;
+	public Event() {
+		
 	}
 	
 	/**
 	 * Processes this event based on the current system 
 	 * state.
+	 * 
+	 * @param	state	the current system state
 	 */
-	public abstract void process();
+	public abstract void process(SystemState state);
 	
 	/**
 	 * @return	the <code>LocalDateTime</code> representation of the 
@@ -36,13 +36,6 @@ public abstract class Event implements Comparable<Event> {
 	@Override
 	public int compareTo(Event other) {
 		return time().compareTo(other.time());
-	}
-	
-	/**
-	 * @return	returns the current system state
-	 */
-	public SystemState getState() {
-		return state;
 	}
 	
 }

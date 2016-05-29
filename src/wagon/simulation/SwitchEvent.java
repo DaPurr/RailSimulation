@@ -4,8 +4,8 @@ import java.time.LocalDateTime;
 
 public class SwitchEvent extends Event {
 
-	public SwitchEvent(SystemState state) {
-		super(state);
+	public SwitchEvent() {
+		super();
 		// TODO Auto-generated constructor stub
 	}
 
@@ -16,7 +16,7 @@ public class SwitchEvent extends Event {
 	}
 
 	@Override
-	public void process() {
+	public void process(SystemState state) {
 		// TODO Auto-generated method stub
 		
 	}

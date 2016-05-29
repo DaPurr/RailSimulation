@@ -1,10 +1,9 @@
 package wagon.simulation;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import wagon.network.expanded.EventActivityNetwork;
-import wagon.timetable.Timetable;
+import wagon.timetable.*;
 
 /**
  * This class represents the DES system state. It contains a list of all counters, and the 
@@ -18,9 +17,15 @@ import wagon.timetable.Timetable;
  */
 public class SystemState {
 
-	private List<Counter> counters;
+//	private List<Counter> counters;
 	private EventActivityNetwork network;
 	private Timetable timetable;
+	private Map<Integer, Double> trainOccupation;
+	
+	// counters
+	private Map<ScheduledTrip, Counter> tripToB; // b_t
+	private Map<ScheduledTrip, Counter> tripToN; // n_t
+	private Map<ScheduledTrip, Counter> tripToF; // f_t
 	
 	/**
 	 * Constructs the system state of a DES.
@@ -29,17 +34,21 @@ public class SystemState {
 	 * @param timetable	the timetable used in this simulation
 	 */
 	public SystemState(EventActivityNetwork network, Timetable timetable) {
-		counters = new ArrayList<>();
+//		counters = new ArrayList<>();
 		this.network = network;
 		this.timetable = timetable;
+		trainOccupation = new HashMap<>();
+		tripToB = new HashMap<>();
+		tripToN = new HashMap<>();
+		tripToF = new HashMap<>();
 	}
 	
-	/**
-	 * @return	returns the <code>List</code> of counters
-	 */
-	public List<Counter> getCounters() {
-		return new ArrayList<>(counters);
-	}
+//	/**
+//	 * @return	returns the <code>List</code> of counters
+//	 */
+//	public List<Counter> getCounters() {
+//		return new ArrayList<>(counters);
+//	}
 	
 	/**
 	 * @return	returns an <code>EventActivityNetwork</code> object
@@ -56,13 +65,101 @@ public class SystemState {
 		return timetable;
 	}
 	
-	public Counter addCounter(String name, int startValue) {
-		Counter counter = new Counter(name, startValue);
-		counters.add(counter);
-		return counter;
+//	/**
+//	 * Adds a new <code>Counter</code> to the <code>SimModel</code>, with name 
+//	 * <code>name</code> and initial value <code>startValue</code>.
+//	 * 
+//	 * @param name			the name of the counter to be added
+//	 * @param startValue	the initial value
+//	 * @return				the <code>Counter</code> that is created
+//	 */
+//	public Counter addCounter(String name, int startValue) {
+//		Counter counter = new Counter(name, startValue);
+//		counters.add(counter);
+//		return counter;
+//	}
+//	
+//	/**
+//	 * Adds a new <code>Counter</code> with name <code>name</code> and 
+//	 * initial value value 0.
+//	 * 
+//	 * @param name	the name of the counter to be added
+//	 * @return		the <code>Counter</code> that is created
+//	 */
+//	public Counter addCounter(String name) {
+//		return addCounter(name, 0);
+//	}
+	
+	/**
+	 * Returns the occupation of the the train identified by <code>trainNumber</code>. 
+	 * If there is no train with number <code>trainNumber</code>, then 0.0 is 
+	 * returned. 
+	 * 
+	 * @param trainNumber	the train number
+	 * @return				(fractional) number of people inside the train
+	 */
+	public double getOccupation(int trainNumber) {
+		if (trainNumber < 0)
+			throw new IllegalArgumentException("Train number must be non-negative.");
+		Double occupation = trainOccupation.get(trainNumber);
+		if (occupation == null)
+			return 0.0;
+		return occupation;
 	}
 	
-	public Counter addCounter(String name) {
-		return addCounter(name, 0);
+	/**
+	 * Updates the train occupation of train <code>trainNumber</code> to 
+	 * <code>occupation</code>, then returns the previous value. 
+	 * 
+	 * @param trainNumber	the train number
+	 * @param occupation	the new amount of people occupying train <code>trainNumber</code>
+	 * @return				the old amount of people occupying train <code>trainNumber</code>
+	 */
+	public double setOccupation(int trainNumber, double occupation) {
+		if (trainNumber < 0 || occupation < 0.0)
+			throw new IllegalArgumentException("Arguments must be non-negative.");
+		Double oldValue = trainOccupation.get(trainNumber);
+		trainOccupation.put(trainNumber, occupation);
+		if (oldValue == null)
+			return 0.0;
+		return oldValue;
+	}
+	
+	/**
+	 * Increments the counter responsible for determining the number of people 
+	 * just before trip departure.
+	 * 
+	 * @param trip	the corresponding trip
+	 * @param incr	the increment
+	 * @return		returns the increment added to the old value
+	 */
+	public int incrementCounterN(ScheduledTrip trip, int incr) {
+		if (trip == null || incr < 0)
+			throw new IllegalArgumentException("Invalid arguments.");
+		Counter count = tripToN.get(trip);
+		if (count == null) {
+			count = new Counter("n_t#" + trip.toString());
+			tripToN.put(trip, count);
+		}
+		return count.increment(incr);
+	}
+	
+	/**
+	 * Increments the counter responsible for determining the number of people 
+	 * boarding at trip <code>trip</code>.
+	 * 
+	 * @param trip	the corresponding trip
+	 * @param incr	the increment
+	 * @return		returns the increment added to the old value
+	 */
+	public int incrementCounterB(ScheduledTrip trip, int incr) {
+		if (trip == null || incr < 0)
+			throw new IllegalArgumentException("Invalid arguments.");
+		Counter count = tripToB.get(trip);
+		if (count == null) {
+			count = new Counter("b_t#" + trip.toString());
+			tripToB.put(trip, count);
+		}
+		return count.increment(incr);
 	}
 }

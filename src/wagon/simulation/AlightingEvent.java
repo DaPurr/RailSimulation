@@ -4,8 +4,8 @@ import java.time.LocalDateTime;
 
 public class AlightingEvent extends Event {
 
-	public AlightingEvent(SystemState state) {
-		super(state);
+	public AlightingEvent() {
+		super();
 		// TODO Auto-generated constructor stub
 	}
 
@@ -16,7 +16,7 @@ public class AlightingEvent extends Event {
 	}
 
 	@Override
-	public void process() {
+	public void process(SystemState state) {
 		// TODO Auto-generated method stub
 		
 	}

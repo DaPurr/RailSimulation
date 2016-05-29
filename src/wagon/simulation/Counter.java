@@ -39,15 +39,16 @@ public class Counter {
 	 * 
 	 * @param incr	the increment
 	 */
-	public void increment(int incr) {
+	public int increment(int incr) {
 		count += incr;
+		return count;
 	}
 	
 	/**
 	 * Increments the counter by 1.
 	 */
-	public void increment() {
-		increment(1);
+	public int increment() {
+		return increment(1);
 	}
 	
 	/**
