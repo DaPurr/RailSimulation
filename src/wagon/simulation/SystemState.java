@@ -17,15 +17,15 @@ import wagon.timetable.*;
  */
 public class SystemState {
 
-//	private List<Counter> counters;
 	private EventActivityNetwork network;
 	private Timetable timetable;
 	private Map<Integer, Double> trainOccupation;
+	private Map<Integer, List<PassengerGroup>> trainToPassengers;
 	
 	// counters
 	private Map<ScheduledTrip, Counter> tripToB; // b_t
 	private Map<ScheduledTrip, Counter> tripToN; // n_t
-	private Map<ScheduledTrip, Counter> tripToF; // f_t
+//	private Map<ScheduledTrip, Counter> tripToF; // f_t
 	
 	/**
 	 * Constructs the system state of a DES.
@@ -34,21 +34,15 @@ public class SystemState {
 	 * @param timetable	the timetable used in this simulation
 	 */
 	public SystemState(EventActivityNetwork network, Timetable timetable) {
-//		counters = new ArrayList<>();
 		this.network = network;
 		this.timetable = timetable;
 		trainOccupation = new HashMap<>();
+		trainToPassengers = new HashMap<>();
+		
 		tripToB = new HashMap<>();
 		tripToN = new HashMap<>();
-		tripToF = new HashMap<>();
+//		tripToF = new HashMap<>();
 	}
-	
-//	/**
-//	 * @return	returns the <code>List</code> of counters
-//	 */
-//	public List<Counter> getCounters() {
-//		return new ArrayList<>(counters);
-//	}
 	
 	/**
 	 * @return	returns an <code>EventActivityNetwork</code> object
@@ -133,7 +127,7 @@ public class SystemState {
 	 * @param incr	the increment
 	 * @return		returns the increment added to the old value
 	 */
-	public int incrementCounterN(ScheduledTrip trip, int incr) {
+	public double incrementCounterN(ScheduledTrip trip, double incr) {
 		if (trip == null || incr < 0)
 			throw new IllegalArgumentException("Invalid arguments.");
 		Counter count = tripToN.get(trip);
@@ -152,7 +146,7 @@ public class SystemState {
 	 * @param incr	the increment
 	 * @return		returns the increment added to the old value
 	 */
-	public int incrementCounterB(ScheduledTrip trip, int incr) {
+	public double incrementCounterB(ScheduledTrip trip, double incr) {
 		if (trip == null || incr < 0)
 			throw new IllegalArgumentException("Invalid arguments.");
 		Counter count = tripToB.get(trip);
@@ -161,5 +155,13 @@ public class SystemState {
 			tripToB.put(trip, count);
 		}
 		return count.increment(incr);
+	}
+	
+	public void addGroupToTrain(int trainID, PassengerGroup group) {
+		List<PassengerGroup> groups = trainToPassengers.get(trainID);
+		if (groups == null) {
+			groups = new ArrayList<>();
+		}
+		groups.add(group);
 	}
 }

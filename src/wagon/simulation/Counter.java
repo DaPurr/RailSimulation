@@ -11,7 +11,7 @@ package wagon.simulation;
 
 public class Counter {
 
-	private int count;
+	private double count;
 	private String name;
 	
 	/**
@@ -29,7 +29,7 @@ public class Counter {
 	 * @param name			the name of this counter
 	 * @param startValue	the start value
 	 */
-	public Counter(String name, int startValue) {
+	public Counter(String name, double startValue) {
 		count = startValue;
 		this.name = name;
 	}
@@ -39,7 +39,7 @@ public class Counter {
 	 * 
 	 * @param incr	the increment
 	 */
-	public int increment(int incr) {
+	public double increment(double incr) {
 		count += incr;
 		return count;
 	}
@@ -47,14 +47,14 @@ public class Counter {
 	/**
 	 * Increments the counter by 1.
 	 */
-	public int increment() {
+	public double increment() {
 		return increment(1);
 	}
 	
 	/**
 	 * @return	returns the current value of this counter.
 	 */
-	public int getValue() {
+	public double getValue() {
 		return count;
 	}
 	
