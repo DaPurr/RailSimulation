@@ -15,15 +15,17 @@ import wagon.algorithms.RouteSelection;
 import wagon.algorithms.SLTLARouteSelection;
 import wagon.algorithms.Path;
 import wagon.network.expanded.EventActivityNetwork;
+import wagon.simulation.SystemState;
 import wagon.timetable.Timetable;
 
 public class Main {
 
 	public static void main(String[] args) {
 		try {
+//			Timetable sample = Timetable.importFromExcel("data/full_dataset.xlsx");
 //			Timetable sample = Timetable.importFromXML("data/processed/smaller_sample_schedule1_export.xml");
 			Timetable sample = Timetable.importFromXML("data/processed/full_dataset_export.xml");
-//			sample.export("data/processed/smaller_sample_schedule1_export.xml");
+//			sample.export("data/processed/full_dataset_export.xml");
 			EventActivityNetwork network = EventActivityNetwork.createNetwork(sample);
 			
 //			DijkstraShortestPath dijkstra = new DijkstraShortestPath(network);

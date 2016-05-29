@@ -95,9 +95,12 @@ public class EventActivityNetwork {
 		Station station2 = new Station("Cps");
 		Station station3 = new Station("Rta");
 		
-		Composition comp1 = new Composition(1, TrainType.SGM, 3, 100, 20);
-		Composition comp2 = new Composition(2, TrainType.SGM, 3, 100, 20);
-		Composition comp3 = new Composition(3, TrainType.SGM, 6, 100, 20);
+		Composition comp1 = new Composition(1, TrainType.SGM,
+				3, 100, 20, 20, 20, 20, 20, 20, 20);
+		Composition comp2 = new Composition(2, TrainType.SGM, 
+				3, 100, 20, 20, 20, 20, 20, 20, 20);
+		Composition comp3 = new Composition(3, TrainType.SGM, 
+				6, 100, 20, 20, 20, 20, 20, 20, 20);
 		
 		ScheduledTrip sd1 = new ScheduledTrip(comp1, 
 				LocalDateTime.parse("2016-04-11T06:47"), 
@@ -149,8 +152,10 @@ public class EventActivityNetwork {
 		Station stationB = new Station("B");
 		Station stationC = new Station("C");
 		
-		Composition comp1 = new Composition(1, TrainType.SLT, 3, 100, 20);
-		Composition comp2 = new Composition(2, TrainType.SLT, 6, 100, 20);
+		Composition comp1 = new Composition(1, TrainType.SLT, 
+				3, 100, 20, 20, 20, 20, 20, 20, 20);
+		Composition comp2 = new Composition(2, TrainType.SLT, 
+				6, 100, 20, 20, 20, 20, 20, 20, 20);
 		
 		ScheduledTrip trip1 = new ScheduledTrip(comp1, 
 				LocalDateTime.parse("2016-04-19T10:53"), 
@@ -186,8 +191,10 @@ public class EventActivityNetwork {
 		Station stationB = new Station("B");
 		Station stationC = new Station("C");
 		
-		Composition comp1 = new Composition(1, TrainType.SLT, 3, 100, 20);
-		Composition comp2 = new Composition(2, TrainType.SLT, 6, 100, 20);
+		Composition comp1 = new Composition(1, TrainType.SLT, 
+				3, 100, 20, 20, 20, 20, 20, 20, 20);
+		Composition comp2 = new Composition(2, TrainType.SLT, 
+				6, 100, 20, 20, 20, 20, 20, 20, 20);
 		
 		ScheduledTrip trip1 = new ScheduledTrip(comp1, 
 				LocalDateTime.parse("2016-04-19T12:00"), 
@@ -292,7 +299,7 @@ public class EventActivityNetwork {
 				network.graph.addVertex(dn);
 				network.graph.addVertex(an);
 				network.graph.addEdge(dn, an, tripEdge);
-				network.capacities.put(tripEdge, (double) trip.composition().capacity());
+				network.capacities.put(tripEdge, (double) trip.composition().getAllSeats());
 				countTrips++;
 			}
 		}
@@ -393,7 +400,8 @@ public class EventActivityNetwork {
 			throw new IllegalArgumentException("Station not found: " + name);
 		TreeSet<DepartureNode> set = departuresByStation.get(station);
 		ScheduledTrip dummyTrip = new ScheduledTrip(
-				new Composition(0, TrainType.VIRM, 0, 0, 0), 
+				new Composition(0, TrainType.VIRM, 
+						0, 0, 0, 20, 20, 20, 20, 20, 20), 
 				time, 
 				time, 
 				new Station(name), 
@@ -424,7 +432,8 @@ public class EventActivityNetwork {
 			throw new IllegalArgumentException("Station not found: " + name);
 		TreeSet<ArrivalNode> set = arrivalsByStation.get(station);
 		ScheduledTrip dummyTrip = new ScheduledTrip(
-				new Composition(0, TrainType.VIRM, 0, 0, 0), 
+				new Composition(0, TrainType.VIRM, 
+						0, 0, 0, 20, 20, 20, 20, 20, 20), 
 				time, 
 				time, 
 				new Station(name), 

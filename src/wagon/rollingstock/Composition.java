@@ -13,9 +13,16 @@ public class Composition {
 
 	private int nrWagons;
 	private TrainType type;
-	private int capacity1;
-	private int capacity2;
+	private int seats1;
+	private int seats2;
+	private int foldable;
+	private int standArea;
 	private int id;
+	
+	private int normC1;
+	private int normC2;
+	private int normA2;
+	private int normV2;
 
 	/**
 	 * Constructs a <code>Composition</code> object reflecting a simplified 
@@ -23,15 +30,30 @@ public class Composition {
 	 * 
 	 * @param type		the type of rolling stock
 	 * @param nrWagons	number of trains in the composition
-	 * @param capacity1	capacity for business class
-	 * @param capacity2	capacity for economy class
+	 * @param seats1	number of seats for business class
+	 * @param seats2	number of seats for economy class
+	 * @param foldable	number of foldable seats in economy class
+	 * @param standArea	stand area capacity for economy class
+	 * @param normC1	norm 'C' capacity for business class
+	 * @param normC2	norm 'C' capacity for economy class
+	 * @param normA2	norm 'A' capacity for economy class
+	 * @param normV2	norm 'V' capacity for economy class
 	 */
-	public Composition(int id, TrainType type, int nrWagons, int capacity1, int capacity2) {
+	public Composition(int id, TrainType type, int nrWagons, int seats1, int seats2,
+			int foldable, int standArea, int normC1, int normC2, int normA2, 
+			int normV2) {
 		this.type = type;
 		this.nrWagons = nrWagons;
-		this.capacity1 = capacity1;
-		this.capacity2 = capacity2;
+		this.seats1 = seats1;
+		this.seats2 = seats2;
+		this.foldable = foldable;
 		this.id = id;
+		this.standArea = standArea;
+		
+		this.normC1 = normC1;
+		this.normC2 = normC2;
+		this.normA2 = normA2;
+		this.normV2 = normV2;
 	}
 	
 	/**
@@ -58,21 +80,63 @@ public class Composition {
 	/**
 	 * @return	all available capacity
 	 */
-	public int capacity() {
-		return capacity1 + capacity2;
+	public int getAllSeats() {
+		return seats1 + seats2;
 	}
 
 	/**
-	 * @return	business class passenger capacity
+	 * @return	business class passenger seats
 	 */
-	public int capacity1() {
-		return capacity1;
+	public int getSeats1() {
+		return seats1;
 	}
 
 	/**
-	 * @return	economy class passenger capacity
+	 * @return	economy class passenger seats
 	 */
-	public int capacity2() {
-		return capacity2;
+	public int getSeats2() {
+		return seats2;
+	}
+	
+	/**
+	 * @return	economy class foldable seats
+	 */
+	public int getFoldableSeats2() {
+		return foldable;
+	}
+	
+	/**
+	 * @return	economy class stand area capacity
+	 */
+	public int getStandArea2() {
+		return standArea;
+	}
+	
+	/**
+	 * @return	business class 'C' norm
+	 */
+	public int getNormC1() {
+		return normC1;
+	}
+
+	/**
+	 * @return	economy class 'C' norm
+	 */
+	public int getNormC2() {
+		return normC2;
+	}
+	
+	/**
+	 * @return	economy class 'A' norm
+	 */
+	public int getNormA2() {
+		return normA2;
+	}
+
+	/**
+	 * @return	economy class 'V' norm
+	 */
+	public int getNormV2() {
+		return normV2;
 	}
 }

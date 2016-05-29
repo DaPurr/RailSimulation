@@ -33,7 +33,7 @@ import wagon.rollingstock.TrainType;
  * 
  */
 
-public class Timetable {
+public class Timetable implements Iterable<ScheduledTrip> {
 	
 	private Map<Station, List<ScheduledTrip>> departures;
 	private Map<Composition,SortedSet<ScheduledTrip>> routes;
@@ -252,11 +252,20 @@ public class Timetable {
 			int capSeats2Fold = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
 			cellRef = new CellReference("BI");
 			int capStand2 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
+			cellRef = new CellReference("AY");
+			int capNormC1 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
+			cellRef = new CellReference("AZ");
+			int capNormC2 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
+			cellRef = new CellReference("BA");
+			int capNormA2 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
+			cellRef = new CellReference("BB");
+			int capNormV2 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
 			cellRef = new CellReference("H");
 			TrainType trainType = extractTrainTypeFromCell(row.getCell(cellRef.getCol()));
 			
 			Composition comp = new Composition(trainNr, trainType, nrWagons, 
-					capSeats1, capSeats2 + capSeats2Fold + capStand2);
+					capSeats1, capSeats2, capSeats2Fold, capStand2, capNormC1, 
+					capNormC2, capNormA2, capNormV2);
 			ScheduledTrip trip = new ScheduledTrip(comp, departureTime, arrivalTime, 
 					fromStation, toStation);
 			timetable.addStation(fromStation, trip);
@@ -303,13 +312,25 @@ public class Timetable {
 			String id = composition.getAttribute("id");
 			String type = composition.getAttribute("type");
 			String nrUnits = composition.getAttribute("nrUnits");
-			String cap1 = composition.getAttribute("cap1");
-			String cap2 = composition.getAttribute("cap2");
+			String seats1 = composition.getAttribute("seats1");
+			String seats2 = composition.getAttribute("seats2");
+			String foldable = composition.getAttribute("foldable");
+			String standArea = composition.getAttribute("standArea");
+			String normC1 = composition.getAttribute("normC1");
+			String normC2 = composition.getAttribute("normC2");
+			String normA2 = composition.getAttribute("normA2");
+			String normV2 = composition.getAttribute("normV2");
 			Composition comp = new Composition(Integer.parseInt(id), 
 					TrainType.valueOf(type), 
-					Integer.valueOf(nrUnits), 
-					Integer.valueOf(cap1), 
-					Integer.valueOf(cap2));
+					Integer.valueOf(nrUnits),
+					Integer.valueOf(seats1),
+					Integer.valueOf(seats2),
+					Integer.valueOf(foldable),
+					Integer.valueOf(standArea),
+					Integer.valueOf(normC1),
+					Integer.valueOf(normC2),
+					Integer.valueOf(normA2),
+					Integer.valueOf(normV2));
 			
 			String departureDate = trip.getAttribute("departureTime");
 			String arrivalDate = trip.getAttribute("arrivalTime");
@@ -360,8 +381,14 @@ public class Timetable {
 		s += "id=\"" + comp.id() + "\" ";
 		s += "type=\"" + comp.type().toString() + "\" ";
 		s += "nrUnits=\"" + comp.getNrWagons() + "\" ";
-		s += "cap1=\"" + comp.capacity1() + "\" ";
-		s += "cap2=\"" + comp.capacity2() + "\" />" + System.lineSeparator();
+		s += "seats1=\"" + comp.getSeats1() + "\" ";
+		s += "seats2=\"" + comp.getSeats2() + "\" ";
+		s += "foldable=\"" + comp.getFoldableSeats2() + "\" ";
+		s += "standArea=\"" + comp.getStandArea2() + "\" ";
+		s += "normC1=\"" + comp.getNormC1() + "\" ";
+		s += "normC2=\"" + comp.getNormC2() + "\" ";
+		s += "normA2=\"" + comp.getNormA2() + "\" ";
+		s += "normV2=\"" + comp.getNormV2() + "\" /> " + System.lineSeparator();
 		s += indent(indentLevel) + "</trip>";
 		return s;
 	}
@@ -402,5 +429,14 @@ public class Timetable {
 		if (cell.getCellType() != Cell.CELL_TYPE_STRING)
 			throw new IllegalArgumentException("Wrong cell type for train types.");
 		return TrainType.valueOf(cell.getStringCellValue());
+	}
+
+	@Override
+	public Iterator<ScheduledTrip> iterator() {
+		Set<ScheduledTrip> newSet = new HashSet<>();
+		for (Set<ScheduledTrip> set : routes.values()) {
+			newSet.addAll(set);
+		}
+		return newSet.iterator();
 	}
 }
