@@ -59,31 +59,6 @@ public class SystemState {
 		return timetable;
 	}
 	
-//	/**
-//	 * Adds a new <code>Counter</code> to the <code>SimModel</code>, with name 
-//	 * <code>name</code> and initial value <code>startValue</code>.
-//	 * 
-//	 * @param name			the name of the counter to be added
-//	 * @param startValue	the initial value
-//	 * @return				the <code>Counter</code> that is created
-//	 */
-//	public Counter addCounter(String name, int startValue) {
-//		Counter counter = new Counter(name, startValue);
-//		counters.add(counter);
-//		return counter;
-//	}
-//	
-//	/**
-//	 * Adds a new <code>Counter</code> with name <code>name</code> and 
-//	 * initial value value 0.
-//	 * 
-//	 * @param name	the name of the counter to be added
-//	 * @return		the <code>Counter</code> that is created
-//	 */
-//	public Counter addCounter(String name) {
-//		return addCounter(name, 0);
-//	}
-	
 	/**
 	 * Returns the occupation of the the train identified by <code>trainNumber</code>. 
 	 * If there is no train with number <code>trainNumber</code>, then 0.0 is 
@@ -157,11 +132,31 @@ public class SystemState {
 		return count.increment(incr);
 	}
 	
+	/**
+	 * Adds a passenger group to a certain train.
+	 * 
+	 * @param trainID	the id of the train
+	 * @param group		the passenger group
+	 */
 	public void addGroupToTrain(int trainID, PassengerGroup group) {
 		List<PassengerGroup> groups = trainToPassengers.get(trainID);
 		if (groups == null) {
 			groups = new ArrayList<>();
 		}
 		groups.add(group);
+	}
+	
+	/**
+	 * @return	returns a mapping of trip to counter n_t
+	 */
+	public Map<ScheduledTrip, Counter> getCountersN() {
+		return new HashMap<>(tripToN);
+	}
+	
+	/**
+	 * @return	returns a mapping of trip to counter b_t
+	 */
+	public Map<ScheduledTrip, Counter> getCountersB() {
+		return new HashMap<>(tripToB);
 	}
 }
