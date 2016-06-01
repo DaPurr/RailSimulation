@@ -25,11 +25,28 @@ public class Main {
 	public static void main(String[] args) {
 		try {
 //			Timetable sample = Timetable.importFromExcel("data/materieelplan/full_dataset.xlsx");
-			Timetable sample = Timetable.importFromExcel("data/materieelplan/smaller_sample_schedule1.xlsx");
+//			Timetable sample = Timetable.importFromExcel("data/materieelplan/smaller_sample_schedule1.xlsx");
 //			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/smaller_sample_schedule1_export.xml");
-//			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/full_dataset_export.xml");
+			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/full_dataset_export.xml");
 //			sample.export("data/materieelplan/processed/smaller_sample_schedule1_export.xml");
 			EventActivityNetwork network = EventActivityNetwork.createNetwork(sample);
+			
+//			long begin = System.nanoTime();
+//			RouteGeneration rgen = new RouteGeneration(network);
+//			List<DefaultPath> paths4 = rgen.generateRoutes(
+//					"Nwk", 
+//					"Rtd", 
+//					LocalDateTime.parse("2016-04-11T06:45"), 
+//					LocalDateTime.parse("2016-04-11T07:06"));
+//			RouteSelection selectedLTLA = new SLTLARouteSelection(
+//					LocalDateTime.parse("2016-04-11T06:45"),
+//					LocalDateTime.parse("2016-04-11T07:06"),
+//					10);
+//			DefaultPath path4 = selectedLTLA.selectPath(paths4);
+//			long end = System.nanoTime();
+//			double duration = (end-begin)*1e-9;
+//			System.out.println("Time: " + duration);
+//			System.out.println(path4.representation());
 			
 //			EventActivityNetwork network = EventActivityNetwork.createTestNetwork2();
 //			DijkstraShortestPath dijkstra = new DijkstraShortestPath(network);
@@ -108,18 +125,18 @@ public class Main {
 		catch (IOException e) {
 			e.printStackTrace();
 		} 
-//		catch (SAXException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		catch (ParserConfigurationException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} 
-		catch (InvalidFormatException e) {
+		catch (SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+//		catch (InvalidFormatException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 
 }
