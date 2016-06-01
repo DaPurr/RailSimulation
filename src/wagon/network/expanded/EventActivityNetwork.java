@@ -331,10 +331,10 @@ public class EventActivityNetwork {
 				else
 					time2 = event.trip().arrivalTime();
 				int wait = duration(time1, time2);
-					WeightedEdge waitEdge = new WaitEdge(prevEvent, event, wait);
-					network.graph.addEdge(prevEvent, event, waitEdge);
-					network.capacities.put(waitEdge, Double.MAX_VALUE);
-					countWaits++;
+				WeightedEdge waitEdge = new WaitEdge(prevEvent, event, wait);
+				network.graph.addEdge(prevEvent, event, waitEdge);
+				network.capacities.put(waitEdge, Double.MAX_VALUE);
+				countWaits++;
 				prevEvent = event;
 			}
 		}
@@ -532,6 +532,7 @@ public class EventActivityNetwork {
 						path.addEdge(edge);
 						piecePointer += 2;
 						outgoingEdges = graph.outgoingEdgesOf(edge.target());
+						break;
 					}
 				}
 			} else if (currentPiece.charAt(0) == 'W') {
@@ -544,6 +545,7 @@ public class EventActivityNetwork {
 						path.addEdge(edge);
 						piecePointer++;
 						outgoingEdges = graph.outgoingEdgesOf(edge.target());
+						break;
 					}
 				}
 			} else
