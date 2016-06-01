@@ -48,7 +48,7 @@ public class Station {
 		if (!(other instanceof Station))
 			return false;
 		Station o = (Station) other;
-		return this.name.equals(o.name);
+		return this.name.equalsIgnoreCase(o.name);
 	}
 	
 	@Override
