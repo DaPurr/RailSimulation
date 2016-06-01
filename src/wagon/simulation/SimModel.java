@@ -8,6 +8,7 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import wagon.algorithms.DefaultPath;
+import wagon.data.CiCoData;
 import wagon.network.WeightedEdge;
 import wagon.network.expanded.EventActivityNetwork;
 import wagon.timetable.ScheduledTrip;
@@ -37,9 +38,10 @@ public class SimModel {
 	private void initialize() {
 		try {
 			// import the passenger groups/routes
-			List<PassengerGroup> groups = importPassengerGroups("data/routes/test1.csv");
+//			List<PassengerGroup> groups = importPassengerGroups("data/routes/test1.csv");
+			CiCoData cicoData = CiCoData.importRawData("data/routes/ritten_20160112.csv");
 			// process groups to events
-			processPassengerGroups(groups);
+//			processPassengerGroups(groups);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
