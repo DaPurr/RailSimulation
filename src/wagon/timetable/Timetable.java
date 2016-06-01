@@ -3,6 +3,7 @@ package wagon.timetable;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -22,6 +23,7 @@ import org.xml.sax.SAXException;
 import com.monitorjbl.xlsx.StreamingReader;
 
 import wagon.infrastructure.Station;
+import wagon.rollingstock.ComfortNorm;
 import wagon.rollingstock.Composition;
 import wagon.rollingstock.TrainType;
 
@@ -32,11 +34,10 @@ import wagon.rollingstock.TrainType;
  * @author Nemanja Milovanovic
  * 
  */
-
 public class Timetable implements Iterable<ScheduledTrip> {
 	
 	private Map<Station, List<ScheduledTrip>> departures;
-	private Map<Composition,SortedSet<ScheduledTrip>> routes;
+	private Map<Composition, SortedSet<ScheduledTrip>> routes;
 	private Set<Station> stations;
 	
 	private Logger log = Logger.getLogger(this.getClass().getName());
@@ -260,12 +261,14 @@ public class Timetable implements Iterable<ScheduledTrip> {
 			int capNormA2 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
 			cellRef = new CellReference("BB");
 			int capNormV2 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
+			cellRef = new CellReference("G");
+			ComfortNorm norm = ComfortNorm.valueOf(row.getCell(cellRef.getCol()).getStringCellValue());
 			cellRef = new CellReference("H");
 			TrainType trainType = extractTrainTypeFromCell(row.getCell(cellRef.getCol()));
 			
 			Composition comp = new Composition(trainNr, trainType, nrWagons, 
 					capSeats1, capSeats2, capSeats2Fold, capStand2, capNormC1, 
-					capNormC2, capNormA2, capNormV2);
+					capNormC2, capNormA2, capNormV2, norm);
 			ScheduledTrip trip = new ScheduledTrip(comp, departureTime, arrivalTime, 
 					fromStation, toStation);
 			timetable.addStation(fromStation, trip);
@@ -320,6 +323,7 @@ public class Timetable implements Iterable<ScheduledTrip> {
 			String normC2 = composition.getAttribute("normC2");
 			String normA2 = composition.getAttribute("normA2");
 			String normV2 = composition.getAttribute("normV2");
+			String norm = composition.getAttribute("norm");
 			Composition comp = new Composition(Integer.parseInt(id), 
 					TrainType.valueOf(type), 
 					Integer.valueOf(nrUnits),
@@ -330,7 +334,8 @@ public class Timetable implements Iterable<ScheduledTrip> {
 					Integer.valueOf(normC1),
 					Integer.valueOf(normC2),
 					Integer.valueOf(normA2),
-					Integer.valueOf(normV2));
+					Integer.valueOf(normV2),
+					ComfortNorm.valueOf(norm));
 			
 			String departureDate = trip.getAttribute("departureTime");
 			String arrivalDate = trip.getAttribute("arrivalTime");
@@ -388,7 +393,8 @@ public class Timetable implements Iterable<ScheduledTrip> {
 		s += "normC1=\"" + comp.getNormC1() + "\" ";
 		s += "normC2=\"" + comp.getNormC2() + "\" ";
 		s += "normA2=\"" + comp.getNormA2() + "\" ";
-		s += "normV2=\"" + comp.getNormV2() + "\" /> " + System.lineSeparator();
+		s += "normV2=\"" + comp.getNormV2() + "\" ";
+		s += "norm=\"" + comp.getNorm() + "\" /> " + System.lineSeparator();
 		s += indent(indentLevel) + "</trip>";
 		return s;
 	}
@@ -438,5 +444,17 @@ public class Timetable implements Iterable<ScheduledTrip> {
 			newSet.addAll(set);
 		}
 		return newSet.iterator();
+	}
+	
+	/**
+	 * @return	returns all trips associated to the timetable
+	 */
+	public Set<ScheduledTrip> getAllTrips() {
+		Set<ScheduledTrip> trips = new HashSet<>();
+		for (Entry<Composition, SortedSet<ScheduledTrip>> entry : routes.entrySet()) {
+			Set<ScheduledTrip> set = entry.getValue();
+			trips.addAll(set);
+		}
+		return trips;
 	}
 }
