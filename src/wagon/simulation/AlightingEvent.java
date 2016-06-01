@@ -14,7 +14,7 @@ public class AlightingEvent extends Event {
 
 	public AlightingEvent(ScheduledTrip trip, List<PassengerGroup> groups, LocalDateTime time) {
 		super();
-		this.time = time;
+		this.trip = trip;
 		this.groups = groups;
 		this.time = time;
 	}
@@ -33,11 +33,11 @@ public class AlightingEvent extends Event {
 		double currentOccupation = state.getOccupation(trainID);
 		
 		// let passengers alight
-		double passengersToBoard = countPassengers(groups);
-		state.incrementCounterB(trip, passengersToBoard);
+		double passengersToAlight = countPassengers(groups);
+		state.incrementCounterN(trip, -passengersToAlight);
 		
 		// determine new occupation
-		state.setOccupation(trainID, currentOccupation + passengersToBoard);
+		state.setOccupation(trainID, currentOccupation - passengersToAlight);
 	}
 	
 	private double countPassengers(Collection<PassengerGroup> groups) {

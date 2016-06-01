@@ -28,7 +28,7 @@ public class BoardingEvent extends Event {
 	 */
 	public BoardingEvent(ScheduledTrip trip, List<PassengerGroup> groups, LocalDateTime time) {
 		super();
-		this.time = time;
+		this.trip = trip;
 		this.groups = groups;
 		this.time = time;
 	}
@@ -47,11 +47,12 @@ public class BoardingEvent extends Event {
 		double currentOccupation = state.getOccupation(trainID);
 		
 		// let passengers board
-		double passengersToAlight = countPassengers(groups);
-		state.incrementCounterB(trip, -passengersToAlight);
+		double passengersToBoard = countPassengers(groups);
+		state.incrementCounterB(trip, passengersToBoard);
+		state.incrementCounterN(trip, currentOccupation + passengersToBoard);
 		
 		// determine new occupation
-		state.setOccupation(trainID, currentOccupation - passengersToAlight);
+		state.setOccupation(trainID, currentOccupation + passengersToBoard);
 	}
 	
 	private double countPassengers(Collection<PassengerGroup> groups) {
