@@ -7,11 +7,11 @@ import java.util.logging.*;
 import org.jgrapht.graph.DefaultDirectedGraph;
 
 import wagon.algorithms.DefaultPath;
-import wagon.algorithms.Path;
 import wagon.infrastructure.Station;
 import wagon.network.Edge;
 import wagon.network.Node;
 import wagon.network.WeightedEdge;
+import wagon.rollingstock.ComfortNorm;
 import wagon.rollingstock.Composition;
 import wagon.rollingstock.TrainType;
 import wagon.timetable.ScheduledTrip;
@@ -96,11 +96,11 @@ public class EventActivityNetwork {
 		Station station3 = new Station("Rta");
 		
 		Composition comp1 = new Composition(1, TrainType.SGM,
-				3, 100, 20, 20, 20, 20, 20, 20, 20);
+				3, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
 		Composition comp2 = new Composition(2, TrainType.SGM, 
-				3, 100, 20, 20, 20, 20, 20, 20, 20);
+				3, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
 		Composition comp3 = new Composition(3, TrainType.SGM, 
-				6, 100, 20, 20, 20, 20, 20, 20, 20);
+				6, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
 		
 		ScheduledTrip sd1 = new ScheduledTrip(comp1, 
 				LocalDateTime.parse("2016-04-11T06:47"), 
@@ -153,9 +153,9 @@ public class EventActivityNetwork {
 		Station stationC = new Station("C");
 		
 		Composition comp1 = new Composition(1, TrainType.SLT, 
-				3, 100, 20, 20, 20, 20, 20, 20, 20);
+				3, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
 		Composition comp2 = new Composition(2, TrainType.SLT, 
-				6, 100, 20, 20, 20, 20, 20, 20, 20);
+				6, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
 		
 		ScheduledTrip trip1 = new ScheduledTrip(comp1, 
 				LocalDateTime.parse("2016-04-19T10:53"), 
@@ -192,9 +192,9 @@ public class EventActivityNetwork {
 		Station stationC = new Station("C");
 		
 		Composition comp1 = new Composition(1, TrainType.SLT, 
-				3, 100, 20, 20, 20, 20, 20, 20, 20);
+				3, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
 		Composition comp2 = new Composition(2, TrainType.SLT, 
-				6, 100, 20, 20, 20, 20, 20, 20, 20);
+				6, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
 		
 		ScheduledTrip trip1 = new ScheduledTrip(comp1, 
 				LocalDateTime.parse("2016-04-19T12:00"), 
@@ -401,7 +401,7 @@ public class EventActivityNetwork {
 		TreeSet<DepartureNode> set = departuresByStation.get(station);
 		ScheduledTrip dummyTrip = new ScheduledTrip(
 				new Composition(0, TrainType.VIRM, 
-						0, 0, 0, 20, 20, 20, 20, 20, 20), 
+						0, 0, 0, 20, 20, 20, 20, 20, 20, ComfortNorm.C), 
 				time, 
 				time, 
 				new Station(name), 
@@ -433,7 +433,7 @@ public class EventActivityNetwork {
 		TreeSet<ArrivalNode> set = arrivalsByStation.get(station);
 		ScheduledTrip dummyTrip = new ScheduledTrip(
 				new Composition(0, TrainType.VIRM, 
-						0, 0, 0, 20, 20, 20, 20, 20, 20), 
+						0, 0, 0, 20, 20, 20, 20, 20, 20, ComfortNorm.C), 
 				time, 
 				time, 
 				new Station(name), 
@@ -472,7 +472,7 @@ public class EventActivityNetwork {
 		return events;
 	}
 	
-	public Path textToPath(String s) {
+	public DefaultPath textToPath(String s) {
 		String[] pieces = s.split(",");
 		
 		// check if format is valid

@@ -10,6 +10,7 @@ import java.util.List;
 import org.junit.Test;
 
 import wagon.infrastructure.Station;
+import wagon.rollingstock.ComfortNorm;
 import wagon.rollingstock.Composition;
 import wagon.rollingstock.TrainType;
 import wagon.timetable.ScheduledTrip;
@@ -26,7 +27,7 @@ public class TimetableTest {
 		Station stationFrom = new Station("from");
 		Station stationTo = new Station("to");
 		Composition comp = new Composition(1, TrainType.VIRM, 
-				6, 100, 20, 20, 20, 20, 20, 20, 20);
+				6, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
 		
 		for (int i = 0; i < nrTimetables; i++) {
 			LocalDateTime time = LocalDateTime.parse("2016-04-11T12:00:00");
@@ -65,7 +66,7 @@ public class TimetableTest {
 		Station stationFrom = new Station("from");
 		Station stationTo = new Station("to");
 		Composition comp = new Composition(1, TrainType.VIRM, 
-				6, 100, 20, 20, 20, 20, 20, 20, 20);
+				6, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
 		
 		for (int i = 0; i < nrTimetables; i++) {
 			LocalDateTime time = LocalDateTime.parse("2016-04-11T12:00:00");
@@ -107,7 +108,7 @@ public class TimetableTest {
 		Station to3 = new Station("Rtd");
 		
 		Composition comp1 = new Composition(1, TrainType.SLT, 
-				3, 100, 20, 20, 20, 20, 20, 20, 20);
+				3, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
 		
 		LocalDateTime time1 = LocalDateTime.parse("2016-04-11T12:00:00");
 		ScheduledTrip sd1 = new ScheduledTrip(comp1, time1, time1.plusMinutes(2), from1, to1);
@@ -146,9 +147,9 @@ public class TimetableTest {
 		Station to3 = new Station("Rtd");
 		
 		Composition comp1 = new Composition(1, TrainType.SLT, 
-				3, 100, 20, 20, 20, 20, 20, 20, 20);
+				3, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
 		Composition comp2 = new Composition(2, TrainType.SGM, 
-				3, 100, 20, 20, 20, 20, 20, 20, 20);
+				3, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
 		
 		LocalDateTime time1 = LocalDateTime.parse("2016-04-11T12:00:00");
 		ScheduledTrip sd1 = new ScheduledTrip(comp1, time1, time1.plusMinutes(2), from1, to1);
