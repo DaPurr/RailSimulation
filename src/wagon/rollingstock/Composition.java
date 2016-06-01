@@ -23,6 +23,8 @@ public class Composition {
 	private int normC2;
 	private int normA2;
 	private int normV2;
+	
+	private ComfortNorm norm;
 
 	/**
 	 * Constructs a <code>Composition</code> object reflecting a simplified 
@@ -38,10 +40,11 @@ public class Composition {
 	 * @param normC2	norm 'C' capacity for economy class
 	 * @param normA2	norm 'A' capacity for economy class
 	 * @param normV2	norm 'V' capacity for economy class
+	 * @param norm		the comfort norm for this trip
 	 */
 	public Composition(int id, TrainType type, int nrWagons, int seats1, int seats2,
 			int foldable, int standArea, int normC1, int normC2, int normA2, 
-			int normV2) {
+			int normV2, ComfortNorm norm) {
 		this.type = type;
 		this.nrWagons = nrWagons;
 		this.seats1 = seats1;
@@ -54,6 +57,7 @@ public class Composition {
 		this.normC2 = normC2;
 		this.normA2 = normA2;
 		this.normV2 = normV2;
+		this.norm = norm;
 	}
 	
 	/**
@@ -138,5 +142,22 @@ public class Composition {
 	 */
 	public int getNormV2() {
 		return normV2;
+	}
+	
+	public ComfortNorm getNorm() {
+		return norm;
+	}
+	
+	public int normCapacity() {
+		switch (norm) {
+		case A:
+			return normA2 + seats1;
+		case C:
+			return normC1 + normC2;
+		case V:
+			return normV2 + seats1;
+		}
+		
+		throw new IllegalStateException("There cannot be another comfort norm.");
 	}
 }
