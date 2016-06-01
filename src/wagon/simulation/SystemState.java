@@ -147,16 +147,35 @@ public class SystemState {
 	}
 	
 	/**
-	 * @return	returns a mapping of trip to counter n_t
+	 * @param trip	the trip
+	 * @return	returns the counter for n_t corresponding to <code>trip</code>
 	 */
-	public Map<ScheduledTrip, Counter> getCountersN() {
-		return new HashMap<>(tripToN);
+	public Counter getTripCounterN(ScheduledTrip trip) {
+		Counter counter = tripToN.get(trip);
+		if (counter == null) {
+			counter = new Counter("n_t#" + trip.toString());
+			tripToN.put(trip, counter);
+		}
+		return counter;
 	}
 	
 	/**
-	 * @return	returns a mapping of trip to counter b_t
+	 * @param trip	the trip
+	 * @return	returns the counter for b_t corresponding to <code>trip</code>
 	 */
-	public Map<ScheduledTrip, Counter> getCountersB() {
-		return new HashMap<>(tripToB);
+	public Counter getTripCounterB(ScheduledTrip trip) {
+		Counter counter = tripToB.get(trip);
+		if (counter == null) {
+			counter = new Counter("b_t#" + trip.toString());
+			tripToB.put(trip, counter);
+		}
+		return counter;
+	}
+	
+	/**
+	 * @return	returns all trips for which a counter is registered (n_t counter)
+	 */
+	public Set<ScheduledTrip> getRegisteredTrips() {
+		return new HashSet<>(tripToN.keySet());
 	}
 }
