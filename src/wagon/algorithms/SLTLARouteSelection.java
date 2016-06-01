@@ -33,11 +33,11 @@ public class SLTLARouteSelection implements RouteSelection {
 	}
 
 	@Override
-	public Path selectPath(Collection<Path> paths) {
+	public DefaultPath selectPath(Collection<DefaultPath> paths) {
 		
 		// apply the selection rule
-		List<Path> ties = new ArrayList<>();
-		for (Path p : paths) {
+		List<DefaultPath> ties = new ArrayList<>();
+		for (DefaultPath p : paths) {
 			LocalDateTime departureTime = p.departureTime();
 			LocalDateTime arrivalTime = p.arrivalTime();
 			Duration departureCheckInDiff = Duration.between(departureTime, checkInTime).abs();
@@ -58,11 +58,11 @@ public class SLTLARouteSelection implements RouteSelection {
 			return tieBreakerPath(paths);
 	}
 	
-	private Path tieBreakerPath(Collection<Path> ties) {
+	private DefaultPath tieBreakerPath(Collection<DefaultPath> ties) {
 		// least transfers
-		List<Path> leastTransfers = new ArrayList<>();
+		List<DefaultPath> leastTransfers = new ArrayList<>();
 		int bestTransfers = Integer.MAX_VALUE;
-		for (Path p : ties) {
+		for (DefaultPath p : ties) {
 			int countTransfers = p.countTransfers();
 			if (countTransfers < bestTransfers) {
 				leastTransfers = new ArrayList<>();
@@ -75,9 +75,9 @@ public class SLTLARouteSelection implements RouteSelection {
 			return leastTransfers.get(0);
 		
 		// latest arrival
-		List<Path> latestArrivals = new ArrayList<>();
+		List<DefaultPath> latestArrivals = new ArrayList<>();
 		LocalDateTime bestArrival = null;
-		for (Path p : leastTransfers) {
+		for (DefaultPath p : leastTransfers) {
 			if (bestArrival == null) {
 				latestArrivals.add(p);
 				bestArrival = p.arrivalTime();
@@ -95,9 +95,9 @@ public class SLTLARouteSelection implements RouteSelection {
 	
 	// retrieve the path having the earliest departure time
 	// from a collection of paths
-	private Path firstDeparture(Collection<Path> paths) {
-		Path bestPath = null;
-		for (Path p : paths) {
+	private DefaultPath firstDeparture(Collection<DefaultPath> paths) {
+		DefaultPath bestPath = null;
+		for (DefaultPath p : paths) {
 			if (bestPath == null)
 				bestPath = p;
 			else if (p.departureTime().compareTo(bestPath.departureTime()) < 0)

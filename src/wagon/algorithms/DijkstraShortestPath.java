@@ -38,7 +38,7 @@ public class DijkstraShortestPath {
 	 * @param departureTime	time of departure
 	 * @return	shortest path from <code>start</code> to <code>stop</code>
 	 */
-	public List<Path> earliestArrivalPath(String from, String to, LocalDateTime departureTime) {
+	public List<DefaultPath> earliestArrivalPath(String from, String to, LocalDateTime departureTime) {
 		DepartureNode start = network.getStationDepartureNode(from, departureTime);
 		if (start == null)
 			throw new IllegalStateException("Cannot find a suitable departure node");
@@ -54,7 +54,7 @@ public class DijkstraShortestPath {
 	 * @param to			abbreviated name of the destination station
 	 * @return	earliest arrival path from <code>from</code> to <code>to</code>
 	 */
-	public List<Path> earliestArrivalPath(DepartureNode from, String to) {
+	public List<DefaultPath> earliestArrivalPath(DepartureNode from, String to) {
 		
 		/* TODO: Now, we do forward searches until we find a path where the passenger
 		 * arrives after his check-out. It is then possible for a train departing after this
@@ -141,11 +141,11 @@ public class DijkstraShortestPath {
 		throw new IllegalStateException("Could not find sink node(s)");
 	}
 	
-//	private List<Path> removeSpaceCycles(List<Path> paths) {
+//	private List<DefaultPath> removeSpaceCycles(List<DefaultPath> paths) {
 //		if (paths == null)
 //			throw new IllegalArgumentException("Paths cannot be null");
 //		
-//		List<Path> newPaths = new ArrayList<>();
+//		List<DefaultPath> newPaths = new ArrayList<>();
 //		for (int i = 0; i < paths.size(); i++) {
 //			if (!hasSpaceCycle(paths.get(i)))
 //				newPaths.add(paths.get(i));
@@ -161,9 +161,9 @@ public class DijkstraShortestPath {
 //		throw new IllegalArgumentException("Event can only be arrival or departure");
 //	}
 	
-//	private boolean hasSpaceCycle(Path path) {
+//	private boolean hasSpaceCycle(DefaultPath path) {
 //		if (path == null)
-//			throw new IllegalArgumentException("Path cannot be null");
+//			throw new IllegalArgumentException("DefaultPath cannot be null");
 //		Set<Station> visited = new HashSet<>();
 //		List<WeightedEdge> edges = path.edges();
 //		visited.add(edges.get(0).source().trip().fromStation());
@@ -179,10 +179,10 @@ public class DijkstraShortestPath {
 //		return false;
 //	}
 	
-//	private List<Path> filterLeastTransfers(List<Path> paths) {
-//		List<Path> newPaths = new ArrayList<>();
+//	private List<DefaultPath> filterLeastTransfers(List<DefaultPath> paths) {
+//		List<DefaultPath> newPaths = new ArrayList<>();
 //		int minTransfers = Integer.MAX_VALUE;
-//		for (Path path : paths) {
+//		for (DefaultPath path : paths) {
 //			int nrTransfers = countTransfers(path);
 //			if (nrTransfers < minTransfers) {
 //				newPaths = new ArrayList<>();
@@ -194,7 +194,7 @@ public class DijkstraShortestPath {
 //		return newPaths;
 //	}
 	
-//	private int countTransfers(Path path) {
+//	private int countTransfers(DefaultPath path) {
 //		List<WeightedEdge> edges = path.edges();
 //		int count = 0;
 //		
@@ -217,10 +217,10 @@ public class DijkstraShortestPath {
 //		return count;
 //	}
 	
-	private List<Path> constructPath(List<DijkstraNode<EventNode>> endNodes) {
-		List<Path> paths = new ArrayList<>();
+	private List<DefaultPath> constructPath(List<DijkstraNode<EventNode>> endNodes) {
+		List<DefaultPath> paths = new ArrayList<>();
 		for (DijkstraNode<EventNode> node : endNodes) {
-			List<Path> dfsPaths = depthFirstSearch(node);
+			List<DefaultPath> dfsPaths = depthFirstSearch(node);
 			paths.addAll(dfsPaths);
 		}
 //		paths = removeSpaceCycles(paths);
@@ -228,8 +228,8 @@ public class DijkstraShortestPath {
 	}
 	
 	// employ depth-first search to find all shortest paths
-	private List<Path> depthFirstSearch(DijkstraNode<EventNode> u) {
-		List<Path> paths = new ArrayList<>();
+	private List<DefaultPath> depthFirstSearch(DijkstraNode<EventNode> u) {
+		List<DefaultPath> paths = new ArrayList<>();
 		Stack<List<DijkstraNode<EventNode>>> stack = new Stack<>();
 		
 		// initialize DFS

@@ -9,7 +9,7 @@ import wagon.network.WeightedEdge;
 import wagon.network.expanded.*;
 import wagon.timetable.ScheduledTrip;
 
-public class DefaultPath implements Path {
+public class DefaultPath{
 
 	private double totalCost;
 	private List<WeightedEdge> edges;
@@ -36,12 +36,10 @@ public class DefaultPath implements Path {
 		totalCost -= e.weight();
 	}
 	
-	@Override
 	public double weight() {
 		return totalCost;
 	}
 
-	@Override
 	public Node startNode() {
 		if (edges.isEmpty())
 			return null;
@@ -49,7 +47,6 @@ public class DefaultPath implements Path {
 		return node;
 	}
 
-	@Override
 	public Node endNode() {
 		if (edges.isEmpty())
 			return null;
@@ -58,12 +55,10 @@ public class DefaultPath implements Path {
 		return node;
 	}
 
-	@Override
 	public List<WeightedEdge> edges() {
 		return new ArrayList<>(edges);
 	}
 	
-	@Override
 	public String toString() {
 		String s = "";
 		for (int i = 0; i < edges.size(); i++) {
@@ -106,17 +101,14 @@ public class DefaultPath implements Path {
 		return 7*edges.hashCode() + 13*Double.valueOf(totalCost).hashCode();
 	}
 
-	@Override
 	public LocalDateTime departureTime() {
 		return edges.get(0).source().trip().departureTime();
 	}
 
-	@Override
 	public LocalDateTime arrivalTime() {
 		return edges.get(edges.size()-1).target().trip().arrivalTime();
 	}
 
-	@Override
 	public int countTransfers() {
 		int currentID = Integer.MIN_VALUE;
 		int count = 0;
@@ -131,7 +123,6 @@ public class DefaultPath implements Path {
 		return count;
 	}
 
-	@Override
 	public String representation() {
 		String s = "";
 		boolean b = false;

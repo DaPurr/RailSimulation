@@ -1,11 +1,10 @@
 package wagon.simulation;
 
 import wagon.algorithms.DefaultPath;
-import wagon.algorithms.Path;
 
 /**
  * This class represents a certain passenger group, where 
- * passengers are aggregated into groups based on the <code>Path</code>s 
+ * passengers are aggregated into groups based on the <code>DefaultPath</code>s 
  * that they take.
  * 
  * @author Nemanja Milovanovic
@@ -63,18 +62,18 @@ public class PassengerGroup {
 	}
 	
 	/**
-	 * @return	<code>Path</code> corresponding to this passenger 
+	 * @return	<code>DefaultPath</code> corresponding to this passenger 
 	 * 			group
 	 */
-	public Path getPath() {
+	public DefaultPath getPath() {
 		return new DefaultPath(path);
 	}
 	
 	/**
-	 * Set the current <code>Path</code> for this passenger 
+	 * Set the current <code>DefaultPath</code> for this passenger 
 	 * group.
 	 * 
-	 * @param path	<code>Path</code> to be traversed
+	 * @param path	<code>DefaultPath</code> to be traversed
 	 */
 	public void setPath(DefaultPath path) {
 		this.path = new DefaultPath(path);
