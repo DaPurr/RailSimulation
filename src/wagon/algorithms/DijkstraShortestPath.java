@@ -2,6 +2,7 @@ package wagon.algorithms;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 //import wagon.infrastructure.Station;
@@ -26,6 +27,7 @@ public class DijkstraShortestPath {
 	 */
 	public DijkstraShortestPath(EventActivityNetwork network) {
 		this.network = network;
+		log.setLevel(Level.OFF);
 	}
 	
 	/**
@@ -117,6 +119,21 @@ public class DijkstraShortestPath {
 			Set<WeightedEdge> outEdges = network.outgoingEdges(dijkU.e);
 			for (WeightedEdge edge : outEdges) {
 				EventNode v = edge.target();
+				
+				// sanity check
+				LocalDateTime timeU = null;
+				if (dijkU.e instanceof ArrivalNode)
+					timeU = dijkU.e.trip().arrivalTime();
+				else if (dijkU.e instanceof DepartureNode)
+					timeU = dijkU.e.trip().departureTime();
+				LocalDateTime timeV = null;
+				if (v instanceof ArrivalNode)
+					timeV = v.trip().arrivalTime();
+				else if (v instanceof DepartureNode)
+					timeV = v.trip().departureTime();
+				if (timeU.compareTo(timeV) > 0)
+					throw new IllegalStateException("Timing of node u cannot be later than node v");
+				
 				if (edge.source() != dijkU.e)
 					throw new IllegalStateException("Inconsistency detected");
 				Double distV = distance.get(v);

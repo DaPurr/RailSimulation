@@ -1,13 +1,10 @@
 package wagon.simulation;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
 
-import wagon.algorithms.DefaultPath;
+import wagon.algorithms.*;
 import wagon.data.CiCoData;
 import wagon.network.WeightedEdge;
 import wagon.network.expanded.EventActivityNetwork;
@@ -39,7 +36,10 @@ public class SimModel {
 		try {
 			// import the passenger groups/routes
 //			List<PassengerGroup> groups = importPassengerGroups("data/routes/test1.csv");
-			CiCoData cicoData = CiCoData.importRawData("data/routes/ritten_20160112.csv");
+			CiCoData cicoData = CiCoData.importRawData("data/cico/ritten_20160112.csv",
+					"data/cico/omzettabel_stations.csv");
+			List<PassengerGroup> groups = cicoData.processPassengersIntoGroups(new RouteGeneration(state.getNetwork()));
+			exportPassengerGroups("data/routes/groups_20160112.csv", groups);
 			// process groups to events
 //			processPassengerGroups(groups);
 		} catch (IOException e) {
@@ -56,7 +56,7 @@ public class SimModel {
 		while (line != null) {
 			String[] parts = line.split(";");
 			DefaultPath path = state.getNetwork().textToPath(parts[0]);
-			int groupSize = Integer.valueOf(parts[1]);
+			double groupSize = Double.valueOf(parts[1]);
 			PassengerGroup group = new PassengerGroup(path, groupSize);
 			groups.add(group);
 			line = br.readLine();
@@ -64,6 +64,20 @@ public class SimModel {
 		br.close();
 		
 		return groups;
+	}
+	
+	private void exportPassengerGroups(String file_name, 
+			Collection<PassengerGroup> groups) throws IOException {
+		if (!file_name.matches(".*\\.csv"))
+			throw new IllegalArgumentException("File needs to be CSV format.");
+		
+		File file = new File(file_name);
+		BufferedWriter bw = new BufferedWriter(
+				new FileWriter(file));
+		for (PassengerGroup group : groups) {
+			bw.write(group.getPath().representation() + ";" + group.size());
+		}
+		bw.close();
 	}
 	
 	private void processPassengerGroups(List<PassengerGroup> groups) {

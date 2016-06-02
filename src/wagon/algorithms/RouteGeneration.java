@@ -2,6 +2,7 @@ package wagon.algorithms;
 
 import java.time.*;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import wagon.infrastructure.*;
@@ -30,6 +31,7 @@ public class RouteGeneration {
 	 */
 	public RouteGeneration(EventActivityNetwork network) {
 		this.network = network;
+		log.setLevel(Level.OFF);
 	}
 	
 	/**

@@ -229,7 +229,7 @@ public class Timetable implements Iterable<ScheduledTrip> {
 			
 			int dayOfWeek = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
 			// only save mondays
-			if (dayOfWeek != 1)
+			if (dayOfWeek != 2)
 				continue;
 			
 			// init variables to store timetable

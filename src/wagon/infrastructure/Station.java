@@ -18,12 +18,12 @@ public class Station {
 	 * @param	name	name of the station
 	 */
 	public Station(String name, GPSLocation location) {
-		this.name = name;
+		this.name = name.toLowerCase();
 		this.location = location;
 	}
 	
 	public Station(String name) {
-		this.name = name;
+		this.name = name.toLowerCase();
 		this.location = null;
 	}
 	
