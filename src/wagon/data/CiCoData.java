@@ -126,7 +126,7 @@ public class CiCoData {
 			DefaultPath path = selector.selectPath(paths);
 			pathsMultiset.add(path);
 			
-			if (counter % 1 == 0)
+			if (counter % 100 == 0)
 				log.info("... Finish selecting routes for " + counter + " passengers");
 		}
 		
