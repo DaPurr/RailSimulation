@@ -290,6 +290,15 @@ public class Timetable implements Iterable<ScheduledTrip> {
 		
 		// fixing departure/arrival times
 		fixTripTimes(trainRoutes);
+		for (Entry<Composition, List<ScheduledTrip>> entry : trainRoutes.entrySet()) {
+			for (ScheduledTrip trip : entry.getValue()) {
+				Station fromStation = trip.fromStation();
+				Station toStation = trip.toStation();
+				timetable.addStation(fromStation, trip);
+				timetable.stations.add(fromStation);
+				timetable.stations.add(toStation);
+			}
+		}
 		
 		timetable.log.info("...Finished importing Excel");
 		
