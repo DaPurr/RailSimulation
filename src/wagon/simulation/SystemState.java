@@ -36,12 +36,12 @@ public class SystemState {
 	public SystemState(EventActivityNetwork network, Timetable timetable) {
 		this.network = network;
 		this.timetable = timetable;
-		trainOccupation = new HashMap<>();
-		trainToPassengers = new HashMap<>();
+		trainOccupation = new LinkedHashMap<>();
+		trainToPassengers = new LinkedHashMap<>();
 		
-		tripToB = new HashMap<>();
-		tripToN = new HashMap<>();
-//		tripToF = new HashMap<>();
+		tripToB = new LinkedHashMap<>();
+		tripToN = new LinkedHashMap<>();
+//		tripToF = new LinkedHashMap<>();
 	}
 	
 	/**
@@ -176,6 +176,6 @@ public class SystemState {
 	 * @return	returns all trips for which a counter is registered (n_t counter)
 	 */
 	public Set<ScheduledTrip> getRegisteredTrips() {
-		return new HashSet<>(tripToN.keySet());
+		return new LinkedHashSet<>(tripToN.keySet());
 	}
 }

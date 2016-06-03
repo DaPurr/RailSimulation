@@ -24,7 +24,23 @@ public class CiCoData {
 	private Logger log = Logger.getLogger(this.getClass().getName());
 	
 	private CiCoData() {
-		passengers = new HashSet<>();
+		passengers = new LinkedHashSet<>();
+	}
+	
+	/**
+	 * @return	the set of passengers
+	 */
+	public Set<Passenger> getPassengers() {
+		return new LinkedHashSet<>(passengers);
+	}
+	
+	/**
+	 * Replaces the current set of passengers with <code>passengers</code>.
+	 * 
+	 * @param passengers	the new set of passengers
+	 */
+	public void setPassengers(Set<Passenger> passengers) {
+		this.passengers = passengers;
 	}
 	
 	public static CiCoData importRawData(	String cicoFileName,
@@ -36,7 +52,7 @@ public class CiCoData {
 		
 		CiCoData cicoData = new CiCoData();
 		
-		Map<Integer, String> stationCodeToName = new HashMap<>();
+		Map<Integer, String> stationCodeToName = new LinkedHashMap<>();
 		File file = new File(stationTableFileName);
 		BufferedReader br = new BufferedReader(
 				new FileReader(file));

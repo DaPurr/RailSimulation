@@ -33,11 +33,11 @@ public class EventActivityNetwork {
 	
 	private EventActivityNetwork() {
 		graph = new DefaultDirectedGraph<>(WeightedEdge.class);
-		capacities = new HashMap<>();
+		capacities = new LinkedHashMap<>();
 		
-		departuresByStation = new HashMap<>();
-		arrivalsByStation = new HashMap<>();
-		stationNameMap = new HashMap<>();
+		departuresByStation = new LinkedHashMap<>();
+		arrivalsByStation = new LinkedHashMap<>();
+		stationNameMap = new LinkedHashMap<>();
 		log.setLevel(Level.ALL);
 	}
 	
@@ -70,7 +70,7 @@ public class EventActivityNetwork {
 	 * @return	set of all nodes
 	 */
 	public Set<Node> nodeSet() {
-		return new HashSet<>(graph.vertexSet());
+		return new LinkedHashSet<>(graph.vertexSet());
 	}
 	
 	/**
@@ -264,9 +264,9 @@ public class EventActivityNetwork {
 		network.log.info("Begin import of timetable...");
 		
 		// temporarily store departure and arrival nodes for each station
-		Map<Station,SortedSet<DepartureNode>> departures = new HashMap<>();
-		Map<Station,SortedSet<ArrivalNode>> arrivals = new HashMap<>();
-		Set<Station> stations = new HashSet<>();
+		Map<Station,SortedSet<DepartureNode>> departures = new LinkedHashMap<>();
+		Map<Station,SortedSet<ArrivalNode>> arrivals = new LinkedHashMap<>();
+		Set<Station> stations = new LinkedHashSet<>();
 		
 		// loop through the composition routes to create departure and arrival nodes for
 		// each station
@@ -449,7 +449,7 @@ public class EventActivityNetwork {
 	public Set<DepartureNode> getDeparturesByStation(Station station) {
 		if (station == null)
 			throw new IllegalArgumentException("Station cannot be null");
-		return new HashSet<>(departuresByStation.get(station));
+		return new LinkedHashSet<>(departuresByStation.get(station));
 	}
 	
 	/**
@@ -459,7 +459,7 @@ public class EventActivityNetwork {
 	public Set<ArrivalNode> getArrivalsByStation(Station station) {
 		if (station == null)
 			throw new IllegalArgumentException("Station cannot be null");
-		return new HashSet<>(arrivalsByStation.get(station));
+		return new LinkedHashSet<>(arrivalsByStation.get(station));
 	}
 	
 	public Set<EventNode> getEventsByStation(Station station) {
@@ -467,7 +467,7 @@ public class EventActivityNetwork {
 			throw new IllegalArgumentException("Station cannot be null");
 		Set<DepartureNode> departures = getDeparturesByStation(station);
 		Set<ArrivalNode> arrivals = getArrivalsByStation(station);
-		Set<EventNode> events = new HashSet<>(departures);
+		Set<EventNode> events = new LinkedHashSet<>(departures);
 		events.addAll(arrivals);
 		return events;
 	}

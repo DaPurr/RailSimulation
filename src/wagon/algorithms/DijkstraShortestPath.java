@@ -72,8 +72,8 @@ public class DijkstraShortestPath {
 		DepartureNode start = from;
 		
 		// sparse representation; only add when necessary
-		Map<Node, Double> distance = new HashMap<>();
-		Map<EventNode, DijkstraNode<EventNode>> eventToDijkstra = new HashMap<>();
+		Map<Node, Double> distance = new LinkedHashMap<>();
+		Map<EventNode, DijkstraNode<EventNode>> eventToDijkstra = new LinkedHashMap<>();
 		
 		// init queue
 		PriorityQueue<DijkstraNode<EventNode>> queue = new PriorityQueue<>();
@@ -131,8 +131,8 @@ public class DijkstraShortestPath {
 					timeV = v.trip().arrivalTime();
 				else if (v instanceof DepartureNode)
 					timeV = v.trip().departureTime();
-				if (timeU.compareTo(timeV) > 0)
-					throw new IllegalStateException("Timing of node u cannot be later than node v");
+//				if (timeU.compareTo(timeV) > 0)
+//					throw new IllegalStateException("Timing of node u cannot be later than node v");
 				
 				if (edge.source() != dijkU.e)
 					throw new IllegalStateException("Inconsistency detected");
@@ -181,7 +181,7 @@ public class DijkstraShortestPath {
 //	private boolean hasSpaceCycle(DefaultPath path) {
 //		if (path == null)
 //			throw new IllegalArgumentException("DefaultPath cannot be null");
-//		Set<Station> visited = new HashSet<>();
+//		Set<Station> visited = new LinkedHashSet<>();
 //		List<WeightedEdge> edges = path.edges();
 //		visited.add(edges.get(0).source().trip().fromStation());
 //		for (int i = 0; i < edges.size(); i++) {

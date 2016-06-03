@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 
 import wagon.algorithms.*;
 import wagon.data.CiCoData;
+import wagon.infrastructure.Station;
 import wagon.network.WeightedEdge;
 import wagon.network.expanded.EventActivityNetwork;
 import wagon.timetable.ScheduledTrip;
@@ -38,6 +39,28 @@ public class SimModel {
 //			List<PassengerGroup> groups = importPassengerGroups("data/routes/test1.csv");
 			CiCoData cicoData = CiCoData.importRawData("data/cico/ritten_20160112.csv",
 					"data/cico/omzettabel_stations.csv");
+			
+			Set<Passenger> passengers = cicoData.getPassengers();
+			Set<Passenger> passengersToDelete = new LinkedHashSet<>();
+//			Set<Station> missingStations = new LinkedHashSet<>();
+			Set<Station> availableStations = state.getTimetable().getStations();
+			// remove passengers with origin or destination not in timetable
+			for (Passenger passenger : passengers) {
+				Station from = passenger.getFromStation();
+				Station to = passenger.getToStation();
+				if (!availableStations.contains(from) || 
+						!availableStations.contains(to)) {
+					passengersToDelete.add(passenger);
+				}
+			}
+//			System.out.println("Missing stations: " + missingStations.size());
+//			for (Station station : missingStations)
+//				System.out.println(station.name());
+			for (Passenger passenger : passengersToDelete)
+				passengers.remove(passenger);
+			System.out.println("Passengers removed: " + passengersToDelete.size());
+			
+			cicoData.setPassengers(passengers);
 			List<PassengerGroup> groups = cicoData.processPassengersIntoGroups(new RouteGeneration(state.getNetwork()));
 			exportPassengerGroups("data/routes/groups_20160112.csv", groups);
 			// process groups to events
@@ -82,7 +105,7 @@ public class SimModel {
 	
 	private void processPassengerGroups(List<PassengerGroup> groups) {
 		Map<ScheduledTrip, List<PassengerGroup>> mapTripToGroups = 
-				new HashMap<>();
+				new LinkedHashMap<>();
 		// make lists of groups according to boarding trip
 		for (PassengerGroup group : groups) {
 			List<WeightedEdge> edges = group.getPath().edges();

@@ -46,9 +46,9 @@ public class Timetable implements Iterable<ScheduledTrip> {
 	 * Create an empty <code>Timetable</code> object.
 	 */
 	public Timetable() {
-		departures = new HashMap<>();
-		routes = new HashMap<>();
-		stations = new HashSet<>();
+		departures = new LinkedHashMap<>();
+		routes = new LinkedHashMap<>();
+		stations = new LinkedHashSet<>();
 		log.setLevel(Level.ALL);
 	}
 	
@@ -67,6 +67,10 @@ public class Timetable implements Iterable<ScheduledTrip> {
 		for (ScheduledTrip trip : trips) {
 			addStation(station, trip);
 		}
+	}
+	
+	public Set<Station> getStations() {
+		return new LinkedHashSet<>(stations);
 	}
 	
 	/**
@@ -92,13 +96,14 @@ public class Timetable implements Iterable<ScheduledTrip> {
 		
 		// add trip to composition route
 		addTrip(trip);
+		stations.add(station);
 	}
 	
 	/**
 	 * @return	<code>Set</code> of all compositions in the timetable
 	 */
 	public Set<Composition> compositions() {
-		return new HashSet<>(routes.keySet());
+		return new LinkedHashSet<>(routes.keySet());
 	}
 	
 	public List<ScheduledTrip> getRoute(Composition comp) {
@@ -439,7 +444,7 @@ public class Timetable implements Iterable<ScheduledTrip> {
 
 	@Override
 	public Iterator<ScheduledTrip> iterator() {
-		Set<ScheduledTrip> newSet = new HashSet<>();
+		Set<ScheduledTrip> newSet = new LinkedHashSet<>();
 		for (Set<ScheduledTrip> set : routes.values()) {
 			newSet.addAll(set);
 		}
@@ -450,7 +455,7 @@ public class Timetable implements Iterable<ScheduledTrip> {
 	 * @return	returns all trips associated to the timetable
 	 */
 	public Set<ScheduledTrip> getAllTrips() {
-		Set<ScheduledTrip> trips = new HashSet<>();
+		Set<ScheduledTrip> trips = new LinkedHashSet<>();
 		for (Entry<Composition, SortedSet<ScheduledTrip>> entry : routes.entrySet()) {
 			Set<ScheduledTrip> set = entry.getValue();
 			trips.addAll(set);
