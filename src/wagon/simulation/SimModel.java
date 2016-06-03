@@ -3,6 +3,7 @@ package wagon.simulation;
 import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.logging.Logger;
 
 import wagon.algorithms.*;
 import wagon.data.CiCoData;
@@ -16,6 +17,8 @@ public class SimModel {
 
 	private SystemState state;
 	private PriorityQueue<Event> eventQueue;
+	
+	private Logger log = Logger.getLogger(this.getClass().getName());
 	
 	public SimModel(Timetable timetable, EventActivityNetwork network) {
 		state = new SystemState(network, timetable);
@@ -94,11 +97,16 @@ public class SimModel {
 		if (!file_name.matches(".*\\.csv"))
 			throw new IllegalArgumentException("File needs to be CSV format.");
 		
+		log.info("Begin exporting passenger groups ...");
 		File file = new File(file_name);
 		BufferedWriter bw = new BufferedWriter(
 				new FileWriter(file));
+		long counter = 0;
 		for (PassengerGroup group : groups) {
+			counter++;
 			bw.write(group.getPath().representation() + ";" + group.size());
+			if (counter % 100 == 0)
+				System.out.println("... Finish writing " + counter + " passengers to disk");
 		}
 		bw.close();
 	}
