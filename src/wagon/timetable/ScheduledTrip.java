@@ -72,6 +72,42 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 		return fromStation;
 	}
 	
+	/**
+	 * Sets the current arrival time to <code>time</code>.
+	 * 
+	 * @param time	the new arrival time
+	 */
+	public void setArrivalTime(LocalDateTime time) {
+		arrTime = time;
+	}
+	
+	/**
+	 * Sets the current departure time to <code>time</code>.
+	 * 
+	 * @param time	the new departure time
+	 */
+	public void setDepartureTime(LocalDateTime time) {
+		depTime = time;
+	}
+	
+	/**
+	 * Sets the current origin station to <code>station</code>.
+	 * 
+	 * @param time	the new origin station
+	 */
+	public void setFromStation(Station station) {
+		fromStation = station;
+	}
+	
+	/**
+	 * Sets the current destination station to <code>station</code>.
+	 * 
+	 * @param time	the new destination station
+	 */
+	public void setToStation(Station station) {
+		toStation = station;
+	}
+	
 	@Override
 	public boolean equals(Object other) {
 		if (!(other instanceof ScheduledTrip))
