@@ -36,6 +36,10 @@ import wagon.rollingstock.TrainType;
  */
 public class Timetable implements Iterable<ScheduledTrip> {
 	
+	// reference date-time
+	private static final LocalDateTime referenceDateTime = 
+			LocalDateTime.of(2016, 04, 11, 0, 0);
+	
 	private Map<Station, List<ScheduledTrip>> departures;
 	private Map<Composition, SortedSet<ScheduledTrip>> routes;
 	private Set<Station> stations;
@@ -209,26 +213,18 @@ public class Timetable implements Iterable<ScheduledTrip> {
 //		XSSFWorkbook workbook = new XSSFWorkbook(file);
 		timetable.log.info("...Finished parsing Excel");
 		timetable.log.info("Begin Excel import...");
+		
+		Map<Composition, List<ScheduledTrip>> trainRoutes = 
+				new LinkedHashMap<>();
+		
 		int rowCount = 1;
-//		XSSFSheet sheet = workbook.getSheetAt(0);
-//		Iterator<Row> rowIterator = sheet.rowIterator();
 		for (Row row : reader) {
-//			Row row = rowIterator.next();
 			Cell cell = row.getCell(0);
 			// skip row if we have a header line
 			if (cell.getCellType() == Cell.CELL_TYPE_STRING)
 				continue;
 			
 			// TODO: save timetable per day of the week
-//			System.out.println(row.getCell(0).getStringCellValue());
-//			System.out.println(row.getCell(1).getStringCellValue());
-//			System.out.println(row.getCell(2).getStringCellValue());
-//			System.out.println(row.getCell(3).getStringCellValue());
-//			System.out.println(row.getCell(4).getStringCellValue());
-//			System.out.println(row.getCell(5).getStringCellValue());
-//			System.out.println(row.getCell(6).getStringCellValue());
-//			System.out.println(row.getCell(7).getStringCellValue());
-//			System.out.println(row.getCell(8).getStringCellValue());
 			
 			CellReference cellRef = new CellReference("L");
 			
@@ -276,15 +272,25 @@ public class Timetable implements Iterable<ScheduledTrip> {
 					capNormC2, capNormA2, capNormV2, norm);
 			ScheduledTrip trip = new ScheduledTrip(comp, departureTime, arrivalTime, 
 					fromStation, toStation);
-			timetable.addStation(fromStation, trip);
-			timetable.stations.add(fromStation);
-			timetable.stations.add(toStation);
+			List<ScheduledTrip> trips = trainRoutes.get(comp);
+			if (trips == null) {
+				trips = new ArrayList<>();
+				trainRoutes.put(comp, trips);
+			}
+			trips.add(trip);
+//			timetable.addStation(fromStation, trip);
+//			timetable.stations.add(fromStation);
+//			timetable.stations.add(toStation);
 			if (rowCount % 500 == 0)
 				timetable.log.info("...Processed row " + rowCount);
 			rowCount++;
 		}
 //		workbook.close();
 		reader.close();
+		
+		// fixing departure/arrival times
+		fixTripTimes(trainRoutes);
+		
 		timetable.log.info("...Finished importing Excel");
 		
 		// display some characteristics
@@ -292,6 +298,31 @@ public class Timetable implements Iterable<ScheduledTrip> {
 		timetable.log.info("Number of stations: (dep & arr) " + timetable.departures.keySet().size());
 		
 		return timetable;
+	}
+	
+	private static void fixTripTimes(Map<Composition, List<ScheduledTrip>> trainRoutes) {
+		for (Entry<Composition, List<ScheduledTrip>> entry : trainRoutes.entrySet()) {
+			List<ScheduledTrip> trips = entry.getValue();
+			
+			LocalDateTime previousDateTime = null;
+			for (ScheduledTrip trip : trips) {
+				LocalDateTime departureDateTime = trip.departureTime();
+				if (previousDateTime == null) {
+					previousDateTime = departureDateTime;
+					continue;
+				}
+				// case 1: departure before 00:00, arrival after 00:00
+				if (trip.departureTime().compareTo(trip.arrivalTime()) > 0)
+					trip.setArrivalTime(trip.arrivalTime().plusDays(1));
+				// case 2: both departure and arrival after 00:00
+				if (departureDateTime.compareTo(previousDateTime) < 0) {
+					departureDateTime = trip.departureTime().plusDays(1);
+					trip.setDepartureTime(departureDateTime);
+					trip.setArrivalTime(trip.arrivalTime().plusDays(1));
+				}
+				previousDateTime = departureDateTime;
+			}
+		}
 	}
 	
 	public static Timetable importFromXML(String file_name) throws SAXException, IOException, ParserConfigurationException {
@@ -425,8 +456,10 @@ public class Timetable implements Iterable<ScheduledTrip> {
 		int second = number/10;
 		number -= second*10;
 		int first = number;
-		String date = "2016-04-11T" + fourth + third + ":" + second + first + ":00";
-		LocalDateTime datetime = LocalDateTime.parse(date);
+//		String date = "2016-04-11T" + fourth + third + ":" + second + first + ":00";
+		LocalDateTime datetime = referenceDateTime
+				.withHour(fourth*10 + third)
+				.withMinute(second*10 + first);
 		return datetime;
 	}
 	
