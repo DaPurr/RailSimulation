@@ -160,4 +160,17 @@ public class Composition {
 		
 		throw new IllegalStateException("There cannot be another comfort norm.");
 	}
+	
+	@Override
+	public boolean equals(Object other) {
+		if (!(other instanceof Composition))
+			return false;
+		Composition o = (Composition) other;
+		return this.id == o.id;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Integer.hashCode(id);
+	}
 }
