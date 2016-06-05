@@ -80,6 +80,10 @@ public class CiCoData {
 			String[] parts = line.split(",");
 			LocalDateTime checkInTime = toLocalDateTimeObject(parts[10]);
 			LocalDateTime checkOutTime = toLocalDateTimeObject(parts[27]);
+			// apply correction of 3 mins
+			checkOutTime = checkOutTime.plusMinutes(3);
+			if (checkInTime.compareTo(checkOutTime) > 0)
+				checkOutTime = checkOutTime.plusDays(1);
 			
 			// only accept passengers inside the time frame 06:00 - 20:00
 			if (!(checkInTime.compareTo(LocalDateTime.of(2016, 4, 11, 6, 0)) > 0 &&
@@ -124,9 +128,10 @@ public class CiCoData {
 					passenger.getCheckOutTime(), 
 					10);
 			DefaultPath path = selector.selectPath(paths);
-			pathsMultiset.add(path);
+			if (path != null)
+				pathsMultiset.add(path);
 			
-			if (counter % 100 == 0)
+			if (counter % 1000 == 0)
 				log.info("... Finish selecting routes for " + counter + " passengers");
 		}
 		
@@ -141,8 +146,9 @@ public class CiCoData {
 	}
 	
 	private static LocalDateTime toLocalDateTimeObject(String text) {
-		LocalDateTime date = LocalDateTime.parse(text.toLowerCase(), DateTimeFormatter.ofPattern("ddMMMyyyy:HH:mm:ss"));
-		date = date.withYear(2016).withMonth(4).withDayOfMonth(11);
+//		LocalDateTime date = LocalDateTime.parse(text.toLowerCase(), DateTimeFormatter.ofPattern("ddMMMyyyy:HH:mm:ss"));
+		LocalDateTime date = LocalDateTime.parse("2016-04-11T" + text.substring(text.length()-8, text.length()-3));
+//		date = date.withYear(2016).withMonth(4).withDayOfMonth(11);
 		return date;
 	}
 	

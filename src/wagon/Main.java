@@ -15,6 +15,7 @@ import wagon.algorithms.RouteSelection;
 import wagon.algorithms.SLTLARouteSelection;
 import wagon.algorithms.DefaultPath;
 import wagon.network.expanded.EventActivityNetwork;
+import wagon.simulation.Options;
 import wagon.simulation.Report;
 import wagon.simulation.SimModel;
 import wagon.simulation.SystemState;
@@ -24,11 +25,11 @@ public class Main {
 
 	public static void main(String[] args) {
 		try {
-			Timetable sample = Timetable.importFromExcel("data/materieelplan/full_dataset.xlsx");
+//			Timetable sample = Timetable.importFromExcel("data/materieelplan/full_dataset.xlsx");
 //			Timetable sample = Timetable.importFromExcel("data/materieelplan/smaller_sample_schedule1.xlsx");
 //			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/smaller_sample_schedule1_export.xml");
-//			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/full_dataset_export.xml");
-			sample.export("data/materieelplan/processed/full_dataset_export.xml");
+			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/full_dataset_export.xml");
+//			sample.export("data/materieelplan/processed/full_dataset_export.xml");
 //			sample.export("data/materieelplan/processed/smaller_sample_schedule1_export.xml");
 			EventActivityNetwork network = EventActivityNetwork.createNetwork(sample);
 			
@@ -118,26 +119,30 @@ public class Main {
 //			System.out.println(newPath4);
 //			System.out.println(newPath4.representation());
 			
-			SimModel sim = new SimModel(sample, network);
+			Options options = new Options();
+			options.setPathToProcessedGroupsData("data/cico/ritten_20160209_groups.csv");
+//			options.setpathToRawCiCoData("data/cico/ritten_20160209.csv");
+			SimModel sim = new SimModel(sample, 
+					network, 
+					options);
 			Report report = sim.start();
 			System.out.println(report.summary());
-			
 		}
 		catch (IOException e) {
 			e.printStackTrace();
 		} 
-//		catch (SAXException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		catch (ParserConfigurationException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} 
-		catch (InvalidFormatException e) {
+		catch (SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+//		catch (InvalidFormatException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 
 }
