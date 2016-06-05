@@ -17,12 +17,16 @@ public class SimModel {
 
 	private SystemState state;
 	private PriorityQueue<Event> eventQueue;
+	private Options options;
 	
 	private Logger log = Logger.getLogger(this.getClass().getName());
 	
-	public SimModel(Timetable timetable, EventActivityNetwork network) {
+	public SimModel(Timetable timetable, 
+			EventActivityNetwork network, 
+			Options options) {
 		state = new SystemState(network, timetable);
 		eventQueue = new PriorityQueue<>();
+		this.options = options;
 	}
 	
 	public Report start() {
@@ -38,36 +42,46 @@ public class SimModel {
 	
 	private void initialize() {
 		try {
-			// import the passenger groups/routes
-//			List<PassengerGroup> groups = importPassengerGroups("data/routes/test1.csv");
-			CiCoData cicoData = CiCoData.importRawData("data/cico/ritten_20160112.csv",
-					"data/cico/omzettabel_stations.csv");
-			
-			Set<Passenger> passengers = cicoData.getPassengers();
-			Set<Passenger> passengersToDelete = new LinkedHashSet<>();
-//			Set<Station> missingStations = new LinkedHashSet<>();
-			Set<Station> availableStations = state.getTimetable().getStations();
-			// remove passengers with origin or destination not in timetable
-			for (Passenger passenger : passengers) {
-				Station from = passenger.getFromStation();
-				Station to = passenger.getToStation();
-				if (!availableStations.contains(from) || 
-						!availableStations.contains(to)) {
-					passengersToDelete.add(passenger);
+			if (options.getPathToProcessedGroupsData() == null &&
+					options.getPathToRawCiCoData() == null)
+				throw new IllegalStateException("You need to either import raw data or"
+						+ "processed passenger group data.");
+			List<PassengerGroup> groups = null;
+			if (options.getPathToProcessedGroupsData() != null) {
+				groups = importPassengerGroups(options.getPathToProcessedGroupsData());
+			} else {
+				CiCoData cicoData = CiCoData
+						.importRawData(	options.getPathToRawCiCoData(),
+										"data/cico/omzettabel_stations.csv"); // hardcoded
+				Set<Passenger> passengers = cicoData.getPassengers();
+				Set<Passenger> passengersToDelete = new LinkedHashSet<>();
+				Set<Station> availableStations = state.getTimetable().getStations();
+				
+				// remove passengers with origin or destination not in timetable
+				for (Passenger passenger : passengers) {
+					Station from = passenger.getFromStation();
+					Station to = passenger.getToStation();
+					if (!availableStations.contains(from) || 
+							!availableStations.contains(to)) {
+						passengersToDelete.add(passenger);
+					}
 				}
+				for (Passenger passenger : passengersToDelete)
+					passengers.remove(passenger);
+				log.info("Passengers removed with origin/destination not in timetable: " + passengersToDelete.size());
+				cicoData.setPassengers(passengers);
+				groups = cicoData.processPassengersIntoGroups(new RouteGeneration(state.getNetwork()));
+//				String[] parts = options.getPathToRawCiCoData().split("/");
+//				String tempie = parts[parts.length-1];
+//				String[] parts2 = tempie.split("\\.");
+//				String fileName = parts[0] + "/" + parts2[0] + "_groups.csv";
+				String pathName = options.getPathToRawCiCoData();
+				String fileName = pathName.substring(0, pathName.length()-4) + "_groups.csv";
+				exportPassengerGroups(fileName, groups);
 			}
-//			System.out.println("Missing stations: " + missingStations.size());
-//			for (Station station : missingStations)
-//				System.out.println(station.name());
-			for (Passenger passenger : passengersToDelete)
-				passengers.remove(passenger);
-			System.out.println("Passengers removed: " + passengersToDelete.size());
 			
-			cicoData.setPassengers(passengers);
-			List<PassengerGroup> groups = cicoData.processPassengersIntoGroups(new RouteGeneration(state.getNetwork()));
-			exportPassengerGroups("data/routes/groups_20160112.csv", groups);
-			// process groups to events
-//			processPassengerGroups(groups);
+			// process passenger groups into events
+			processPassengerGroups(groups);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -104,9 +118,9 @@ public class SimModel {
 		long counter = 0;
 		for (PassengerGroup group : groups) {
 			counter++;
-			bw.write(group.getPath().representation() + ";" + group.size());
+			bw.write(group.getPath().representation() + ";" + group.size() + System.lineSeparator());
 			if (counter % 100 == 0)
-				System.out.println("... Finish writing " + counter + " passengers to disk");
+				System.out.println("... Finish writing " + counter + " passenger groups to disk");
 		}
 		bw.close();
 	}
