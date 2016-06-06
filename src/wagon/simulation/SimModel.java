@@ -71,10 +71,6 @@ public class SimModel {
 				log.info("Passengers removed with origin/destination not in timetable: " + passengersToDelete.size());
 				cicoData.setPassengers(passengers);
 				groups = cicoData.processPassengersIntoGroups(new RouteGeneration(state.getNetwork()));
-//				String[] parts = options.getPathToRawCiCoData().split("/");
-//				String tempie = parts[parts.length-1];
-//				String[] parts2 = tempie.split("\\.");
-//				String fileName = parts[0] + "/" + parts2[0] + "_groups.csv";
 				String pathName = options.getPathToRawCiCoData();
 				String fileName = pathName.substring(0, pathName.length()-4) + "_groups.csv";
 				exportPassengerGroups(fileName, groups);

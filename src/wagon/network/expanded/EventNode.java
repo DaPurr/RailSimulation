@@ -34,7 +34,8 @@ public abstract class EventNode implements Node, Comparable<EventNode> {
 		EventNode other = (EventNode) o;
 		boolean b1 = this.getClass().equals(other.getClass());
 		boolean b2 = this.trip.equals(other.trip);
-		return b1 && b2;
+		boolean b3 = this.trip.composition().equals(other.trip.composition());
+		return b1 && b2 && b3;
 	}
 	
 	@Override
