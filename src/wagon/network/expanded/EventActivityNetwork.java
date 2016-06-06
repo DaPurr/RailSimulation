@@ -475,6 +475,17 @@ public class EventActivityNetwork {
 	public DefaultPath textToPath(String s) {
 		String[] pieces = s.split(",");
 		
+		// throw away first 'waits'
+		int countWaitPieces = 0;
+		int i = 0;
+		while (pieces[i].charAt(0) == 'W') {
+			if (pieces[i].charAt(0) == 'W')
+				countWaitPieces++;
+			i++;
+		}
+		if (countWaitPieces > 0)
+			pieces = Arrays.copyOfRange(pieces, countWaitPieces, pieces.length);
+		
 		// check if format is valid
 		char firstEventType = pieces[0].charAt(0);
 		if (firstEventType != 'A' && 
