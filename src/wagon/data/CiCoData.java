@@ -86,7 +86,7 @@ public class CiCoData {
 				checkOutTime = checkOutTime.plusDays(1);
 			
 			// only accept passengers inside the time frame 06:00 - 20:00
-			if (!(checkInTime.compareTo(LocalDateTime.of(2016, 4, 11, 6, 0)) > 0 &&
+			if (!(	checkInTime.compareTo(LocalDateTime.of(2016, 4, 11, 6, 0)) 	> 0 &&
 					checkOutTime.compareTo(LocalDateTime.of(2016, 4, 11, 6, 0)) > 0 &&
 					checkOutTime.compareTo(LocalDateTime.of(2016, 4, 11, 20, 0)) < 0 &&
 					checkInTime.compareTo(LocalDateTime.of(2016, 4, 11, 20, 0)) < 0)) {
