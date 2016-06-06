@@ -192,7 +192,7 @@ public class Timetable implements Iterable<ScheduledTrip> {
 	 * @throws InvalidFormatException
 	 * @throws IOException
 	 */
-	public static Timetable importFromExcel(String filename) 
+	public static Timetable importFromExcel(String filename, int day) 
 			throws InvalidFormatException, IOException {
 		// only allow xls(x) files
 		if (!filename.matches(".*\\.xls.?"))
@@ -230,7 +230,7 @@ public class Timetable implements Iterable<ScheduledTrip> {
 			
 			int dayOfWeek = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
 			// only save mondays
-			if (dayOfWeek != 2)
+			if (dayOfWeek != day)
 				continue;
 			
 			// init variables to store timetable
@@ -316,13 +316,16 @@ public class Timetable implements Iterable<ScheduledTrip> {
 			LocalDateTime previousDateTime = null;
 			for (ScheduledTrip trip : trips) {
 				LocalDateTime departureDateTime = trip.departureTime();
+				
+				// case 1: departure before 00:00, arrival after 00:00
+				if (trip.departureTime().compareTo(trip.arrivalTime()) > 0)
+					trip.setArrivalTime(trip.arrivalTime().plusDays(1));
+				
 				if (previousDateTime == null) {
 					previousDateTime = departureDateTime;
 					continue;
 				}
-				// case 1: departure before 00:00, arrival after 00:00
-				if (trip.departureTime().compareTo(trip.arrivalTime()) > 0)
-					trip.setArrivalTime(trip.arrivalTime().plusDays(1));
+				
 				// case 2: both departure and arrival after 00:00
 				if (departureDateTime.compareTo(previousDateTime) < 0) {
 					departureDateTime = trip.departureTime().plusDays(1);
