@@ -25,12 +25,12 @@ public class Main {
 
 	public static void main(String[] args) {
 		try {
-//			Timetable sample = Timetable.importFromExcel("data/materieelplan/full_dataset.xlsx");
-//			Timetable sample = Timetable.importFromExcel("data/materieelplan/smaller_sample_schedule1.xlsx");
+			Timetable sample = Timetable.importFromExcel("data/materieelplan/full_dataset.xlsx", 2);
+//			Timetable sample = Timetable.importFromExcel("data/materieelplan/smaller_sample_schedule1.xlsx", 2);
 //			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/smaller_sample_schedule1_export.xml");
-			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/full_dataset_export.xml");
-//			sample.export("data/materieelplan/processed/full_dataset_export.xml");
-//			sample.export("data/materieelplan/processed/smaller_sample_schedule1_export.xml");
+//			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/full_dataset_export.xml");
+			sample.export("data/materieelplan/processed/full_dataset_day2_export.xml");
+//			sample.export("data/materieelplan/processed/smaller_sample_schedule1_day2_export.xml");
 			EventActivityNetwork network = EventActivityNetwork.createNetwork(sample);
 			
 //			long begin = System.nanoTime();
@@ -113,15 +113,16 @@ public class Main {
 //			DefaultPath newPath2 = network.textToPath(rep2);
 //			System.out.println(newPath2);
 			
-//			String rep4 = path4.representation();
+//			String rep4 = "W3.9,W9.0," + path4.representation();
 //			System.out.println(rep4);
 //			DefaultPath newPath4 = network.textToPath(rep4);
 //			System.out.println(newPath4);
 //			System.out.println(newPath4.representation());
 			
 			Options options = new Options();
-			options.setPathToProcessedGroupsData("data/cico/ritten_20160209_groups.csv");
-//			options.setpathToRawCiCoData("data/cico/ritten_20160209.csv");
+//			options.setPathToProcessedGroupsData("data/cico/ritten_20160209_groups.csv");
+			options.setpathToRawCiCoData("data/cico/ritten_20160209.csv");
+			options.setDayOfWeek(2);
 			SimModel sim = new SimModel(sample, 
 					network, 
 					options);
@@ -131,18 +132,18 @@ public class Main {
 		catch (IOException e) {
 			e.printStackTrace();
 		} 
-		catch (SAXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
-//		catch (InvalidFormatException e) {
+//		catch (SAXException e) {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
+//		catch (ParserConfigurationException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} 
+		catch (InvalidFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }
