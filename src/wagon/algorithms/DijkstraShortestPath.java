@@ -1,5 +1,6 @@
 package wagon.algorithms;
 
+import java.awt.EventQueue;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Level;
@@ -81,6 +82,8 @@ public class DijkstraShortestPath {
 		// insert source
 		DijkstraNode<EventNode> dijkSource = new DijkstraNode<EventNode>(start, 0.0);
 		eventToDijkstra.put(start, dijkSource);
+		
+		log.info("Add node to queue: " + dijkSource);
 		queue.add(dijkSource);
 		
 		// used to identify nodes with least cost
@@ -88,8 +91,9 @@ public class DijkstraShortestPath {
 		
 		while (!queue.isEmpty()) {
 			DijkstraNode<EventNode> dijkU = queue.poll();
+			log.info("Polled node: " + dijkU);	
 			eventToDijkstra.put(dijkU.e, dijkU);
-			if ((dijkU.e instanceof ArrivalNode) && dijkU.e.trip().toStation().name().equals(to)) {
+			if ((dijkU.e instanceof ArrivalNode) && dijkU.e.trip().toStation().name().equalsIgnoreCase(to)) {
 				minimumCost = dijkU.weight;
 				List<DijkstraNode<EventNode>> endNodes = new ArrayList<>();
 				endNodes.add(dijkU);
@@ -120,6 +124,12 @@ public class DijkstraShortestPath {
 			for (WeightedEdge edge : outEdges) {
 				EventNode v = edge.target();
 				
+				// sanity check - cannot have itself as neighbor
+				if (dijkU.e.equals(v))
+					throw new IllegalStateException("Cannot have itself as neighbor.");
+				
+				log.info("... Traversing node: " + v);
+				
 				// sanity check
 				LocalDateTime timeU = null;
 				if (dijkU.e instanceof ArrivalNode)
@@ -131,8 +141,8 @@ public class DijkstraShortestPath {
 					timeV = v.trip().arrivalTime();
 				else if (v instanceof DepartureNode)
 					timeV = v.trip().departureTime();
-//				if (timeU.compareTo(timeV) > 0)
-//					throw new IllegalStateException("Timing of node u cannot be later than node v");
+				if (timeU.compareTo(timeV) > 0)
+					throw new IllegalStateException("Timing of node u cannot be later than node v");
 				
 				if (edge.source() != dijkU.e)
 					throw new IllegalStateException("Inconsistency detected");
@@ -144,6 +154,7 @@ public class DijkstraShortestPath {
 					List<DijkstraNode<EventNode>> nodes = new ArrayList<>();
 					nodes.add(dijkU);
 					DijkstraNode<EventNode> newNode = new DijkstraNode<EventNode>(v, nodes, dijkU.weight + edgeWeight);
+					log.info("Add node to queue: " + newNode);
 					queue.add(newNode);
 					distance.put(v, dijkU.weight + edgeWeight);
 					eventToDijkstra.put(newNode.e, newNode);
@@ -293,6 +304,13 @@ public class DijkstraShortestPath {
 			this.weight = weight;
 			this.e = e;
 			this.previous = previous;
+		}
+		
+		@Override
+		public String toString() {
+			String s = "[";
+			s += e.toString();
+			return s + "]";
 		}
 
 		@Override
