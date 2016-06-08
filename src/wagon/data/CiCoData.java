@@ -83,10 +83,16 @@ public class CiCoData {
 			LocalDateTime checkOutTime = toLocalDateTimeObject(parts[27]);
 			
 			// apply correction of check-in and check-out
-			if (cicoData.checkInTimeCorrection != 0)
+			if (cicoData.checkInTimeCorrection != 0) {
 				checkInTime = checkInTime.plusMinutes(cicoData.checkInTimeCorrection);
-			if (cicoData.checkOutTimeCorrection != 0)
+				cicoData.log.info("Check-in time adjusted by "
+						+ cicoData.checkInTimeCorrection + " minutes...");
+			}
+			if (cicoData.checkOutTimeCorrection != 0) {
 				checkOutTime = checkOutTime.plusMinutes(cicoData.checkOutTimeCorrection);
+				cicoData.log.info("Check-out time adjusted by "
+						+ cicoData.checkOutTimeCorrection + " minutes...");
+			}
 			
 			if (checkInTime.compareTo(checkOutTime) > 0)
 				checkOutTime = checkOutTime.plusDays(1);
