@@ -1,6 +1,8 @@
 package wagon.simulation;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 
 import wagon.timetable.ScheduledTrip;
@@ -9,15 +11,49 @@ public class Report {
 
 	private SystemState state;
 	
+	/**
+	 * TODO: create new class representing n simulation iterations, 
+	 * instead of using SystemState
+	 * 
+	 * Constructs a <code>Report</code> object.
+	 * 
+	 * @param state	the system state after simulation
+	 */
 	public Report(SystemState state) {
 		this.state = state;
 	}
 	
+	/**
+	 * @return	Returns a short summary of both the current and the new KPI 
+	 * 			'transport capacity during rush hour'. The summary consists 
+	 * 			of the KPI values overall, and ordered by morning and 
+	 * 			afternoon rush hour. 
+	 */
 	public String summary() {
 		String s = "";
 		Set<ScheduledTrip> trips = state.getTimetable().getAllTrips();
+		s += "ALL TRIPS" + System.lineSeparator();
+		s += "=========================";
 		s += "KPI_{old}=" + calculateKPIOld(trips) + System.lineSeparator();
-		s += "KPI_{new}=" + calculateKPINew(trips);
+		s += "KPI_{new}=" + calculateKPINew(trips) + System.lineSeparator();
+		s += System.lineSeparator();
+		Set<ScheduledTrip> tripsMorningRush = getTripsMorningRushHour(trips);
+		s += "MORNING RUSH HOUR" + System.lineSeparator();
+		s += "=========================";
+		s += "KPI_{old}=" + calculateKPIOld(tripsMorningRush) + System.lineSeparator();
+		s += "KPI_{new}=" + calculateKPINew(tripsMorningRush) + System.lineSeparator();
+		Set<ScheduledTrip> tripsAfternoonRush = getTripsAfternoonRushHour(trips);
+		s += "AFTERNOON RUSH HOUR" + System.lineSeparator();
+		s += "=========================";
+		s += "KPI_{old}=" + calculateKPIOld(tripsAfternoonRush) + System.lineSeparator();
+		s += "KPI_{new}=" + calculateKPINew(tripsAfternoonRush) + System.lineSeparator();
+		Set<ScheduledTrip> tripsAllRush = new HashSet<>(tripsMorningRush);
+		tripsAllRush.addAll(tripsAfternoonRush);
+		s += "COMBINED RUSH HOUR" + System.lineSeparator();
+		s += "=========================";
+		s += "KPI_{old}=" + calculateKPIOld(tripsAllRush) + System.lineSeparator();
+		s += "KPI_{new}=" + calculateKPINew(tripsAllRush) + System.lineSeparator();
+		
 		return s;
 	}
 	
@@ -69,5 +105,45 @@ public class Report {
 			sumB += countB;
 		}
 		return sumF/sumB;
+	}
+
+	/**
+	 * 
+	 * @param trips	the set of trips
+	 * @return	the set of morning rush hour trips
+	 */
+	public Set<ScheduledTrip> getTripsMorningRushHour(Collection<ScheduledTrip> trips) {
+		return getTripsBetweenTimes(trips, LocalTime.parse("07:00"), LocalTime.parse("09:00"));
+	}
+	
+	/**
+	 * 
+	 * @param trips	the set of trips
+	 * @return	the set of afternoon rush hour trips
+	 */
+	public Set<ScheduledTrip> getTripsAfternoonRushHour(Collection<ScheduledTrip> trips) {
+		return getTripsBetweenTimes(trips, LocalTime.parse("16:00"), LocalTime.parse("18:00"));
+	}
+	
+	/**
+	 * Returns the set of trips where every trip has an overlap with time window 
+	 * [<code>time1</code>, <code>time2</code>], inclusive.
+	 * 
+	 * @param trips	the set of trips
+	 * @param time1	the lower bound of the time horizon
+	 * @param time2	the upper bound of the time horizon
+	 * @return	the overlapping set of trips
+	 */
+	public Set<ScheduledTrip> getTripsBetweenTimes(Collection<ScheduledTrip> trips, LocalTime time1, LocalTime time2) {
+		Set<ScheduledTrip> setTrips = new HashSet<>();
+		for (ScheduledTrip trip : trips) {
+			LocalDateTime tripDepartureTime = trip.departureTime();
+			LocalDateTime tripArrivalTime = trip.arrivalTime();
+			if (tripArrivalTime.toLocalTime().compareTo(time2) <= 0
+					&& tripDepartureTime.toLocalTime().compareTo(time1) >= 0) {
+				setTrips.add(trip);
+			}
+		}
+		return setTrips;
 	}
 }
