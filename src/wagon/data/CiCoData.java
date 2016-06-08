@@ -19,6 +19,8 @@ import wagon.simulation.PassengerGroup;
 public class CiCoData {
 
 	private Set<Passenger> passengers;
+	private int checkInTimeCorrection = 0;
+	private int checkOutTimeCorrection = 0;
 	
 	private Logger log = Logger.getLogger(this.getClass().getName());
 	
@@ -79,8 +81,13 @@ public class CiCoData {
 			String[] parts = line.split(",");
 			LocalDateTime checkInTime = toLocalDateTimeObject(parts[10]);
 			LocalDateTime checkOutTime = toLocalDateTimeObject(parts[27]);
-			// apply correction of 3 mins
-//			checkOutTime = checkOutTime.plusMinutes(3);
+			
+			// apply correction of check-in and check-out
+			if (cicoData.checkInTimeCorrection != 0)
+				checkInTime = checkInTime.plusMinutes(cicoData.checkInTimeCorrection);
+			if (cicoData.checkOutTimeCorrection != 0)
+				checkOutTime = checkOutTime.plusMinutes(cicoData.checkOutTimeCorrection);
+			
 			if (checkInTime.compareTo(checkOutTime) > 0)
 				checkOutTime = checkOutTime.plusDays(1);
 			
@@ -119,11 +126,13 @@ public class CiCoData {
 		log.info("Begin processing CiCo data into passenger groups ...");
 		for (Passenger passenger : passengers) {
 			counter++;
-			List<DefaultPath> paths = generator.generateRoutes(passenger.getFromStation().name(),
+			List<DefaultPath> paths = generator.generateRoutes(
+					passenger.getFromStation().name(),
 					passenger.getToStation().name(), 
 					passenger.getCheckInTime(), 
 					passenger.getCheckOutTime());
-			RouteSelection selector = new SLTLARouteSelection(passenger.getCheckInTime(), 
+			RouteSelection selector = new SLTLARouteSelection(
+					passenger.getCheckInTime(), 
 					passenger.getCheckOutTime(), 
 					10);
 			DefaultPath path = selector.selectPath(paths);
@@ -157,5 +166,25 @@ public class CiCoData {
 		if (stationName == null)
 			throw new IllegalStateException("Station name cannot be null");
 		return new Station(stationName);
+	}
+	
+	/**
+	 * Incorporates a check-in time correction. The argument <code>correction</code> is 
+	 * allowed to be either positive or negative. A value of 0 will have no effect.
+	 * 
+	 * @param correction	the time correction
+	 */
+	public void setCheckInTimeCorrection(int correction) {
+		checkInTimeCorrection = correction;
+	}
+	
+	/**
+	 * Incorporates a check-out time correction. The argument <code>correction</code> is 
+	 * allowed to be either positive or negative. A value of 0 will have no effect.
+	 * 
+	 * @param correction	the time correction
+	 */
+	public void setCheckOutTimeCorrection(int correction) {
+		checkOutTimeCorrection = correction;
 	}
 }
