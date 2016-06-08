@@ -2,7 +2,6 @@ package wagon.data;
 
 import java.io.*;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -81,7 +80,7 @@ public class CiCoData {
 			LocalDateTime checkInTime = toLocalDateTimeObject(parts[10]);
 			LocalDateTime checkOutTime = toLocalDateTimeObject(parts[27]);
 			// apply correction of 3 mins
-			checkOutTime = checkOutTime.plusMinutes(3);
+//			checkOutTime = checkOutTime.plusMinutes(3);
 			if (checkInTime.compareTo(checkOutTime) > 0)
 				checkOutTime = checkOutTime.plusDays(1);
 			

@@ -1,6 +1,5 @@
 package wagon.algorithms;
 
-import java.awt.EventQueue;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Level;
