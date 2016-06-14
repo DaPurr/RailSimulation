@@ -11,7 +11,7 @@ import wagon.infrastructure.Station;
  * @author Nemanja Milovanovic
  *
  */
-public class Passenger {
+public class Passenger implements Comparable<Passenger> {
 
 	private LocalDateTime checkIn;
 	private LocalDateTime checkOut;
@@ -63,4 +63,39 @@ public class Passenger {
 	public Station getToStation() {
 		return toStation;
 	}
+
+	@Override
+	public int compareTo(Passenger o) {
+		int res1 = checkIn.compareTo(o.checkIn);
+		if (res1 != 0)
+			return res1;
+		int res2 = checkOut.compareTo(o.checkOut);
+		if (res2 != 0)
+			return res2;
+		int res3 = fromStation.name().compareTo(o.fromStation.name());
+		if (res3 != 0)
+			return res3;
+		return toStation.name().compareTo(o.toStation.name());
+	}
+	
+	@Override
+	public boolean equals(Object o) {
+		if (!(o instanceof Passenger))
+			return false;
+		Passenger other = (Passenger) o;
+		boolean b1 = this.checkIn.equals(other.checkIn);
+		boolean b2 = this.checkOut.equals(other.checkOut);
+		boolean b3 = this.fromStation.equals(other.fromStation);
+		boolean b4 = this.toStation.equals(other.toStation);
+		return b1 && b2 && b3 && b4;
+	}
+	
+	@Override
+	public int hashCode() {
+		return 7*checkIn.hashCode()
+				+ 11*checkOut.hashCode()
+				+ 13*fromStation.hashCode()
+				+ 17*toStation.hashCode();
+	}
+	
 }
