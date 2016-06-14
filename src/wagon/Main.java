@@ -13,6 +13,7 @@ import wagon.algorithms.DijkstraShortestPath;
 import wagon.algorithms.RouteGeneration;
 import wagon.algorithms.RouteSelection;
 import wagon.algorithms.SLTLARouteSelection;
+import wagon.data.CiCoData;
 import wagon.algorithms.DefaultPath;
 import wagon.network.expanded.EventActivityNetwork;
 import wagon.simulation.Options;
@@ -32,6 +33,12 @@ public class Main {
 //			sample.export("data/materieelplan/processed/full_dataset_day2_export.xml");
 //			sample.export("data/materieelplan/processed/smaller_sample_schedule1_day2_export.xml");
 			EventActivityNetwork network = EventActivityNetwork.createNetwork(sample);
+			
+			CiCoData cicoData = CiCoData
+					.importRawData(
+							"data/cico/ritten_20160209.csv",
+							"data/cico/omzettabel_stations.csv"); // hardcoded
+			cicoData.exportPassengers("data/cico/processed/ritten_20160209_processed.csv");
 			
 //			long begin = System.nanoTime();
 //			RouteGeneration rgen = new RouteGeneration(network);
@@ -119,10 +126,8 @@ public class Main {
 //			System.out.println(newPath4);
 //			System.out.println(newPath4.representation());
 			
-			Options options = new Options();
+			Options options = new Options("data/cico/ritten_20160209.csv", null, 2);
 //			options.setPathToProcessedGroupsData("data/cico/ritten_20160209_groups.csv");
-			options.setpathToRawCiCoData("data/cico/ritten_20160209.csv");
-			options.setDayOfWeek(2);
 			SimModel sim = new SimModel(sample, 
 					network, 
 					options);
