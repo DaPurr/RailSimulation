@@ -2,24 +2,17 @@ package wagon;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.xml.sax.SAXException;
 
-import wagon.algorithms.DijkstraShortestPath;
-import wagon.algorithms.RouteGeneration;
-import wagon.algorithms.RouteSelection;
-import wagon.algorithms.SLTLARouteSelection;
+import wagon.algorithms.*;
 import wagon.data.CiCoData;
-import wagon.algorithms.DefaultPath;
 import wagon.network.expanded.EventActivityNetwork;
-import wagon.simulation.Options;
-import wagon.simulation.Report;
-import wagon.simulation.SimModel;
-import wagon.simulation.SystemState;
+import wagon.simulation.*;
 import wagon.timetable.Timetable;
 
 public class Main {
@@ -34,11 +27,16 @@ public class Main {
 //			sample.export("data/materieelplan/processed/smaller_sample_schedule1_day2_export.xml");
 			EventActivityNetwork network = EventActivityNetwork.createNetwork(sample);
 			
+			Options options = new Options("data/cico/ritten_20160209.csv", null, 2);
+			
 			CiCoData cicoData = CiCoData
 					.importRawData(
 							"data/cico/ritten_20160209.csv",
-							"data/cico/omzettabel_stations.csv"); // hardcoded
-			cicoData.exportPassengers("data/cico/processed/ritten_20160209_processed.csv");
+							"data/cico/omzettabel_stations.csv",
+							options); // hardcoded
+//			cicoData.exportPassengers("data/cico/processed/ritten_20160209_processed.csv");
+			Collection<Passenger> selectedPassengers = cicoData.getPassengersWithJourney("rta", "rtd");
+			CiCoData.drawPassengerArrivalRate(selectedPassengers, 1);
 			
 //			long begin = System.nanoTime();
 //			RouteGeneration rgen = new RouteGeneration(network);
@@ -126,8 +124,6 @@ public class Main {
 //			System.out.println(newPath4);
 //			System.out.println(newPath4.representation());
 			
-			Options options = new Options("data/cico/ritten_20160209.csv", null, 2);
-//			options.setPathToProcessedGroupsData("data/cico/ritten_20160209_groups.csv");
 			SimModel sim = new SimModel(sample, 
 					network, 
 					options);

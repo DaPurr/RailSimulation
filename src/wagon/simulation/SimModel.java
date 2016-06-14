@@ -52,7 +52,8 @@ public class SimModel {
 			} else {
 				CiCoData cicoData = CiCoData
 						.importRawData(	options.getPathToRawCiCoData(),
-										"data/cico/omzettabel_stations.csv"); // hardcoded
+										"data/cico/omzettabel_stations.csv",
+										options); // hardcoded
 				Set<Passenger> passengers = cicoData.getPassengers();
 				Set<Passenger> passengersToDelete = new LinkedHashSet<>();
 				Set<Station> availableStations = state.getTimetable().getStations();

@@ -1,5 +1,7 @@
 package wagon.simulation;
 
+import java.time.LocalTime;
+
 /**
  * This class is used to pass options to a <code>SimModel</code> object.
  * 
@@ -19,6 +21,10 @@ public class Options {
 	private String pathToRawCiCoData;
 	private String pathToProcessedGroupsData;
 	private int dayOfWeek;
+	private int checkInTimeCorrection;
+	private int checkOutTimeCorrection;
+	private LocalTime timeLowerBound;
+	private LocalTime timeUpperBound;
 	
 	/**
 	 * Constructs an object of class <code>Option</code>.
@@ -40,6 +46,10 @@ public class Options {
 		this.pathToProcessedGroupsData = pathToProcessedGroupsData;
 		this.pathToRawCiCoData = pathToRawCiCoData;
 		this.dayOfWeek = dayOfWeek;
+		checkInTimeCorrection = 0;
+		checkOutTimeCorrection = 0;
+		timeLowerBound = LocalTime.parse("00:00:00");
+		timeUpperBound = LocalTime.parse("23:59:59");
 	}
 	
 	public String getPathToRawCiCoData() {
@@ -52,5 +62,37 @@ public class Options {
 	
 	public int getDayOfWeek() {
 		return dayOfWeek;
+	}
+	
+	public void setCheckInTimeCorrection(int correction) {
+		checkInTimeCorrection = correction;
+	}
+	
+	public void setCheckOutTimeCorrection(int correction) {
+		checkOutTimeCorrection = correction;
+	}
+	
+	public int getCheckInTimeCorrection() {
+		return checkInTimeCorrection;
+	}
+	
+	public int getCheckOutTimeCorrection() {
+		return checkOutTimeCorrection;
+	}
+	
+	public void setCheckInLowerBound(LocalTime time) {
+		timeLowerBound = time;
+	}
+	
+	public void setCheckOutUpperBound(LocalTime time) {
+		timeUpperBound = time;
+	}
+	
+	public LocalTime getCheckInLowerBound() {
+		return timeLowerBound;
+	}
+	
+	public LocalTime getCheckOutUpperBound() {
+		return timeUpperBound;
 	}
 }
