@@ -1,31 +1,45 @@
 package wagon.data;
 
+import java.awt.Color;
 import java.io.*;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.logging.Logger;
+
+import javax.swing.JFrame;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 
+import de.erichseifert.gral.data.DataTable;
+import de.erichseifert.gral.plots.XYPlot;
+import de.erichseifert.gral.plots.lines.DefaultLineRenderer2D;
+import de.erichseifert.gral.plots.lines.LineRenderer;
+import de.erichseifert.gral.ui.InteractivePanel;
 import wagon.algorithms.DefaultPath;
 import wagon.algorithms.RouteGeneration;
 import wagon.algorithms.RouteSelection;
 import wagon.algorithms.SLTLARouteSelection;
 import wagon.infrastructure.Station;
+import wagon.simulation.Options;
 import wagon.simulation.Passenger;
 import wagon.simulation.PassengerGroup;
 
 public class CiCoData {
 
 	private Set<Passenger> passengers;
-	private int checkInTimeCorrection = 0;
-	private int checkOutTimeCorrection = 0;
+	private Options options;
 	
 	private Logger log = Logger.getLogger(this.getClass().getName());
 	
 	private CiCoData() {
+		this(null);
+	}
+	
+	private CiCoData(Options options) {
 		passengers = new LinkedHashSet<>();
+		this.options = options;
 	}
 	
 	/**
@@ -44,9 +58,10 @@ public class CiCoData {
 		this.passengers = passengers;
 	}
 	
-	public static CiCoData importRawData(	String cicoFileName,
-											String stationTableFileName
-											) throws IOException {
+	public static CiCoData importRawData(
+			String cicoFileName,
+			String stationTableFileName, 
+			Options options) throws IOException {
 		if (!cicoFileName.matches(".*\\.csv") ||
 				!stationTableFileName.matches(".*\\.csv"))
 			throw new IllegalArgumentException("File needs to be CSV format.");
@@ -83,25 +98,31 @@ public class CiCoData {
 			LocalDateTime checkOutTime = toLocalDateTimeObject(parts[27]);
 			
 			// apply correction of check-in and check-out
-			if (cicoData.checkInTimeCorrection != 0) {
-				checkInTime = checkInTime.plusMinutes(cicoData.checkInTimeCorrection);
+			if (options.getCheckInTimeCorrection() != 0) {
+				checkInTime = checkInTime.plusMinutes(options.getCheckInTimeCorrection());
 				cicoData.log.info("Check-in time adjusted by "
-						+ cicoData.checkInTimeCorrection + " minutes...");
+						+ options.getCheckInTimeCorrection() + " minutes...");
 			}
-			if (cicoData.checkOutTimeCorrection != 0) {
-				checkOutTime = checkOutTime.plusMinutes(cicoData.checkOutTimeCorrection);
+			if (options.getCheckOutTimeCorrection() != 0) {
+				checkOutTime = checkOutTime.plusMinutes(options.getCheckOutTimeCorrection());
 				cicoData.log.info("Check-out time adjusted by "
-						+ cicoData.checkOutTimeCorrection + " minutes...");
+						+ options.getCheckOutTimeCorrection() + " minutes...");
 			}
 			
 			if (checkInTime.compareTo(checkOutTime) > 0)
 				checkOutTime = checkOutTime.plusDays(1);
 			
 			// only accept passengers inside the time frame 06:00 - 20:00
-			if (!(	checkInTime.compareTo(LocalDateTime.of(2016, 4, 11, 6, 0)) 	> 0 &&
-					checkOutTime.compareTo(LocalDateTime.of(2016, 4, 11, 6, 0)) > 0 &&
-					checkOutTime.compareTo(LocalDateTime.of(2016, 4, 11, 20, 0)) < 0 &&
-					checkInTime.compareTo(LocalDateTime.of(2016, 4, 11, 20, 0)) < 0)) {
+//			if (!(	checkInTime.toLocalTime().compareTo(options.getCheckInLowerBound())		> 0 &&
+//					checkOutTime.toLocalTime().compareTo(options.getCheckInLowerBound())	> 0 &&
+//					checkOutTime.toLocalTime().compareTo(options.getCheckOutUpperBound())	< 0 &&
+//					checkInTime.toLocalTime().compareTo(options.getCheckOutUpperBound())	< 0)) {
+//				line = br.readLine();
+//				continue;
+//			}
+			
+			if (!(checkInTime.toLocalTime().compareTo(options.getCheckInLowerBound()) >= 0 &&
+					checkOutTime.toLocalTime().compareTo(options.getCheckOutUpperBound()) <= 0)) {
 				line = br.readLine();
 				continue;
 			}
@@ -174,23 +195,97 @@ public class CiCoData {
 		return new Station(stationName);
 	}
 	
-	/**
-	 * Incorporates a check-in time correction. The argument <code>correction</code> is 
-	 * allowed to be either positive or negative. A value of 0 will have no effect.
-	 * 
-	 * @param correction	the time correction
-	 */
-	public void setCheckInTimeCorrection(int correction) {
-		checkInTimeCorrection = correction;
+	public void exportPassengers(String fileName) throws IOException {
+		File file = new File(fileName);
+		BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+		log.info("Begin export of CiCo data ...");
+		long count = 0;
+		for (Passenger passenger : passengers) {
+			bw.write(passenger.getCheckInTime().toString() + ",");
+			bw.write(passenger.getCheckOutTime().toString() + ",");
+			bw.write(passenger.getFromStation().name() + ",");
+			bw.write(passenger.getToStation().name() + System.lineSeparator());
+			count++;
+			if (count % 1000 == 0)
+				log.info("... Processed " + count + " passengers");
+		}
+		bw.flush();
+		bw.close();
 	}
 	
-	/**
-	 * Incorporates a check-out time correction. The argument <code>correction</code> is 
-	 * allowed to be either positive or negative. A value of 0 will have no effect.
-	 * 
-	 * @param correction	the time correction
-	 */
-	public void setCheckOutTimeCorrection(int correction) {
-		checkOutTimeCorrection = correction;
+	public static void drawPassengerArrivalRate(Collection<Passenger> passengers, int interval) {
+		@SuppressWarnings("unchecked")
+		DataTable table = new DataTable(Integer.class, Integer.class);
+		List<Integer> frequencies = arrivalsToFrequencies(passengers, interval);
+		for (int i = 0; i < frequencies.size(); i++) {
+			table.add(i+1, frequencies.get(i));
+		}
+		FrequencyPlot plot = new FrequencyPlot(table);
+		plot.setVisible(true);
+	}
+	
+	private static List<Integer> arrivalsToFrequencies(Collection<Passenger> passengers, int interval) {
+		List<Integer> frequencies = new ArrayList<>();
+		Object[] sortedPassengers = passengers.toArray();
+		Arrays.sort(sortedPassengers);
+		LocalTime referenceDateTime = LocalTime.parse("00:00:00");
+		int counter = 0;
+		for (Object o : sortedPassengers) {
+			Passenger passenger = (Passenger) o;
+			if (referenceDateTime == null)
+				referenceDateTime = passenger.getCheckInTime().toLocalTime();
+			if (passenger.getCheckInTime().toLocalTime().compareTo(referenceDateTime.plusMinutes(interval)) >= 0) {
+				while (passenger.getCheckInTime().toLocalTime().compareTo(referenceDateTime.plusMinutes(interval)) >= 0) {
+					frequencies.add(counter);
+					counter = 0;
+					referenceDateTime = referenceDateTime.plusMinutes(interval);
+				}
+				counter++;
+			} else {
+				counter++;
+			}
+		}
+		
+		// add 0 padding to end of day
+		int neededSize = (int)Math.ceil(1440f/interval);
+		while (frequencies.size() < neededSize)
+			frequencies.add(0);
+		return frequencies;
+	}
+	
+	public Collection<Passenger> getPassengersWithJourney(String fromStation, String toStation) {
+		List<Passenger> selectedPassengers = new ArrayList<>();
+		for (Passenger passenger : passengers) {
+			if (passenger.getFromStation().name().equals(fromStation) &&
+					passenger.getToStation().name().equals(toStation)) {
+				selectedPassengers.add(passenger);
+			}
+		}
+		return selectedPassengers;
+	}
+	
+	public Collection<Passenger> getPassengersBetween(LocalTime time1, LocalTime time2) {
+		List<Passenger> selectedPassengers = new ArrayList<>();
+		for (Passenger passenger : passengers) {
+			if (passenger.getCheckInTime().toLocalTime().compareTo(time1) >= 0 &&
+					passenger.getCheckOutTime().toLocalTime().compareTo(time2) <= 0) {
+				selectedPassengers.add(passenger);
+			}
+		}
+		return selectedPassengers;
+	}
+	
+	private static class FrequencyPlot extends JFrame {
+		public FrequencyPlot(DataTable data) {
+			setDefaultCloseOperation(EXIT_ON_CLOSE);
+			setSize(800, 600);
+			
+			XYPlot plot = new XYPlot(data);
+			LineRenderer lines = new DefaultLineRenderer2D();
+			plot.setLineRenderers(data, lines);
+			Color color = new Color(0.0f, 0.3f, 1.0f);
+			lines.setColor(color);
+			getContentPane().add(new InteractivePanel(plot));
+		}
 	}
 }
