@@ -213,7 +213,17 @@ public class CiCoData {
 		bw.close();
 	}
 	
-	public static void drawPassengerArrivalRate(Collection<Passenger> passengers, int interval) {
+	public void exportFrequencies(List<Integer> frequencies, String fileName) throws IOException {
+		File file = new File(fileName);
+		BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+		for (int k : frequencies) {
+			bw.write(k + System.lineSeparator());
+		}
+		bw.flush();
+		bw.close();
+	}
+	
+	public static List<Integer> drawPassengerArrivalRate(Collection<Passenger> passengers, int interval) {
 		@SuppressWarnings("unchecked")
 		DataTable table = new DataTable(Integer.class, Integer.class);
 		List<Integer> frequencies = arrivalsToFrequencies(passengers, interval);
@@ -222,29 +232,27 @@ public class CiCoData {
 		}
 		FrequencyPlot plot = new FrequencyPlot(table);
 		plot.setVisible(true);
+		return frequencies;
 	}
 	
 	private static List<Integer> arrivalsToFrequencies(Collection<Passenger> passengers, int interval) {
 		List<Integer> frequencies = new ArrayList<>();
 		Object[] sortedPassengers = passengers.toArray();
 		Arrays.sort(sortedPassengers);
-		LocalTime referenceDateTime = LocalTime.parse("00:00:00");
+		LocalTime referenceTime = LocalTime.parse("00:00:00").plusMinutes(interval);
 		int counter = 0;
 		for (Object o : sortedPassengers) {
 			Passenger passenger = (Passenger) o;
-			if (referenceDateTime == null)
-				referenceDateTime = passenger.getCheckInTime().toLocalTime();
-			if (passenger.getCheckInTime().toLocalTime().compareTo(referenceDateTime.plusMinutes(interval)) >= 0) {
-				while (passenger.getCheckInTime().toLocalTime().compareTo(referenceDateTime.plusMinutes(interval)) >= 0) {
-					frequencies.add(counter);
-					counter = 0;
-					referenceDateTime = referenceDateTime.plusMinutes(interval);
-				}
-				counter++;
-			} else {
-				counter++;
+			LocalTime passengerCheckInTime = passenger.getCheckInTime().toLocalTime();
+			while (passengerCheckInTime.compareTo(referenceTime) >= 0 && 
+					referenceTime.compareTo(LocalTime.MIDNIGHT.minusMinutes(interval)) < 0) {
+				frequencies.add(counter);
+				counter = 0;
+				referenceTime = referenceTime.plusMinutes(interval);
 			}
+			counter++;
 		}
+		frequencies.add(counter);
 		
 		// add 0 padding to end of day
 		int neededSize = (int)Math.ceil(1440f/interval);
@@ -256,8 +264,8 @@ public class CiCoData {
 	public Collection<Passenger> getPassengersWithJourney(String fromStation, String toStation) {
 		List<Passenger> selectedPassengers = new ArrayList<>();
 		for (Passenger passenger : passengers) {
-			if (passenger.getFromStation().name().equals(fromStation) &&
-					passenger.getToStation().name().equals(toStation)) {
+			if (passenger.getFromStation().name().equalsIgnoreCase(fromStation) &&
+					passenger.getToStation().name().equalsIgnoreCase(toStation)) {
 				selectedPassengers.add(passenger);
 			}
 		}
@@ -275,7 +283,65 @@ public class CiCoData {
 		return selectedPassengers;
 	}
 	
+	public Collection<Passenger> getPassengersAtCheckInStation(String station) {
+		List<Passenger> selectedPassengers = new ArrayList<>();
+		for (Passenger passenger : passengers) {
+			if (passenger.getFromStation().name().equalsIgnoreCase(station)) {
+				selectedPassengers.add(passenger);
+			}
+		}
+		return selectedPassengers;
+	}
+	
+	public void getJourneySummary() {
+		Multiset<String> journeys = HashMultiset.create();
+		for (Passenger passenger : passengers) {
+			String s = passenger.getFromStation().name();
+			s += "->";
+			s += passenger.getToStation();
+			journeys.add(s);
+		}
+		List<Integer> counts = new ArrayList<>();
+		for (String journey : journeys) {
+			counts.add(journeys.count(journey));
+		}
+		Collections.sort(counts);
+		double minimum = counts.get(0);
+		double maximum = counts.get(counts.size()-1);
+		double mean = mean(counts);
+		double median = median(counts);
+		System.out.println("0.00: " + minimum);
+		System.out.println("0.25: " + counts.get(counts.size()/4));
+		System.out.println("0.50: " + median);
+		System.out.println("0.75: " + counts.get(3*counts.size()/4));
+		System.out.println("1.00: " + maximum);
+		System.out.println("mean: " + mean);
+	}
+	
+	private double mean(Collection<Integer> numbers) {
+		int sum = 0;
+		for (int k : numbers) {
+			sum += k;
+		}
+		return ((double)sum)/numbers.size();
+	}
+	
+	private double median(Collection<Integer> numbers) {
+		List<Integer> counts = new ArrayList<>(numbers);
+		Collections.sort(counts);
+		int n = numbers.size();
+		if (n % 2 == 0)
+			return ((double) counts.get(n/2) + counts.get(n/2-1) )/2;
+		else
+			return counts.get(n/2);
+	}
+	
 	private static class FrequencyPlot extends JFrame {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
 		public FrequencyPlot(DataTable data) {
 			setDefaultCloseOperation(EXIT_ON_CLOSE);
 			setSize(800, 600);

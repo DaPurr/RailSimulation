@@ -27,16 +27,19 @@ public class Main {
 //			sample.export("data/materieelplan/processed/smaller_sample_schedule1_day2_export.xml");
 			EventActivityNetwork network = EventActivityNetwork.createNetwork(sample);
 			
-			Options options = new Options("data/cico/ritten_20160209.csv", null, 2);
+			Options options = new Options("data/cico/ritten_20160315.csv", null, 2);
 			
 			CiCoData cicoData = CiCoData
 					.importRawData(
-							"data/cico/ritten_20160209.csv",
+							"data/cico/ritten_20160315.csv",
 							"data/cico/omzettabel_stations.csv",
 							options); // hardcoded
+			cicoData.getJourneySummary();
 //			cicoData.exportPassengers("data/cico/processed/ritten_20160209_processed.csv");
-			Collection<Passenger> selectedPassengers = cicoData.getPassengersWithJourney("rta", "rtd");
-			CiCoData.drawPassengerArrivalRate(selectedPassengers, 1);
+			Collection<Passenger> selectedPassengers = cicoData.getPassengersWithJourney("rta", "gd");
+//			Collection<Passenger> selectedPassengers = cicoData.getPassengersAtCheckInStation("rta");
+			List<Integer> frequencies = CiCoData.drawPassengerArrivalRate(selectedPassengers, 10);
+			cicoData.exportFrequencies(frequencies, "data/cico/frequencies/20160315/freqs_rta_gd_10min.csv");
 			
 //			long begin = System.nanoTime();
 //			RouteGeneration rgen = new RouteGeneration(network);
