@@ -1,5 +1,9 @@
 package wagon.simulation;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -84,6 +88,35 @@ public class PiecewiseConstantProcess implements ArrivalProcess {
 		}
 		int ceiledArrivalTime = (int) Math.ceil(currTime);
 		return ceiledArrivalTime;
+	}
+	
+	public List<Integer> generateArrivalsFromProcess() {
+		List<Integer> events = new ArrayList<>();
+		int currTime = 0;
+		while (currTime < horizon) {
+			int r = generateArrival(currTime);
+			currTime = r;
+			events.add(r);
+		}
+		return events;
+	}
+	
+	public void exportArrivals(int window, String fileName) throws IOException {
+		int nrWindows = (int) Math.ceil((double)horizon/window);
+		int[] counts = new int[nrWindows];
+		Arrays.fill(counts, 0);
+		List<Integer> events = generateArrivalsFromProcess();
+		for (int v : events) {
+			counts[v/segmentWidth]++;
+		}
+		File file = new File(fileName);
+		BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+		for (int v : counts) {
+			bw.write(String.valueOf(v));
+			bw.newLine();
+		}
+		bw.flush();
+		bw.close();
 	}
 
 }

@@ -22,9 +22,11 @@ import wagon.algorithms.RouteGeneration;
 import wagon.algorithms.RouteSelection;
 import wagon.algorithms.SLTLARouteSelection;
 import wagon.infrastructure.Station;
+import wagon.simulation.ArrivalProcess;
 import wagon.simulation.Options;
 import wagon.simulation.Passenger;
 import wagon.simulation.PassengerGroup;
+import wagon.simulation.PiecewiseConstantProcess;
 
 public class CiCoData {
 

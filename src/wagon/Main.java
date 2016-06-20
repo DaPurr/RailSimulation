@@ -45,19 +45,6 @@ public class Main {
 //			List<Double> frequencies = CiCoData.drawPassengerArrivalRate(selectedPassengers, 10);
 //			cicoData.exportFrequencies(frequencies, "data/cico/frequencies/20160209/freqs_rta_rtd_10min.csv");
 			
-			ArrivalProcess arrivals = new PiecewiseConstantProcess(selectedPassengers, 24*60*60/5);
-			int currTime = 0;
-			File file = new File("data/cico/test.csv");
-			BufferedWriter bw = new BufferedWriter(new FileWriter(file));
-			while (currTime < 24*60*60) {
-				int r = arrivals.generateArrival(currTime);
-				currTime = r;
-				bw.write(String.valueOf(r));
-				bw.newLine();
-			}
-			bw.flush();
-			bw.close();
-			
 			long begin = System.nanoTime();
 //			RouteGeneration rgen = new RouteGeneration(network);
 //			List<DefaultPath> paths4 = rgen.generateRoutes(
