@@ -213,20 +213,20 @@ public class CiCoData {
 		bw.close();
 	}
 	
-	public void exportFrequencies(List<Integer> frequencies, String fileName) throws IOException {
+	public void exportFrequencies(List<Double> frequencies, String fileName) throws IOException {
 		File file = new File(fileName);
 		BufferedWriter bw = new BufferedWriter(new FileWriter(file));
-		for (int k : frequencies) {
+		for (double k : frequencies) {
 			bw.write(k + System.lineSeparator());
 		}
 		bw.flush();
 		bw.close();
 	}
 	
-	public static List<Integer> drawPassengerArrivalRate(Collection<Passenger> passengers, int interval) {
+	public static List<Double> drawPassengerArrivalRate(Collection<Passenger> passengers, int interval) {
 		@SuppressWarnings("unchecked")
-		DataTable table = new DataTable(Integer.class, Integer.class);
-		List<Integer> frequencies = arrivalsToFrequencies(passengers, interval);
+		DataTable table = new DataTable(Integer.class, Double.class);
+		List<Double> frequencies = arrivalsToFrequencies(passengers, interval);
 		for (int i = 0; i < frequencies.size(); i++) {
 			table.add(i+1, frequencies.get(i));
 		}
@@ -235,8 +235,8 @@ public class CiCoData {
 		return frequencies;
 	}
 	
-	private static List<Integer> arrivalsToFrequencies(Collection<Passenger> passengers, int interval) {
-		List<Integer> frequencies = new ArrayList<>();
+	private static List<Double> arrivalsToFrequencies(Collection<Passenger> passengers, int interval) {
+		List<Double> frequencies = new ArrayList<>();
 		Object[] sortedPassengers = passengers.toArray();
 		Arrays.sort(sortedPassengers);
 		LocalTime referenceTime = LocalTime.parse("00:00:00").plusMinutes(interval);
@@ -246,18 +246,18 @@ public class CiCoData {
 			LocalTime passengerCheckInTime = passenger.getCheckInTime().toLocalTime();
 			while (passengerCheckInTime.compareTo(referenceTime) >= 0 && 
 					referenceTime.compareTo(LocalTime.MIDNIGHT.minusMinutes(interval)) < 0) {
-				frequencies.add(counter);
+				frequencies.add((double)counter/interval);
 				counter = 0;
 				referenceTime = referenceTime.plusMinutes(interval);
 			}
 			counter++;
 		}
-		frequencies.add(counter);
+		frequencies.add((double)counter/interval);
 		
 		// add 0 padding to end of day
 		int neededSize = (int)Math.ceil(1440f/interval);
 		while (frequencies.size() < neededSize)
-			frequencies.add(0);
+			frequencies.add(0.0);
 		return frequencies;
 	}
 	
@@ -310,7 +310,9 @@ public class CiCoData {
 		double maximum = counts.get(counts.size()-1);
 		double mean = mean(counts);
 		double median = median(counts);
+		System.out.println("Number of OD-pairs: " + counts.size());
 		System.out.println("0.00: " + minimum);
+		System.out.println("0.05: " + counts.get(counts.size()/20));
 		System.out.println("0.25: " + counts.get(counts.size()/4));
 		System.out.println("0.50: " + median);
 		System.out.println("0.75: " + counts.get(3*counts.size()/4));
