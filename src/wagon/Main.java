@@ -1,5 +1,8 @@
 package wagon;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -35,13 +38,27 @@ public class Main {
 							"data/cico/omzettabel_stations.csv",
 							options); // hardcoded
 			cicoData.getJourneySummary();
-//			cicoData.exportPassengers("data/cico/processed/ritten_20160209_processed.csv");
-			Collection<Passenger> selectedPassengers = cicoData.getPassengersWithJourney("rta", "gd");
-//			Collection<Passenger> selectedPassengers = cicoData.getPassengersAtCheckInStation("rta");
-			List<Integer> frequencies = CiCoData.drawPassengerArrivalRate(selectedPassengers, 10);
-			cicoData.exportFrequencies(frequencies, "data/cico/frequencies/20160315/freqs_rta_gd_10min.csv");
 			
-//			long begin = System.nanoTime();
+//			cicoData.exportPassengers("data/cico/processed/ritten_20160209_processed.csv");
+//			Collection<Passenger> selectedPassengers = cicoData.getPassengersWithJourney("rta", "rtd");
+			Collection<Passenger> selectedPassengers = cicoData.getPassengersAtCheckInStation("rta");
+//			List<Double> frequencies = CiCoData.drawPassengerArrivalRate(selectedPassengers, 10);
+//			cicoData.exportFrequencies(frequencies, "data/cico/frequencies/20160209/freqs_rta_rtd_10min.csv");
+			
+			ArrivalProcess arrivals = new PiecewiseConstantProcess(selectedPassengers, 24*60*60/5);
+			int currTime = 0;
+			File file = new File("data/cico/test.csv");
+			BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+			while (currTime < 24*60*60) {
+				int r = arrivals.generateArrival(currTime);
+				currTime = r;
+				bw.write(String.valueOf(r));
+				bw.newLine();
+			}
+			bw.flush();
+			bw.close();
+			
+			long begin = System.nanoTime();
 //			RouteGeneration rgen = new RouteGeneration(network);
 //			List<DefaultPath> paths4 = rgen.generateRoutes(
 //					"Nwk", 
