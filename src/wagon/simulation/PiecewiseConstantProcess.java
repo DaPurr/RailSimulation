@@ -141,7 +141,7 @@ public class PiecewiseConstantProcess implements ArrivalProcess {
 		
 		// transform arrivals into standard uniform variables
 		// at least, under null-hypothesis
-		List<List<Integer>> arrivalTimes = new ArrayList<>();
+		List<List<Double>> arrivalTimes = new ArrayList<>();
 		int nrWindows = (int) Math.ceil((double)horizon/segmentWidth);
 		for (int i = 0; i < nrWindows; i++) {
 			arrivalTimes.add(new ArrayList<>());
@@ -155,11 +155,12 @@ public class PiecewiseConstantProcess implements ArrivalProcess {
 			// this wouldn't be a problem if the time were continuous
 			if (currentSegment == midpoints.length)
 				currentSegment = midpoints.length-1;
-			arrivalTimes.get(currentSegment).add(intCheckInTime);
+			double unroundedTime = intCheckInTime + random.nextDouble();
+			arrivalTimes.get(currentSegment).add(unroundedTime);
 		}
 		// done with pre-work, do actual calculations
 		for (int i = 0; i < arrivalTimes.size(); i++) {
-			List<Integer> innerTimes = arrivalTimes.get(i);
+			List<Double> innerTimes = arrivalTimes.get(i);
 			for (int j = 0; j < innerTimes.size(); j++) {
 				double r_left = innerTimes.size() + 1 - j;
 				double r_log_num = segmentWidth - innerTimes.get(j);

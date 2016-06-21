@@ -53,7 +53,7 @@ public class Main {
 //					10*60, 
 //					"data/cico/frequencies/20160209/freqs_rta_ut_5min.csv");
 			
-			PiecewiseConstantProcess arrivals = new PiecewiseConstantProcess(selectedPassengers, 15*60, 0);
+			PiecewiseConstantProcess arrivals = new PiecewiseConstantProcess(selectedPassengers, 10*60, 0);
 			arrivals.exportDrawsFromProcess(10*60, "data/cico/test.csv");
 			arrivals.exportArrivalRate("data/cico/rates_piecewise_constant.csv");
 			System.out.println("p: " + arrivals.kolmogorovSmirnovTest());
