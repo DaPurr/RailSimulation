@@ -40,10 +40,23 @@ public class Main {
 			cicoData.getJourneySummary();
 			
 //			cicoData.exportPassengers("data/cico/processed/ritten_20160209_processed.csv");
-//			Collection<Passenger> selectedPassengers = cicoData.getPassengersWithJourney("rta", "rtd");
+//			Collection<Passenger> selectedPassengers = cicoData.getPassengersWithJourney("rta", "ut");
 			Collection<Passenger> selectedPassengers = cicoData.getPassengersAtCheckInStation("rta");
 //			List<Double> frequencies = CiCoData.drawPassengerArrivalRate(selectedPassengers, 10);
-//			cicoData.exportFrequencies(frequencies, "data/cico/frequencies/20160209/freqs_rta_rtd_10min.csv");
+			cicoData.exportEmpiricalArrivalRateOfCheckInStation(
+					"rta", 
+					10*60, 
+					"data/cico/frequencies/20160209/freqs_rta_10min.csv");
+//			cicoData.exportEmpiricalArrivalRateOfJourney(
+//					"rta",
+//					"ut",
+//					10*60, 
+//					"data/cico/frequencies/20160209/freqs_rta_ut_5min.csv");
+			
+			PiecewiseConstantProcess arrivals = new PiecewiseConstantProcess(selectedPassengers, 15*60, 0);
+			arrivals.exportDrawsFromProcess(10*60, "data/cico/test.csv");
+			arrivals.exportArrivalRate("data/cico/rates_piecewise_constant.csv");
+			System.out.println("p: " + arrivals.kolmogorovSmirnovTest());
 			
 			long begin = System.nanoTime();
 //			RouteGeneration rgen = new RouteGeneration(network);

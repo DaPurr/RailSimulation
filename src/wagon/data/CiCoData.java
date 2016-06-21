@@ -29,6 +29,7 @@ import wagon.simulation.PassengerGroup;
 import wagon.simulation.PiecewiseConstantProcess;
 
 public class CiCoData {
+	private final static int horizon = 24*60*60;
 
 	private Set<Passenger> passengers;
 	private Options options;
@@ -215,11 +216,33 @@ public class CiCoData {
 		bw.close();
 	}
 	
-	public void exportFrequencies(List<Double> frequencies, String fileName) throws IOException {
+	public void exportEmpiricalArrivalRateOfCheckInStation(String station, int interval, String fileName) throws IOException {
+		List<Double> frequencies = arrivalsToFrequencies(getPassengersAtCheckInStation(station), interval);
+		
 		File file = new File(fileName);
 		BufferedWriter bw = new BufferedWriter(new FileWriter(file));
-		for (double k : frequencies) {
-			bw.write(k + System.lineSeparator());
+		for (int i = 0; i < frequencies.size(); i++) {
+			double k = frequencies.get(i);
+			int xAxis = i*interval + interval/2;
+			bw.write(xAxis + "," + k + System.lineSeparator());
+		}
+		bw.flush();
+		bw.close();
+	}
+	
+	public void exportEmpiricalArrivalRateOfJourney(
+			String fromStation, 
+			String toStation, 
+			int interval, 
+			String fileName) throws IOException {
+		List<Double> frequencies = arrivalsToFrequencies(getPassengersWithJourney(fromStation, toStation), interval);
+		
+		File file = new File(fileName);
+		BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+		for (int i = 0; i < frequencies.size(); i++) {
+			double k = frequencies.get(i);
+			int xAxis = i*interval + interval/2;
+			bw.write(xAxis + "," + k + System.lineSeparator());
 		}
 		bw.flush();
 		bw.close();
@@ -239,28 +262,53 @@ public class CiCoData {
 	
 	private static List<Double> arrivalsToFrequencies(Collection<Passenger> passengers, int interval) {
 		List<Double> frequencies = new ArrayList<>();
-		Object[] sortedPassengers = passengers.toArray();
-		Arrays.sort(sortedPassengers);
-		LocalTime referenceTime = LocalTime.parse("00:00:00").plusMinutes(interval);
-		int counter = 0;
-		for (Object o : sortedPassengers) {
-			Passenger passenger = (Passenger) o;
-			LocalTime passengerCheckInTime = passenger.getCheckInTime().toLocalTime();
-			while (passengerCheckInTime.compareTo(referenceTime) >= 0 && 
-					referenceTime.compareTo(LocalTime.MIDNIGHT.minusMinutes(interval)) < 0) {
-				frequencies.add((double)counter/interval);
-				counter = 0;
-				referenceTime = referenceTime.plusMinutes(interval);
-			}
-			counter++;
+		List<Passenger> sortedPassengers = new ArrayList<>(passengers);
+		Collections.sort(sortedPassengers);
+		int nSegments = (int) Math.ceil((double)horizon/interval);
+		int[] counts = new int[nSegments];
+		Arrays.fill(counts, 0);
+		for (Passenger passenger : sortedPassengers) {
+			LocalDateTime checkInTime = passenger.getCheckInTime();
+			int intCheckInTime = checkInTime.toLocalTime().toSecondOfDay();
+			int currentSegment = intCheckInTime / interval;
+			// in theory a check-out could happen at the last second,
+			// resulting in the modulo to be 1 higher than we want...
+			// this wouldn't be a problem if the time were continuous
+			if (currentSegment == counts.length)
+				currentSegment = counts.length-1;
+			counts[currentSegment]++;
 		}
-		frequencies.add((double)counter/interval);
-		
-		// add 0 padding to end of day
-		int neededSize = (int)Math.ceil(1440f/interval);
-		while (frequencies.size() < neededSize)
-			frequencies.add(0.0);
+		for (int v : counts) {
+			frequencies.add( (double)v/interval );
+		}
 		return frequencies;
+		
+		
+		
+		
+//		List<Double> frequencies = new ArrayList<>();
+//		Object[] sortedPassengers = passengers.toArray();
+//		Arrays.sort(sortedPassengers);
+//		LocalTime referenceTime = LocalTime.parse("00:00:00").plusSeconds(interval);
+//		int counter = 0;
+//		for (Object o : sortedPassengers) {
+//			Passenger passenger = (Passenger) o;
+//			LocalTime passengerCheckInTime = passenger.getCheckInTime().toLocalTime();
+//			while (passengerCheckInTime.compareTo(referenceTime) >= 0 && 
+//					referenceTime.compareTo(LocalTime.MIDNIGHT.minusSeconds(interval)) < 0) {
+//				frequencies.add((double)counter/interval);
+//				counter = 0;
+//				referenceTime = referenceTime.plusSeconds(interval);
+//			}
+//			counter++;
+//		}
+//		frequencies.add((double)counter/interval);
+//		
+//		// add 0 padding to end of day
+//		int neededSize = (int)Math.ceil(1440f/interval);
+//		while (frequencies.size() < neededSize)
+//			frequencies.add(0.0);
+//		return frequencies;
 	}
 	
 	public Collection<Passenger> getPassengersWithJourney(String fromStation, String toStation) {

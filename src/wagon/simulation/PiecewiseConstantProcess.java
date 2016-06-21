@@ -1,34 +1,39 @@
 package wagon.simulation;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.time.LocalDateTime;
 import java.util.*;
 
 import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.apache.commons.math3.random.MersenneTwister;
+import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
 
 public class PiecewiseConstantProcess implements ArrivalProcess {
 	
 	private final int horizon = 24*60*60; // time horizon in seconds
 	
-	private Collection<Passenger> passengers;
+	private List<Passenger> passengers;
 	private int nSegments;
 	private int segmentWidth;
 	private double[] midpoints;
 	private double lambdaUB;
 	
-	private MersenneTwister random = new MersenneTwister();
+	private MersenneTwister random;
 	
-	public PiecewiseConstantProcess(Collection<Passenger> passengers, int segmentWidth) {
-		this.passengers = passengers;
+	public PiecewiseConstantProcess(Collection<Passenger> passengers, int segmentWidth, int seed) {
+		this.passengers = new ArrayList<>(passengers);
+		Collections.sort(this.passengers);
 		this.segmentWidth = segmentWidth;
 		nSegments = (int) Math.ceil((double)horizon/segmentWidth);
+		random = new MersenneTwister(seed);
 		
-		midpoints = determineMidpoints(passengers, nSegments);
+		midpoints = determineMidpoints(nSegments);
 		lambdaUB = max(midpoints);
+	}
+	
+	public PiecewiseConstantProcess(Collection<Passenger> passengers, int segmentWidth) {
+		this(passengers, segmentWidth, 0);
+		random = new MersenneTwister();
 	}
 	
 	private double max(double[] x) {
@@ -40,12 +45,10 @@ public class PiecewiseConstantProcess implements ArrivalProcess {
 		return maxValue;
 	}
 	
-	private double[] determineMidpoints(Collection<Passenger> passengers, int nSegments) {
-		List<Passenger> sortedPassengers = new ArrayList<>(passengers);
-		Collections.sort(sortedPassengers);
+	private double[] determineMidpoints(int nSegments) {
 		double[] midpoints = new double[nSegments];
-		Arrays.fill(midpoints, 0.0);
-		for (Passenger passenger : sortedPassengers) {
+//		Arrays.fill(midpoints, 0.0);
+		for (Passenger passenger : passengers) {
 			LocalDateTime checkInTime = passenger.getCheckInTime();
 			int intCheckInTime = checkInTime.toLocalTime().toSecondOfDay();
 			int currentSegment = intCheckInTime / segmentWidth;
@@ -101,22 +104,82 @@ public class PiecewiseConstantProcess implements ArrivalProcess {
 		return events;
 	}
 	
-	public void exportArrivals(int window, String fileName) throws IOException {
+	public void exportDrawsFromProcess(int window, String fileName) throws IOException {
 		int nrWindows = (int) Math.ceil((double)horizon/window);
 		int[] counts = new int[nrWindows];
 		Arrays.fill(counts, 0);
 		List<Integer> events = generateArrivalsFromProcess();
 		for (int v : events) {
-			counts[v/segmentWidth]++;
+			if (v < horizon)
+				counts[v/window]++;
 		}
 		File file = new File(fileName);
 		BufferedWriter bw = new BufferedWriter(new FileWriter(file));
-		for (int v : counts) {
-			bw.write(String.valueOf(v));
+		for (int i = 0; i < counts.length; i++) {
+			int v = counts[i];
+			int xAxis = i*window + window/2;
+			bw.write(xAxis + "," + String.valueOf( (double)v/window ));
 			bw.newLine();
 		}
 		bw.flush();
 		bw.close();
+	}
+	
+	public void exportArrivalRate(String fileName) throws IOException {
+		File file = new File(fileName);
+		BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+		for (int i = 0; i < horizon; i++) {
+			bw.write(i + "," + midpoints[i/segmentWidth]);
+			bw.newLine();
+		}
+		bw.flush();
+		bw.close();
+	}
+	
+	public double kolmogorovSmirnovTest() {
+		List<Double> standardExponentials = new ArrayList<>();
+		
+		// transform arrivals into standard uniform variables
+		// at least, under null-hypothesis
+		List<List<Integer>> arrivalTimes = new ArrayList<>();
+		int nrWindows = (int) Math.ceil((double)horizon/segmentWidth);
+		for (int i = 0; i < nrWindows; i++) {
+			arrivalTimes.add(new ArrayList<>());
+		}
+		for (Passenger passenger : passengers) {
+			LocalDateTime checkInTime = passenger.getCheckInTime();
+			int intCheckInTime = checkInTime.toLocalTime().toSecondOfDay();
+			int currentSegment = intCheckInTime / segmentWidth;
+			// in theory a check-out could happen at the last second,
+			// resulting in the modulo to be 1 higher than we want...
+			// this wouldn't be a problem if the time were continuous
+			if (currentSegment == midpoints.length)
+				currentSegment = midpoints.length-1;
+			arrivalTimes.get(currentSegment).add(intCheckInTime);
+		}
+		// done with pre-work, do actual calculations
+		for (int i = 0; i < arrivalTimes.size(); i++) {
+			List<Integer> innerTimes = arrivalTimes.get(i);
+			for (int j = 0; j < innerTimes.size(); j++) {
+				double r_left = innerTimes.size() + 1 - j;
+				double r_log_num = segmentWidth - innerTimes.get(j);
+				double t_i_jmin1 = 0;
+				if (j-1 >= 0)
+					t_i_jmin1 = innerTimes.get(j-1);
+				double r_log_den = segmentWidth-t_i_jmin1;
+				double r = r_left * (-Math.log(r_log_num/r_log_den));
+				standardExponentials.add(r);
+			}
+		}
+		// done calculating
+		double[] exps = new double[standardExponentials.size()];
+		for (int i = 0; i < exps.length; i++) {
+			exps[i] = standardExponentials.get(i);
+		}
+		
+		KolmogorovSmirnovTest kstest = new KolmogorovSmirnovTest();
+		double pVal = kstest.kolmogorovSmirnovTest(new ExponentialDistribution(1.0), exps);
+		return pVal;
 	}
 
 }
