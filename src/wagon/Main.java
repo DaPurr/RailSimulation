@@ -31,6 +31,10 @@ public class Main {
 //			EventActivityNetwork network = EventActivityNetwork.createNetwork(sample);
 			EventActivityNetwork network = EventActivityNetwork.createTestNetwork4();
 			
+			BiCriterionDijkstra biDijkstra = new BiCriterionDijkstra(network, Criterion.DISTANCE, Criterion.TRANSFER);
+//			BiCriterionDijkstra biDijkstra = new BiCriterionDijkstra(network, Criterion.TRANSFER, Criterion.DISTANCE);
+			biDijkstra.lexicographicallyFirst("A", "D", LocalDateTime.parse("2016-04-19T10:50"));
+			
 			Options options = new Options("data/cico/ritten_20160315.csv", null, 2);
 			
 			CiCoData cicoData = CiCoData
