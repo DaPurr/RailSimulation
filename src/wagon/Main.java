@@ -28,7 +28,8 @@ public class Main {
 			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/full_dataset_day2_export.xml");
 //			sample.export("data/materieelplan/processed/full_dataset_day2_export.xml");
 //			sample.export("data/materieelplan/processed/smaller_sample_schedule1_day2_export.xml");
-			EventActivityNetwork network = EventActivityNetwork.createNetwork(sample);
+//			EventActivityNetwork network = EventActivityNetwork.createNetwork(sample);
+			EventActivityNetwork network = EventActivityNetwork.createTestNetwork4();
 			
 			Options options = new Options("data/cico/ritten_20160315.csv", null, 2);
 			
@@ -41,114 +42,28 @@ public class Main {
 			
 //			cicoData.exportPassengers("data/cico/processed/ritten_20160209_processed.csv");
 //			Collection<Passenger> selectedPassengers = cicoData.getPassengersWithJourney("rta", "ut");
-			Collection<Passenger> selectedPassengers = cicoData.getPassengersAtCheckInStation("rta");
+//			Collection<Passenger> selectedPassengers = cicoData.getPassengersAtCheckInStation("rta");
 //			List<Double> frequencies = CiCoData.drawPassengerArrivalRate(selectedPassengers, 10);
-			cicoData.exportEmpiricalArrivalRateOfCheckInStation(
-					"rta", 
-					10*60, 
-					"data/cico/frequencies/20160209/freqs_rta_10min.csv");
+//			cicoData.exportEmpiricalArrivalRateOfCheckInStation(
+//					"rta", 
+//					10*60, 
+//					"data/cico/frequencies/20160209/freqs_rta_10min.csv");
 //			cicoData.exportEmpiricalArrivalRateOfJourney(
 //					"rta",
 //					"ut",
 //					10*60, 
 //					"data/cico/frequencies/20160209/freqs_rta_ut_5min.csv");
 			
-			PiecewiseConstantProcess arrivals = new PiecewiseConstantProcess(selectedPassengers, 10*60, 0);
-			arrivals.exportDrawsFromProcess(10*60, "data/cico/test.csv");
-			arrivals.exportArrivalRate("data/cico/rates_piecewise_constant.csv");
-			System.out.println("p: " + arrivals.kolmogorovSmirnovTest());
+//			PiecewiseConstantProcess arrivals = new PiecewiseConstantProcess(selectedPassengers, 10*60, 0);
+//			arrivals.exportDrawsFromProcess(10*60, "data/cico/test.csv");
+//			arrivals.exportArrivalRate("data/cico/rates_piecewise_constant.csv");
+//			System.out.println("p: " + arrivals.kolmogorovSmirnovTest());
 			
-			long begin = System.nanoTime();
-//			RouteGeneration rgen = new RouteGeneration(network);
-//			List<DefaultPath> paths4 = rgen.generateRoutes(
-//					"Nwk", 
-//					"Rtd", 
-//					LocalDateTime.parse("2016-04-11T06:45"), 
-//					LocalDateTime.parse("2016-04-11T07:06"));
-//			RouteSelection selectedLTLA = new SLTLARouteSelection(
-//					LocalDateTime.parse("2016-04-11T06:45"),
-//					LocalDateTime.parse("2016-04-11T07:06"),
-//					10);
-//			DefaultPath path4 = selectedLTLA.selectPath(paths4);
-//			long end = System.nanoTime();
-//			double duration = (end-begin)*1e-9;
-//			System.out.println("Time: " + duration);
-//			System.out.println(path4.representation());
-			
-//			EventActivityNetwork network = EventActivityNetwork.createTestNetwork2();
-//			DijkstraShortestPath dijkstra = new DijkstraShortestPath(network);
-//			List<DefaultPath> paths1 = dijkstra.earliestArrivalPath("Nwk", "Rtd", LocalDateTime.parse("2016-04-11T06:45"));
-//			RouteSelection selectedLTLA1 = new SLTLARouteSelection(
-//					LocalDateTime.parse("2016-04-11T06:46"),
-//					LocalDateTime.parse("2016-04-11T06:58"),
-//					10);
-//			DefaultPath path8338930 = selectedLTLA1.selectPath(paths1);
-//			System.out.println(path8338930.representation());
-			
-//			EventActivityNetwork network = EventActivityNetwork.createTestNetwork2();
-//			DijkstraShortestPath dijkstra = new DijkstraShortestPath(network);
-//			List<DefaultPath> paths2 = dijkstra.earliestArrivalPath("A", "C", LocalDateTime.parse("2016-04-19T10:50"));
-			
-//			EventActivityNetwork network = EventActivityNetwork.createTestNetwork3();
-//			DijkstraShortestPath dijkstra = new DijkstraShortestPath(network);
-//			List<DefaultPath> paths3 = dijkstra.earliestArrivalPath("A", "C", LocalDateTime.parse("2016-04-19T11:59"));
-			
-//			long begin = System.nanoTime();
-//			RouteGeneration rgen = new RouteGeneration(network);
-//			List<DefaultPath> paths3 = rgen.generateRoutes(
-//					"Vs", 
-//					"Gn", 
-//					LocalDateTime.parse("2016-04-11T15:30"), 
-//					LocalDateTime.parse("2016-04-11T20:17"));
-//			RouteSelection selectedLTLA = new SLTLARouteSelection(
-//					LocalDateTime.parse("2016-04-11T15:30"),
-//					LocalDateTime.parse("2016-04-11T20:17"),
-//					10);
-//			DefaultPath path3 = selectedLTLA.selectPath(paths3);
-//			long end = System.nanoTime();
-//			double duration = (end-begin)*1e-9;
-//			System.out.println("Time: " + duration);
-			
-//			long begin = System.nanoTime();
-//			RouteGeneration rgen = new RouteGeneration(network);
-//			List<DefaultPath> paths4 = rgen.generateRoutes(
-//					"Rta", 
-//					"Dt", 
-//					LocalDateTime.parse("2016-04-11T07:55"), 
-//					LocalDateTime.parse("2016-04-11T08:33"));
-//			RouteSelection selectedLTLA = new SLTLARouteSelection(
-//					LocalDateTime.parse("2016-04-11T07:55"),
-//					LocalDateTime.parse("2016-04-11T08:33"),
-//					10);
-//			DefaultPath path4 = selectedLTLA.selectPath(paths4);
-//			long end = System.nanoTime();
-//			double duration = (end-begin)*1e-9;
-//			System.out.println("Time: " + duration);
-			
-//			System.out.println(paths1);
-//			System.out.println(paths2);
-//			System.out.println(paths3);
-//			System.out.println(paths4);
-					
-//			System.out.println(path3);
-//			System.out.println(path4);
-			
-//			String rep2 = paths2.get(0).representation();
-//			System.out.println(rep2);
-//			DefaultPath newPath2 = network.textToPath(rep2);
-//			System.out.println(newPath2);
-			
-//			String rep4 = "W3.9,W9.0," + path4.representation();
-//			System.out.println(rep4);
-//			DefaultPath newPath4 = network.textToPath(rep4);
-//			System.out.println(newPath4);
-//			System.out.println(newPath4.representation());
-			
-			SimModel sim = new SimModel(sample, 
-					network, 
-					options);
-			Report report = sim.start();
-			System.out.println(report.summary());
+//			SimModel sim = new SimModel(sample, 
+//					network, 
+//					options);
+//			Report report = sim.start();
+//			System.out.println(report.summary());
 		}
 		catch (IOException e) {
 			e.printStackTrace();

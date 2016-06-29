@@ -17,15 +17,10 @@ import de.erichseifert.gral.plots.XYPlot;
 import de.erichseifert.gral.plots.lines.DefaultLineRenderer2D;
 import de.erichseifert.gral.plots.lines.LineRenderer;
 import de.erichseifert.gral.ui.InteractivePanel;
-import wagon.algorithms.DefaultPath;
-import wagon.algorithms.RouteGeneration;
-import wagon.algorithms.RouteSelection;
-import wagon.algorithms.SLTLARouteSelection;
 import wagon.infrastructure.Station;
 import wagon.simulation.ArrivalProcess;
 import wagon.simulation.Options;
 import wagon.simulation.Passenger;
-import wagon.simulation.PassengerGroup;
 import wagon.simulation.PiecewiseConstantProcess;
 
 public class CiCoData {
@@ -149,39 +144,39 @@ public class CiCoData {
 		return cicoData;
 	}
 	
-	public List<PassengerGroup> processPassengersIntoGroups(RouteGeneration generator) {
-		List<PassengerGroup> groups = new ArrayList<>();
-		Multiset<DefaultPath> pathsMultiset = HashMultiset.create();
-		long counter = 0;
-		log.info("Begin processing CiCo data into passenger groups ...");
-		for (Passenger passenger : passengers) {
-			counter++;
-			List<DefaultPath> paths = generator.generateRoutes(
-					passenger.getFromStation().name(),
-					passenger.getToStation().name(), 
-					passenger.getCheckInTime(), 
-					passenger.getCheckOutTime());
-			RouteSelection selector = new SLTLARouteSelection(
-					passenger.getCheckInTime(), 
-					passenger.getCheckOutTime(), 
-					10);
-			DefaultPath path = selector.selectPath(paths);
-			if (path != null)
-				pathsMultiset.add(path);
-			
-			if (counter % 1000 == 0)
-				log.info("... Finish selecting routes for " + counter + " passengers");
-		}
-		
-		// now create the passenger groups with groups size
-		for (DefaultPath path : pathsMultiset.elementSet()) {
-			PassengerGroup group = new PassengerGroup(path, pathsMultiset.count(path));
-			groups.add(group);
-		}
-		log.info("... Finish processing CiCo data into passenger groups");
-		
-		return groups;
-	}
+//	public List<PassengerGroup> processPassengersIntoGroups(RouteGeneration generator) {
+//		List<PassengerGroup> groups = new ArrayList<>();
+//		Multiset<DefaultPath> pathsMultiset = HashMultiset.create();
+//		long counter = 0;
+//		log.info("Begin processing CiCo data into passenger groups ...");
+//		for (Passenger passenger : passengers) {
+//			counter++;
+//			List<DefaultPath> paths = generator.generateRoutes(
+//					passenger.getFromStation().name(),
+//					passenger.getToStation().name(), 
+//					passenger.getCheckInTime(), 
+//					passenger.getCheckOutTime());
+//			RouteSelection selector = new SLTLARouteSelection(
+//					passenger.getCheckInTime(), 
+//					passenger.getCheckOutTime(), 
+//					10);
+//			DefaultPath path = selector.selectPath(paths);
+//			if (path != null)
+//				pathsMultiset.add(path);
+//			
+//			if (counter % 1000 == 0)
+//				log.info("... Finish selecting routes for " + counter + " passengers");
+//		}
+//		
+//		// now create the passenger groups with groups size
+//		for (DefaultPath path : pathsMultiset.elementSet()) {
+//			PassengerGroup group = new PassengerGroup(path, pathsMultiset.count(path));
+//			groups.add(group);
+//		}
+//		log.info("... Finish processing CiCo data into passenger groups");
+//		
+//		return groups;
+//	}
 	
 	private static LocalDateTime toLocalDateTimeObject(String text) {
 //		LocalDateTime date = LocalDateTime.parse(text.toLowerCase(), DateTimeFormatter.ofPattern("ddMMMyyyy:HH:mm:ss"));

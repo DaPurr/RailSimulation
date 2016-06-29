@@ -7,7 +7,7 @@ package wagon.infrastructure;
  *
  */
 
-public class Station {
+public class Station implements Comparable<Station> {
 	
 	private String name;
 	private GPSLocation location;
@@ -54,5 +54,10 @@ public class Station {
 	@Override
 	public int hashCode() {
 		return name.hashCode();
+	}
+
+	@Override
+	public int compareTo(Station o) {
+		return name.compareTo(o.name);
 	}
 }

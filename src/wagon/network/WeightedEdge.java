@@ -1,12 +1,10 @@
 package wagon.network;
 
-import wagon.network.expanded.EventNode;
-
 public abstract class WeightedEdge extends Edge {
 	
 	private double weight;
 	
-	public WeightedEdge(EventNode source, EventNode target, double weight) {
+	public WeightedEdge(Node source, Node target, double weight) {
 		super(source, target);
 		this.weight = weight;
 	}

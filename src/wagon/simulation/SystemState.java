@@ -20,7 +20,7 @@ public class SystemState {
 	private EventActivityNetwork network;
 	private Timetable timetable;
 	private Map<Integer, Double> trainOccupation;
-	private Map<Integer, List<PassengerGroup>> trainToPassengers;
+//	private Map<Integer, List<PassengerGroup>> trainToPassengers;
 	
 	// counters
 	private Map<ScheduledTrip, Counter> tripToB; // b_t
@@ -37,7 +37,7 @@ public class SystemState {
 		this.network = network;
 		this.timetable = timetable;
 		trainOccupation = new LinkedHashMap<>();
-		trainToPassengers = new LinkedHashMap<>();
+//		trainToPassengers = new LinkedHashMap<>();
 		
 		tripToB = new LinkedHashMap<>();
 		tripToN = new LinkedHashMap<>();
@@ -138,13 +138,13 @@ public class SystemState {
 	 * @param trainID	the id of the train
 	 * @param group		the passenger group
 	 */
-	public void addGroupToTrain(int trainID, PassengerGroup group) {
-		List<PassengerGroup> groups = trainToPassengers.get(trainID);
-		if (groups == null) {
-			groups = new ArrayList<>();
-		}
-		groups.add(group);
-	}
+//	public void addGroupToTrain(int trainID, PassengerGroup group) {
+//		List<PassengerGroup> groups = trainToPassengers.get(trainID);
+//		if (groups == null) {
+//			groups = new ArrayList<>();
+//		}
+//		groups.add(group);
+//	}
 	
 	/**
 	 * @param trip	the trip

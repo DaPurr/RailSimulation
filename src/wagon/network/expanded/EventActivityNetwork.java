@@ -6,7 +6,8 @@ import java.util.logging.*;
 
 import org.jgrapht.graph.DefaultDirectedGraph;
 
-import wagon.algorithms.DefaultPath;
+import com.google.common.collect.*;
+
 import wagon.infrastructure.Station;
 import wagon.network.Edge;
 import wagon.network.Node;
@@ -19,7 +20,7 @@ import wagon.timetable.Timetable;
 
 public class EventActivityNetwork {
 	
-	private final int timeLength = 16;
+//	private final int timeLength = 16;
 
 	private DefaultDirectedGraph<Node, WeightedEdge> graph;
 	private Map<Edge, Double> capacities;
@@ -27,6 +28,7 @@ public class EventActivityNetwork {
 	// derived data
 	Map<Station, TreeSet<DepartureNode>> departuresByStation;
 	Map<Station, TreeSet<ArrivalNode>> arrivalsByStation;
+	Map<Station, TreeSet<TransferNode>> transfersByStation;
 	Map<String, Station> stationNameMap;
 	
 	private Logger log = Logger.getLogger(this.getClass().getName());
@@ -37,6 +39,8 @@ public class EventActivityNetwork {
 		
 		departuresByStation = new LinkedHashMap<>();
 		arrivalsByStation = new LinkedHashMap<>();
+		transfersByStation = new LinkedHashMap<>();
+		
 		stationNameMap = new LinkedHashMap<>();
 		log.setLevel(Level.ALL);
 	}
@@ -225,6 +229,53 @@ public class EventActivityNetwork {
 		return network;
 	}
 	
+	/**
+	 * @return	Returns a test network with non-zero transfer
+	 */
+	public static EventActivityNetwork createTestNetwork4() {
+		EventActivityNetwork network = new EventActivityNetwork();
+		network.log.info("Begin constructing test timetable 2...");
+		Station stationA = new Station("A");
+		Station stationB = new Station("B");
+		Station stationC = new Station("C");
+		Station stationD = new Station("D");
+		
+		Composition comp1 = new Composition(1, TrainType.SLT, 
+				3, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
+		Composition comp2 = new Composition(2, TrainType.SLT, 
+				6, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
+		Composition comp3 = new Composition(3, TrainType.SLT, 
+				6, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
+		
+		ScheduledTrip trip1 = new ScheduledTrip(comp1, 
+				LocalDateTime.parse("2016-04-19T10:53"), 
+				LocalDateTime.parse("2016-04-19T11:00"), 
+				stationA, stationB);
+		ScheduledTrip trip2 = new ScheduledTrip(comp1, 
+				LocalDateTime.parse("2016-04-19T11:05"), 
+				LocalDateTime.parse("2016-04-19T11:30"), 
+				stationB, stationC);
+		ScheduledTrip trip3 = new ScheduledTrip(comp2, 
+				LocalDateTime.parse("2016-04-19T11:10"), 
+				LocalDateTime.parse("2016-04-19T11:30"), 
+				stationB, stationC);
+		ScheduledTrip trip4 = new ScheduledTrip(comp3, 
+				LocalDateTime.parse("2016-04-19T11:35"), 
+				LocalDateTime.parse("2016-04-19T11:40"), 
+				stationC, stationD);
+		
+		Timetable timetable = new Timetable();
+		timetable.addStation(stationA, trip1);
+		timetable.addStation(stationB, trip2);
+		timetable.addStation(stationB, trip3);
+		timetable.addStation(stationC, trip4);
+		
+		network = createTransferNetwork(timetable, 1);
+		network.log.info("...Finished constructing test timetable 2");
+		
+		return network;
+	}
+	
 	private void addArrival(Station station, ArrivalNode u) {
 		TreeSet<ArrivalNode> set = arrivalsByStation.get(station);
 		stationNameMap.put(station.name(), station);
@@ -232,10 +283,11 @@ public class EventActivityNetwork {
 			set = new TreeSet<>();
 			set.add(u);
 			arrivalsByStation.put(station, set);
-			departuresByStation.put(station, new TreeSet<>());
+//			departuresByStation.put(station, new TreeSet<>());
 		} else {
 			set.add(u);
 		}
+		graph.addVertex(u);
 	}
 	
 	private void addDeparture(Station station, DepartureNode u) {
@@ -244,16 +296,172 @@ public class EventActivityNetwork {
 		if (set == null) {
 			set = new TreeSet<>();
 			set.add(u);
-			arrivalsByStation.put(station, new TreeSet<>());
+//			arrivalsByStation.put(station, new TreeSet<>());
 			departuresByStation.put(station, set);
 		} else {
 			set.add(u);
 		}
+		graph.addVertex(u);
 	}
+	
+	private void addTransfer(Station station, TransferNode u) {
+		TreeSet<TransferNode> set = transfersByStation.get(station);
+		stationNameMap.put(station.name(), station);
+		if (set == null) {
+			set = new TreeSet<>();
+			set.add(u);
+			transfersByStation.put(station, set);
+		} else {
+			set.add(u);
+		}
+		graph.addVertex(u);
+	}
+	
+	public static EventActivityNetwork createTransferNetwork(
+			Timetable timetable, 
+			int transferTime) {
+		EventActivityNetwork network = new EventActivityNetwork();
+		network.log.info("Begin import of timetable...");
+		
+		// maintain sorted events per station and per type
+		// used for connecting the edges
+		TreeMultimap<Station, TransferNode> transferNodesAtStation = TreeMultimap.create();
+		TreeMultimap<Station, ArrivalNode> arrivalNodesAtStation = TreeMultimap.create();
+		TreeMultimap<Station, DepartureNode> departureNodesAtStation = TreeMultimap.create();
+		
+		// insert nodes into network
+		for (Composition comp : timetable.compositions()) {
+			Iterator<ScheduledTrip> tripIter = timetable.getRoute(comp).iterator();
+			ScheduledTrip previousTrip = tripIter.next();
+			Triple<DepartureNode, ArrivalNode, TransferNode> previousTriple = addTripToNetwork(
+					network, 
+					previousTrip, 
+					departureNodesAtStation, 
+					arrivalNodesAtStation, 
+					transferNodesAtStation);
+			
+			while (tripIter.hasNext()) {
+				ScheduledTrip currentTrip = tripIter.next();
+				Triple<DepartureNode, ArrivalNode, TransferNode> currentTriple = addTripToNetwork(
+						network, 
+						currentTrip, 
+						departureNodesAtStation, 
+						arrivalNodesAtStation, 
+						transferNodesAtStation);
+				
+				// insert wait edge between consecutive trips from the same composition
+				WaitEdge wEdge = new WaitEdge(
+						previousTriple.y, 
+						currentTriple.x, 
+						duration(
+								previousTriple.y.trip().arrivalTime(), 
+								currentTriple.x.trip().departureTime()));
+				network.graph.addEdge(previousTriple.y, currentTriple.x, wEdge);
+				
+				previousTrip = currentTrip;
+			}
+		}
+		
+		// connect arrival nodes with compatible transfer nodes
+		for (Station station : timetable.getStations()) {
+			for (ArrivalNode an : arrivalNodesAtStation.get(station)) {
+				// look for compatible transfer node
+				TransferNode dummyTransfer = new TransferNode(
+						an.trip().arrivalTime().plusMinutes(transferTime), 
+						an.trip().toStation());
+				TransferNode tNode = transferNodesAtStation.get(station).ceiling(dummyTransfer);
+				if (tNode != null) {
+					TransferEdge transEdge = new TransferEdge(
+							an, tNode, 
+							duration(an.trip().arrivalTime(), tNode.getTime()));
+					network.graph.addEdge(an, tNode, transEdge);
+				}
+			}
+		}
+		
+		// connect tranfer nodes by means of wait edges
+		for (Station station : timetable.getStations()) {
+			PeekingIterator<TransferNode> transIter = Iterators
+					.peekingIterator(transferNodesAtStation.get(station).iterator());
+			while (transIter.hasNext()) {
+				TransferNode current = transIter.next();
+				if (!transIter.hasNext())
+					break;
+				TransferNode next = transIter.peek();
+				WaitEdge wEdge = new WaitEdge(
+						current, 
+						next, 
+						duration(current.getTime(), next.getTime()));
+				network.graph.addEdge(current, next, wEdge);
+			}
+		}
+		
+		return network;
+	}
+	
+	private static class Triple<X, Y, Z> {
+		public final X x;
+		public final Y y;
+		public final Z z;
+		public Triple(X x, Y y, Z z) {
+			this.x = x;
+			this.y = y;
+			this.z = z;
+		}
+	}
+	
+	private static Triple<DepartureNode, ArrivalNode, TransferNode> addTripToNetwork(
+			EventActivityNetwork network,
+			ScheduledTrip trip, 
+			TreeMultimap<Station, DepartureNode> departures, 
+			TreeMultimap<Station, ArrivalNode> arrivals,
+			TreeMultimap<Station, TransferNode> transfers
+			) {
+		TransferNode transfer = new TransferNode(
+				trip.departureTime(), 
+				trip.fromStation());
+		DepartureNode departure = new DepartureNode(trip);
+		ArrivalNode arrival = new ArrivalNode(trip);
+		
+		transfers.put(trip.fromStation(), transfer);
+		arrivals.put(trip.toStation(), arrival);
+		departures.put(trip.fromStation(), departure);
+		
+		network.addArrival(trip.toStation(), arrival);
+		network.addDeparture(trip.fromStation(), departure);
+		network.addTransfer(trip.toStation(), transfer);
+		
+		// insert trip edge
+		TripEdge edge = new TripEdge(
+				departure, 
+				arrival, 
+				trip, 
+				duration(trip.departureTime(), trip.arrivalTime()));
+		network.graph.addEdge(departure, arrival, edge);
+		
+		// insert wait edge from transfer node to departure node
+		WaitEdge waitEdge = new WaitEdge(transfer, departure, 0.0);
+		network.graph.addEdge(transfer, departure, waitEdge);
+		
+		return new Triple<>(departure, arrival, transfer);
+	}
+	
+//	private List<TransferNode> floorAll(TransferNode node, NavigableSet<TransferNode> set) {
+//		List<TransferNode> events = new ArrayList<>();
+//		TreeMultiset<TransferNode> treeset = TreeMultiset.create();
+//		treeset.addAll(set);
+//		TransferNode floorNode = set.floor(node);
+//		if (floorNode != null) {
+//			SortedMultiset<TransferNode> subset = treeset.subMultiset(floorNode, BoundType.CLOSED, floorNode, BoundType.CLOSED);
+//			events.addAll(subset);
+//		}
+//		
+//		return events;
+//	}
 	
 	/**
 	 * Construct an event-activity network according to a <code>Timetable</code> object. 
-	 * Does not (yet) take into account transfer time. TODO
+	 * Does not (yet) take into account transfer time.
 	 * 
 	 * @param 	timetable	object containing the timetable which this network 
 	 * 						is based on
@@ -284,6 +492,7 @@ public class EventActivityNetwork {
 				ArrivalNode an = new ArrivalNode(trip);
 				WeightedEdge tripEdge = new TripEdge(dn, an, trip, 
 						duration(trip.departureTime(), trip.arrivalTime()));
+				network.graph.addEdge(dn, an, tripEdge);
 				boolean b = addEventNode(fromStation, dn, departures);
 				if (!b)
 					throw new IllegalStateException("Could not add node (before): " + dn);
@@ -296,10 +505,10 @@ public class EventActivityNetwork {
 				countArrivals++;
 				
 				// add to network
-				network.graph.addVertex(dn);
-				network.graph.addVertex(an);
-				network.graph.addEdge(dn, an, tripEdge);
-				network.capacities.put(tripEdge, (double) trip.composition().getAllSeats());
+//				network.graph.addVertex(dn);
+//				network.graph.addVertex(an);
+//				network.graph.addEdge(dn, an, tripEdge);
+//				network.capacities.put(tripEdge, (double) trip.composition().getAllSeats());
 				countTrips++;
 			}
 		}
@@ -472,111 +681,111 @@ public class EventActivityNetwork {
 		return events;
 	}
 	
-	public DefaultPath textToPath(String s) {
-		String[] pieces = s.split(",");
-		
-		// throw away first 'waits'
-		int countWaitPieces = 0;
-		int i = 0;
-		while (pieces[i].charAt(0) == 'W') {
-			if (pieces[i].charAt(0) == 'W')
-				countWaitPieces++;
-			i++;
-		}
-		if (countWaitPieces > 0)
-			pieces = Arrays.copyOfRange(pieces, countWaitPieces, pieces.length);
-		
-		// check if format is valid
-		char firstEventType = pieces[0].charAt(0);
-		if (firstEventType != 'A' && 
-				firstEventType != 'D')
-			throw new IllegalStateException("Invalid path format.");
-		
-		// get trip information
-		Station eventFromStation = pieceToStation(pieces[0]);
-		Station eventToStation = pieceToStation(pieces[1]);
-		LocalDateTime eventDepartureTime = pieceToTime(pieces[0]);
-		LocalDateTime eventArrivalTime = pieceToTime(pieces[1]);
-		Set<DepartureNode> departures = getDeparturesByStation(eventFromStation);
-		DepartureNode realDeparture = null;
-		for (DepartureNode departure : departures) {
-			ScheduledTrip trip = departure.trip();
-			if (trip.toStation().equals(eventToStation) &&
-					trip.fromStation().equals(eventFromStation) &&
-					trip.arrivalTime().equals(eventArrivalTime) &&
-					trip.departureTime().equals(eventDepartureTime)) {
-				realDeparture = departure;
-				break;
-			}
-		}
-		
-		if (realDeparture == null)
-			throw new IllegalStateException("Real departure not found.");
-		
-		Set<WeightedEdge> outgoingEdges = graph.outgoingEdgesOf(realDeparture);
-		
-		// perform a search through all connecting edges to
-		// reconstruct the path
-		DefaultPath path = new DefaultPath();
-		int piecePointer = 0;
-		while (piecePointer+1 < pieces.length) {
-			String currentPiece = pieces[piecePointer];
-			String nextPiece = pieces[piecePointer+1];
-			
-			if (currentPiece.charAt(0) == 'D' &&
-					nextPiece.charAt(0) == 'A') {
-				Station fromStation = pieceToStation(currentPiece);
-				Station toStation = pieceToStation(nextPiece);
-				LocalDateTime departureTime = pieceToTime(currentPiece);
-				LocalDateTime arrivalTime = pieceToTime(nextPiece);
-				
-				for (WeightedEdge edge : outgoingEdges) {
-					if (!(edge instanceof TripEdge))
-						continue;
-					ScheduledTrip trip = ((TripEdge) edge).trip();
-					
-					if (fromStation.equals(trip.fromStation()) &&
-							toStation.equals(trip.toStation()) &&
-							arrivalTime.equals(trip.arrivalTime()) &&
-							departureTime.equals(trip.departureTime())) {
-						// bingo!
-						path.addEdge(edge);
-						piecePointer += 2;
-						outgoingEdges = graph.outgoingEdgesOf(edge.target());
-						break;
-					}
-				}
-			} else if (currentPiece.charAt(0) == 'W') {
-				for (WeightedEdge edge : outgoingEdges) {
-					if (!(edge instanceof WaitEdge))
-						continue;
-					WaitEdge wait = (WaitEdge) edge;
-					double waitDuration = Double.parseDouble(currentPiece.substring(1));
-					if (waitDuration == wait.weight()) {
-						path.addEdge(edge);
-						piecePointer++;
-						outgoingEdges = graph.outgoingEdgesOf(edge.target());
-						break;
-					}
-				}
-			} else
-				throw new IllegalStateException("Invalid format.");
-		}
-		
-		return path;
-	}
+//	public DefaultPath textToPath(String s) {
+//		String[] pieces = s.split(",");
+//		
+//		// throw away first 'waits'
+//		int countWaitPieces = 0;
+//		int i = 0;
+//		while (pieces[i].charAt(0) == 'W') {
+//			if (pieces[i].charAt(0) == 'W')
+//				countWaitPieces++;
+//			i++;
+//		}
+//		if (countWaitPieces > 0)
+//			pieces = Arrays.copyOfRange(pieces, countWaitPieces, pieces.length);
+//		
+//		// check if format is valid
+//		char firstEventType = pieces[0].charAt(0);
+//		if (firstEventType != 'A' && 
+//				firstEventType != 'D')
+//			throw new IllegalStateException("Invalid path format.");
+//		
+//		// get trip information
+//		Station eventFromStation = pieceToStation(pieces[0]);
+//		Station eventToStation = pieceToStation(pieces[1]);
+//		LocalDateTime eventDepartureTime = pieceToTime(pieces[0]);
+//		LocalDateTime eventArrivalTime = pieceToTime(pieces[1]);
+//		Set<DepartureNode> departures = getDeparturesByStation(eventFromStation);
+//		DepartureNode realDeparture = null;
+//		for (DepartureNode departure : departures) {
+//			ScheduledTrip trip = departure.trip();
+//			if (trip.toStation().equals(eventToStation) &&
+//					trip.fromStation().equals(eventFromStation) &&
+//					trip.arrivalTime().equals(eventArrivalTime) &&
+//					trip.departureTime().equals(eventDepartureTime)) {
+//				realDeparture = departure;
+//				break;
+//			}
+//		}
+//		
+//		if (realDeparture == null)
+//			throw new IllegalStateException("Real departure not found.");
+//		
+//		Set<WeightedEdge> outgoingEdges = graph.outgoingEdgesOf(realDeparture);
+//		
+//		// perform a search through all connecting edges to
+//		// reconstruct the path
+//		DefaultPath path = new DefaultPath();
+//		int piecePointer = 0;
+//		while (piecePointer+1 < pieces.length) {
+//			String currentPiece = pieces[piecePointer];
+//			String nextPiece = pieces[piecePointer+1];
+//			
+//			if (currentPiece.charAt(0) == 'D' &&
+//					nextPiece.charAt(0) == 'A') {
+//				Station fromStation = pieceToStation(currentPiece);
+//				Station toStation = pieceToStation(nextPiece);
+//				LocalDateTime departureTime = pieceToTime(currentPiece);
+//				LocalDateTime arrivalTime = pieceToTime(nextPiece);
+//				
+//				for (WeightedEdge edge : outgoingEdges) {
+//					if (!(edge instanceof TripEdge))
+//						continue;
+//					ScheduledTrip trip = ((TripEdge) edge).trip();
+//					
+//					if (fromStation.equals(trip.fromStation()) &&
+//							toStation.equals(trip.toStation()) &&
+//							arrivalTime.equals(trip.arrivalTime()) &&
+//							departureTime.equals(trip.departureTime())) {
+//						// bingo!
+//						path.addEdge(edge);
+//						piecePointer += 2;
+//						outgoingEdges = graph.outgoingEdgesOf(edge.target());
+//						break;
+//					}
+//				}
+//			} else if (currentPiece.charAt(0) == 'W') {
+//				for (WeightedEdge edge : outgoingEdges) {
+//					if (!(edge instanceof WaitEdge))
+//						continue;
+//					WaitEdge wait = (WaitEdge) edge;
+//					double waitDuration = Double.parseDouble(currentPiece.substring(1));
+//					if (waitDuration == wait.weight()) {
+//						path.addEdge(edge);
+//						piecePointer++;
+//						outgoingEdges = graph.outgoingEdgesOf(edge.target());
+//						break;
+//					}
+//				}
+//			} else
+//				throw new IllegalStateException("Invalid format.");
+//		}
+//		
+//		return path;
+//	}
 	
-	private Station pieceToStation(String piece) {
-		if (piece == null || 
-				(piece.charAt(0) != 'D' &&	piece.charAt(0) != 'A'))
-			throw new IllegalArgumentException("Piece is nor arrival nor departure.");
-		return new Station(piece.substring(1, piece.length()-timeLength));
-	}
-	
-	private LocalDateTime pieceToTime(String piece) {
-		if (piece == null)
-			throw new IllegalArgumentException("Piece cannot be null.");
-		return LocalDateTime.parse(piece.substring(piece.length()-timeLength, piece.length()));
-	}
+//	private Station pieceToStation(String piece) {
+//		if (piece == null || 
+//				(piece.charAt(0) != 'D' &&	piece.charAt(0) != 'A'))
+//			throw new IllegalArgumentException("Piece is nor arrival nor departure.");
+//		return new Station(piece.substring(1, piece.length()-timeLength));
+//	}
+//	
+//	private LocalDateTime pieceToTime(String piece) {
+//		if (piece == null)
+//			throw new IllegalArgumentException("Piece cannot be null.");
+//		return LocalDateTime.parse(piece.substring(piece.length()-timeLength, piece.length()));
+//	}
 	
 }

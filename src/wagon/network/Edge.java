@@ -1,22 +1,20 @@
 package wagon.network;
 
-import wagon.network.expanded.EventNode;
-
 public abstract class Edge {
 	
-	private EventNode source;
-	private EventNode target;
+	private Node source;
+	private Node target;
 	
-	public Edge(EventNode source, EventNode target) {
+	public Edge(Node source, Node target) {
 		this.source = source;
 		this.target = target;
 	}
 
-	public EventNode source() {
+	public Node source() {
 		return source;
 	}
 	
-	public EventNode target() {
+	public Node target() {
 		return target;
 	}
 	
