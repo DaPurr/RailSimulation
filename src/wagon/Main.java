@@ -28,12 +28,12 @@ public class Main {
 			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/full_dataset_day2_export.xml");
 //			sample.export("data/materieelplan/processed/full_dataset_day2_export.xml");
 //			sample.export("data/materieelplan/processed/smaller_sample_schedule1_day2_export.xml");
-//			EventActivityNetwork network = EventActivityNetwork.createNetwork(sample);
-			EventActivityNetwork network = EventActivityNetwork.createTestNetwork4();
+			EventActivityNetwork network = EventActivityNetwork.createTransferNetwork(sample, 0);
+//			EventActivityNetwork network = EventActivityNetwork.createTestNetwork5();
 			
 			BiCriterionDijkstra biDijkstra = new BiCriterionDijkstra(network, Criterion.DISTANCE, Criterion.TRANSFER);
 //			BiCriterionDijkstra biDijkstra = new BiCriterionDijkstra(network, Criterion.TRANSFER, Criterion.DISTANCE);
-			biDijkstra.lexicographicallyFirst("A", "D", LocalDateTime.parse("2016-04-19T10:50"));
+			biDijkstra.lexicographicallyFirst("vss", "gn", LocalDateTime.parse("2016-04-11T10:00"));
 			
 			Options options = new Options("data/cico/ritten_20160315.csv", null, 2);
 			

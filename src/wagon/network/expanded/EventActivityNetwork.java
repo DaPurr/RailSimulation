@@ -276,6 +276,53 @@ public class EventActivityNetwork {
 		return network;
 	}
 	
+	/**
+	 * @return	Returns a test network with two A-C paths: one 
+	 * 			is earliest arrival, other minimum number of transfers
+	 */
+	public static EventActivityNetwork createTestNetwork5() {
+		EventActivityNetwork network = new EventActivityNetwork();
+		network.log.info("Begin constructing test timetable 2...");
+		Station stationA = new Station("A");
+		Station stationB = new Station("B");
+		Station stationC = new Station("C");
+		
+		Composition comp1 = new Composition(1, TrainType.SLT, 
+				3, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
+		Composition comp2 = new Composition(2, TrainType.SLT, 
+				6, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
+		Composition comp3 = new Composition(3, TrainType.SLT, 
+				6, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
+		
+		ScheduledTrip trip1 = new ScheduledTrip(comp1, 
+				LocalDateTime.parse("2016-04-19T11:05"), 
+				LocalDateTime.parse("2016-04-19T11:19"), 
+				stationA, stationB);
+		ScheduledTrip trip2 = new ScheduledTrip(comp1, 
+				LocalDateTime.parse("2016-04-19T11:19"), 
+				LocalDateTime.parse("2016-04-19T12:10"), 
+				stationB, stationC);
+		ScheduledTrip trip3 = new ScheduledTrip(comp2, 
+				LocalDateTime.parse("2016-04-19T11:06"), 
+				LocalDateTime.parse("2016-04-19T11:07"), 
+				stationA, stationB);
+		ScheduledTrip trip4 = new ScheduledTrip(comp3, 
+				LocalDateTime.parse("2016-04-19T11:18"), 
+				LocalDateTime.parse("2016-04-19T12:00"), 
+				stationB, stationC);
+		
+		Timetable timetable = new Timetable();
+		timetable.addStation(stationA, trip1);
+		timetable.addStation(stationB, trip2);
+		timetable.addStation(stationB, trip3);
+		timetable.addStation(stationC, trip4);
+		
+		network = createTransferNetwork(timetable, 1);
+		network.log.info("...Finished constructing test timetable 2");
+		
+		return network;
+	}
+	
 	private void addArrival(Station station, ArrivalNode u) {
 		stationNameMap.put(station.name(), station);
 		arrivalsByStation.put(station, u);
@@ -298,9 +345,11 @@ public class EventActivityNetwork {
 			Timetable timetable, 
 			int transferTime) {
 		EventActivityNetwork network = new EventActivityNetwork();
-		network.log.info("Begin import of timetable...");
+		network.log.info("Begin creation of event-activity network with transfers...");
 		
 		// insert nodes into network
+		network.log.info("Start inserting nodes...");
+		long counter = 1;
 		for (Composition comp : timetable.compositions()) {
 			Iterator<ScheduledTrip> tripIter = timetable.getRoute(comp).iterator();
 			ScheduledTrip previousTrip = tripIter.next();
@@ -313,6 +362,9 @@ public class EventActivityNetwork {
 				Triple<DepartureNode, ArrivalNode, TransferNode> currentTriple = addTripToNetwork(
 						network, 
 						currentTrip);
+				counter++;
+				if (counter % 100 == 0)
+					System.out.println("Processed " + counter + " trips...");
 				
 				// insert wait edge between consecutive trips from the same composition
 				WaitEdge wEdge = new WaitEdge(
@@ -326,7 +378,9 @@ public class EventActivityNetwork {
 				previousTrip = currentTrip;
 			}
 		}
+		network.log.info("... Finish inserting nodes");
 		
+		network.log.info("Connect arrival nodes with compatible transfer nodes...");
 		// connect arrival nodes with compatible transfer nodes
 		for (Station station : timetable.getStations()) {
 			for (ArrivalNode an : network.arrivalsByStation.get(station)) {
@@ -343,7 +397,9 @@ public class EventActivityNetwork {
 				}
 			}
 		}
+		network.log.info("... Finish connecting with compatible transfer nodes");
 		
+		network.log.info("Connect transfer nodes of the same station with each other...");
 		// connect tranfer nodes by means of wait edges
 		for (Station station : timetable.getStations()) {
 			PeekingIterator<TransferNode> transIter = Iterators
@@ -360,6 +416,8 @@ public class EventActivityNetwork {
 				network.graph.addEdge(current, next, wEdge);
 			}
 		}
+		network.log.info("... Finish connecting transfer nodes");
+		network.log.info("... Finish creating network");
 		
 		return network;
 	}
