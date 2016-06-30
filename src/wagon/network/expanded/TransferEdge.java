@@ -9,4 +9,9 @@ public class TransferEdge extends WeightedEdge {
 		super(source, target, weight);
 	}
 
+	@Override
+	public String toString() {
+		return "TRANSFER: (" + source() + ", " + target() + ")";
+	}
+	
 }

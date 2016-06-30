@@ -33,13 +33,9 @@ public class Path {
 	@Override
 	public String toString() {
 		String s = "[";
-		boolean first = true;
+//		boolean first = true;
 		for (WeightedEdge e : edges) {
-			if (first)
-				first = false;
-			else
-				s += ", ";
-			s += e.toString();
+			s += e.toString() + System.lineSeparator();
 		}
 		return s + "]";
 	}
