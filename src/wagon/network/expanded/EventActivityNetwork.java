@@ -26,10 +26,9 @@ public class EventActivityNetwork {
 	private Map<Edge, Double> capacities;
 	
 	// derived data
-	TreeMultimap<Station, DepartureNode> departuresByStation;
-	TreeMultimap<Station, ArrivalNode> arrivalsByStation;
-	TreeMultimap<Station, TransferNode> transfersByStation;
-	Map<String, Station> stationNameMap;
+	Map<Station, TreeSet<DepartureNode>> departuresByStation;
+	Map<Station, TreeSet<ArrivalNode>> arrivalsByStation;
+	Map<Station, TreeSet<TransferNode>> transfersByStation;
 	
 	private Logger log = Logger.getLogger(this.getClass().getName());
 	
@@ -37,11 +36,10 @@ public class EventActivityNetwork {
 		graph = new DefaultDirectedGraph<>(WeightedEdge.class);
 		capacities = new LinkedHashMap<>();
 		
-		departuresByStation = TreeMultimap.create();
-		arrivalsByStation = TreeMultimap.create();
-		transfersByStation = TreeMultimap.create();
+		departuresByStation = new HashMap<>();
+		arrivalsByStation = new HashMap<>();
+		transfersByStation = new HashMap<>();
 		
-		stationNameMap = new LinkedHashMap<>();
 		log.setLevel(Level.ALL);
 	}
 	
@@ -324,20 +322,38 @@ public class EventActivityNetwork {
 	}
 	
 	private void addArrival(Station station, ArrivalNode u) {
-		stationNameMap.put(station.name(), station);
-		arrivalsByStation.put(station, u);
+		TreeSet<ArrivalNode> set = arrivalsByStation.get(station);
+		if (set == null) {
+			set = new TreeSet<>();
+			set.add(u);
+			arrivalsByStation.put(station, set);
+		} else {
+			set.add(u);
+		}
 		graph.addVertex(u);
 	}
 	
 	private void addDeparture(Station station, DepartureNode u) {
-		stationNameMap.put(station.name(), station);
-		departuresByStation.put(station, u);
+		TreeSet<DepartureNode> set = departuresByStation.get(station);
+		if (set == null) {
+			set = new TreeSet<>();
+			set.add(u);
+			departuresByStation.put(station, set);
+		} else {
+			set.add(u);
+		}
 		graph.addVertex(u);
 	}
 	
 	private void addTransfer(Station station, TransferNode u) {
-		stationNameMap.put(station.name(), station);
-		transfersByStation.put(station, u);
+		TreeSet<TransferNode> set = transfersByStation.get(station);
+		if (set == null) {
+			set = new TreeSet<>();
+			set.add(u);
+			transfersByStation.put(station, set);
+		} else {
+			set.add(u);
+		}
 		graph.addVertex(u);
 	}
 	
@@ -349,33 +365,43 @@ public class EventActivityNetwork {
 		
 		// insert nodes into network
 		network.log.info("Start inserting nodes...");
-		long counter = 1;
+		long countArrivals = 0;
+		long countDepartures = 0;
+		long countTransfers = 0;
+		long countWaitEdges = 0;
+		long countTripEdges = 0;
+		long countTransferEdges = 0;
 		for (Composition comp : timetable.compositions()) {
 			Iterator<ScheduledTrip> tripIter = timetable.getRoute(comp).iterator();
 			ScheduledTrip previousTrip = tripIter.next();
 			Triple<DepartureNode, ArrivalNode, TransferNode> previousTriple = addTripToNetwork(
 					network, 
 					previousTrip);
-			
+			countArrivals++; countDepartures++; countTransfers++;
+			countWaitEdges++; countTripEdges++;
 			while (tripIter.hasNext()) {
 				ScheduledTrip currentTrip = tripIter.next();
 				Triple<DepartureNode, ArrivalNode, TransferNode> currentTriple = addTripToNetwork(
 						network, 
 						currentTrip);
-				counter++;
-				if (counter % 100 == 0)
-					System.out.println("Processed " + counter + " trips...");
+				countArrivals++; countDepartures++; countTransfers++;
+				countWaitEdges++; countTripEdges++;
+				if (countTripEdges % 100 == 0)
+					System.out.println("Inserted " + countTripEdges + " trip edges...");
 				
 				// insert wait edge between consecutive trips from the same composition
+				ArrivalNode prevArrivalNode = previousTriple.y;
+				DepartureNode currDepartureNode = currentTriple.x;
 				WaitEdge wEdge = new WaitEdge(
-						previousTriple.y, 
-						currentTriple.x, 
+						prevArrivalNode, 
+						currDepartureNode, 
 						duration(
-								previousTriple.y.trip().arrivalTime(), 
-								currentTriple.x.trip().departureTime()));
-				network.graph.addEdge(previousTriple.y, currentTriple.x, wEdge);
+								prevArrivalNode.trip().arrivalTime(), 
+								currDepartureNode.trip().departureTime()));
+				network.graph.addEdge(prevArrivalNode, currDepartureNode, wEdge);
+				countWaitEdges++;
 				
-				previousTrip = currentTrip;
+				previousTriple = currentTriple;
 			}
 		}
 		network.log.info("... Finish inserting nodes");
@@ -387,13 +413,16 @@ public class EventActivityNetwork {
 				// look for compatible transfer node
 				TransferNode dummyTransfer = new TransferNode(
 						an.trip().arrivalTime().plusMinutes(transferTime), 
-						an.trip().toStation());
+						station);
 				TransferNode tNode = network.transfersByStation.get(station).ceiling(dummyTransfer);
 				if (tNode != null) {
 					TransferEdge transEdge = new TransferEdge(
 							an, tNode, 
 							duration(an.trip().arrivalTime(), tNode.getTime()));
 					network.graph.addEdge(an, tNode, transEdge);
+					countTransferEdges++;
+					if (countTransferEdges % 100 == 0)
+						System.out.println("Added " + countTransferEdges + " transfer edges...");
 				}
 			}
 		}
@@ -414,10 +443,23 @@ public class EventActivityNetwork {
 						next, 
 						duration(current.getTime(), next.getTime()));
 				network.graph.addEdge(current, next, wEdge);
+				countWaitEdges++;
+				if (countWaitEdges % 100 == 0)
+					System.out.println("Added " + countWaitEdges + " wait edges...");
 			}
 		}
 		network.log.info("... Finish connecting transfer nodes");
 		network.log.info("... Finish creating network");
+		
+		network.log.info("Event-activity network has:");
+		network.log.info(countArrivals + " arrival nodes");
+		network.log.info(countDepartures + " departure nodes");
+		network.log.info(countTransfers + " transfer nodes");
+		network.log.info(countTripEdges + " trip edges");
+		network.log.info(countWaitEdges + " wait edges");
+		network.log.info(countTransferEdges + " transfer edges");
+		network.log.info("|V| = " + network.graph.vertexSet().size());
+		network.log.info("|E| = " + network.graph.edgeSet().size());
 		
 		return network;
 	}
@@ -473,9 +515,6 @@ public class EventActivityNetwork {
 		EventActivityNetwork network = new EventActivityNetwork();
 		network.log.info("Begin import of timetable...");
 		
-		// temporarily store departure and arrival nodes for each station
-		Map<Station,SortedSet<DepartureNode>> departures = new LinkedHashMap<>();
-		Map<Station,SortedSet<ArrivalNode>> arrivals = new LinkedHashMap<>();
 		Set<Station> stations = new LinkedHashSet<>();
 		
 		// loop through the composition routes to create departure and arrival nodes for
@@ -484,34 +523,31 @@ public class EventActivityNetwork {
 		int countTrips = 0;
 		int countArrivals = 0;
 		int countDepartures = 0;
+		int counter = 0;
 		for (Composition comp : timetable.compositions()) {
 			for (ScheduledTrip trip : timetable.getRoute(comp)) {
 				Station fromStation = trip.fromStation();
 				Station toStation = trip.toStation();
 				stations.add(fromStation);
 				stations.add(toStation);
+				
 				DepartureNode dn = new DepartureNode(trip);
 				ArrivalNode an = new ArrivalNode(trip);
+				
+				network.addArrival(toStation, an);
+				network.addDeparture(fromStation, dn);
+				
 				WeightedEdge tripEdge = new TripEdge(dn, an, trip, 
 						duration(trip.departureTime(), trip.arrivalTime()));
 				network.graph.addEdge(dn, an, tripEdge);
-				boolean b = addEventNode(fromStation, dn, departures);
-				if (!b)
-					throw new IllegalStateException("Could not add node (before): " + dn);
-				network.addDeparture(fromStation, dn);
-				countDepartures++;
-				b = addEventNode(toStation, an, arrivals);
-//				if (!b)
-//					throw new IllegalStateException("Could not add node (before): " + an);
-				network.addArrival(toStation, an);
-				countArrivals++;
 				
-				// add to network
-//				network.graph.addVertex(dn);
-//				network.graph.addVertex(an);
-//				network.graph.addEdge(dn, an, tripEdge);
-//				network.capacities.put(tripEdge, (double) trip.composition().getAllSeats());
+				countDepartures++;
+				countArrivals++;
 				countTrips++;
+				
+				counter++;
+				if (counter % 100 == 0)
+					System.out.println("Processed " + counter + " trips...");
 			}
 		}
 		network.log.info("...Finished constructing trip edges");
@@ -521,10 +557,10 @@ public class EventActivityNetwork {
 		int countWaits = 0;
 		for (Station station : stations) {
 			SortedSet<EventNode> events = new TreeSet<>();
-			if (departures.containsKey(station))
-				events.addAll(departures.get(station));
-			if (arrivals.containsKey(station))
-				events.addAll(arrivals.get(station));
+			if (network.departuresByStation.containsKey(station))
+				events.addAll(network.departuresByStation.get(station));
+			if (network.arrivalsByStation.containsKey(station))
+				events.addAll(network.arrivalsByStation.get(station));
 			EventNode prevEvent = null;
 			for (EventNode event : events) {
 				if (prevEvent == null) {
@@ -546,6 +582,8 @@ public class EventActivityNetwork {
 				network.graph.addEdge(prevEvent, event, waitEdge);
 				network.capacities.put(waitEdge, Double.MAX_VALUE);
 				countWaits++;
+				if (countWaits % 100 == 0)
+					System.out.println("Inserted " + countWaits + " wait edges...");
 				prevEvent = event;
 			}
 		}
@@ -567,26 +605,6 @@ public class EventActivityNetwork {
 		Duration duration = Duration.between(time1, time2);
 		int minutes = (int) duration.toMinutes();
 		return minutes;
-	}
-	
-	private static <T extends EventNode> boolean addEventNode(Station station, 
-			T eventNode, Map<Station,SortedSet<T>> events) {
-		boolean b = false;
-		if (!events.containsKey(station)) {
-			SortedSet<T> set = new TreeSet<>();
-			b = set.add(eventNode);
-			events.put(station, set);
-		} else {
-			SortedSet<T> set = events.get(station);
-			b = set.add(eventNode);
-		}
-		if (!b) {
-			for (EventNode node : events.get(station)) {
-				if (node.equals(eventNode) || node.compareTo(eventNode) == 0)
-					System.out.println("Already contains: " + node);
-			}
-		}
-		return b;
 	}
 	
 	public TransferNode getNextTransferNode(Station station, LocalDateTime time) {
@@ -611,9 +629,7 @@ public class EventActivityNetwork {
 	public DepartureNode getStationDepartureNode(String name, LocalDateTime time) {
 		if (name == null || time == null)
 			throw new IllegalArgumentException("Arguments cannot be null");
-		Station station = stationNameMap.get(name);
-		if (station == null)
-			throw new IllegalArgumentException("Station not found: " + name);
+		Station station = new Station(name);
 		NavigableSet<DepartureNode> set = departuresByStation.get(station);
 		ScheduledTrip dummyTrip = new ScheduledTrip(
 				new Composition(0, TrainType.VIRM, 
@@ -643,9 +659,7 @@ public class EventActivityNetwork {
 	public ArrivalNode getStationArrivalNode(String name, LocalDateTime time) {
 		if (name == null || time == null)
 			throw new IllegalArgumentException("Arguments cannot be null");
-		Station station = stationNameMap.get(name);
-		if (station == null)
-			throw new IllegalArgumentException("Station not found: " + name);
+		Station station = new Station(name);
 		NavigableSet<ArrivalNode> set = arrivalsByStation.get(station);
 		ScheduledTrip dummyTrip = new ScheduledTrip(
 				new Composition(0, TrainType.VIRM, 
