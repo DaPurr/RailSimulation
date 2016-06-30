@@ -37,7 +37,8 @@ public class BiCriterionDijkstra {
 	}
 	
 	public Path lexicographicallyFirst(Node source, String to) {
-		log.info("Initiate bi-criterion Dijkstra algorithm...");
+		log.info("Start bi-criterion Dijkstra algorithm...");
+		long startTime = System.nanoTime();
 		
 		PriorityQueue<DijkstraNode> queue = new PriorityQueue<>();
 		Map<Node, Label> mapLabel = new LinkedHashMap<>();
@@ -54,6 +55,11 @@ public class BiCriterionDijkstra {
 				ArrivalNode arrival = (ArrivalNode) currentNode.node;
 				if (arrival.trip().toStation().name().equalsIgnoreCase(to)) {
 					Path path = createPath(currentNode);
+					
+					long endTime = System.nanoTime();
+					double duration = (endTime - startTime)*1e-9;
+					log.info("... bi-criterion Dijkstra terminated in: " + duration + " s");
+					
 					return path;
 				}
 			}
@@ -141,7 +147,7 @@ public class BiCriterionDijkstra {
 		map.put(n, label);
 	}
 	
-	private class DijkstraNode implements Comparable<DijkstraNode> {
+	private static class DijkstraNode implements Comparable<DijkstraNode> {
 		private Label label;
 		private DijkstraNode previous;
 		private Node node;
@@ -168,7 +174,7 @@ public class BiCriterionDijkstra {
 		}
 	}
 	
-	private class Label implements Comparable<Label> {
+	private static class Label implements Comparable<Label> {
 
 		private double[] criteria;
 		

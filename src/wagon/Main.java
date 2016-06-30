@@ -33,7 +33,8 @@ public class Main {
 			
 			BiCriterionDijkstra biDijkstra = new BiCriterionDijkstra(network, Criterion.DISTANCE, Criterion.TRANSFER);
 //			BiCriterionDijkstra biDijkstra = new BiCriterionDijkstra(network, Criterion.TRANSFER, Criterion.DISTANCE);
-			biDijkstra.lexicographicallyFirst("vss", "gn", LocalDateTime.parse("2016-04-11T10:00"));
+			Path path = biDijkstra.lexicographicallyFirst("rta", "dt", LocalDateTime.parse("2016-04-11T10:00"));
+			System.out.println(path.toString());
 			
 			Options options = new Options("data/cico/ritten_20160315.csv", null, 2);
 			
