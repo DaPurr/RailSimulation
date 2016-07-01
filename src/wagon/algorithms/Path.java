@@ -3,6 +3,7 @@ package wagon.algorithms;
 import java.util.*;
 
 import wagon.network.WeightedEdge;
+import wagon.network.expanded.TransferEdge;
 
 public class Path {
 	private List<WeightedEdge> edges;
@@ -11,10 +12,32 @@ public class Path {
 		edges = new ArrayList<>();
 	}
 	
+	public Path(Path path) {
+		this();
+		for (WeightedEdge edge : path.edges)
+			addEdge(edge);
+	}
+	
 	public void addEdge(WeightedEdge e) {
 		if (e == null)
 			throw new NullPointerException("Edge cannot be null");
 		edges.add(e);
+	}
+	
+	public int numberOfTransfers() {
+		int count = 0;
+		for (WeightedEdge edge : edges) {
+			if (edge instanceof TransferEdge)
+				count++;
+		}
+		return count;
+	}
+	
+	public double travelTime() {
+		double sum = 0.0;
+		for (WeightedEdge edge : edges)
+			sum += edge.weight();
+		return sum;
 	}
 	
 	@Override
@@ -33,7 +56,6 @@ public class Path {
 	@Override
 	public String toString() {
 		String s = "[";
-//		boolean first = true;
 		for (WeightedEdge e : edges) {
 			s += e.toString() + System.lineSeparator();
 		}
