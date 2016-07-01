@@ -2,6 +2,7 @@ package wagon.algorithms;
 
 import java.time.*;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import wagon.network.expanded.*;
@@ -31,6 +32,8 @@ public class LexicographicallyFirstGeneration implements RouteGeneration {
 		this.from = from;
 		this.to = to;
 		this.checkInTime = checkInTime;
+		
+		log.setLevel(Level.OFF);
 	}
 	
 	public List<Path> generateRoutes() {

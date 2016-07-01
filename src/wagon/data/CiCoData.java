@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import javax.swing.JFrame;
 
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
 
 import de.erichseifert.gral.data.DataTable;
@@ -274,7 +275,7 @@ public class CiCoData {
 	}
 	
 	public void getJourneySummary() {
-		Multiset<String> journeys = HashMultiset.create();
+		Multiset<String> journeys = LinkedHashMultiset.create();
 		for (Passenger passenger : passengers) {
 			String s = passenger.getFromStation().name();
 			s += "->";

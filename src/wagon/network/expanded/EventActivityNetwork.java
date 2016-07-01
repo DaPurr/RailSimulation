@@ -40,7 +40,7 @@ public class EventActivityNetwork {
 		arrivalsByStation = new HashMap<>();
 		transfersByStation = new HashMap<>();
 		
-		log.setLevel(Level.ALL);
+		log.setLevel(Level.OFF);
 	}
 	
 	/**
@@ -387,7 +387,7 @@ public class EventActivityNetwork {
 				countArrivals++; countDepartures++; countTransfers++;
 				countWaitEdges++; countTripEdges++;
 				if (countTripEdges % 100 == 0)
-					System.out.println("Inserted " + countTripEdges + " trip edges...");
+					network.log.info("Inserted " + countTripEdges + " trip edges...");
 				
 				// insert wait edge between consecutive trips from the same composition
 				ArrivalNode prevArrivalNode = previousTriple.y;
@@ -422,14 +422,14 @@ public class EventActivityNetwork {
 					network.graph.addEdge(an, tNode, transEdge);
 					countTransferEdges++;
 					if (countTransferEdges % 100 == 0)
-						System.out.println("Added " + countTransferEdges + " transfer edges...");
+						network.log.info("Added " + countTransferEdges + " transfer edges...");
 				}
 			}
 		}
 		network.log.info("... Finish connecting with compatible transfer nodes");
 		
 		network.log.info("Connect transfer nodes of the same station with each other...");
-		// connect tranfer nodes by means of wait edges
+		// connect transfer nodes by means of wait edges
 		for (Station station : timetable.getStations()) {
 			PeekingIterator<TransferNode> transIter = Iterators
 					.peekingIterator(network.transfersByStation.get(station).iterator());
@@ -445,7 +445,7 @@ public class EventActivityNetwork {
 				network.graph.addEdge(current, next, wEdge);
 				countWaitEdges++;
 				if (countWaitEdges % 100 == 0)
-					System.out.println("Added " + countWaitEdges + " wait edges...");
+					network.log.info("Added " + countWaitEdges + " wait edges...");
 			}
 		}
 		network.log.info("... Finish connecting transfer nodes");
@@ -478,6 +478,7 @@ public class EventActivityNetwork {
 	private static Triple<DepartureNode, ArrivalNode, TransferNode> addTripToNetwork(
 			EventActivityNetwork network,
 			ScheduledTrip trip) {
+		
 		TransferNode transfer = new TransferNode(
 				trip.departureTime(), 
 				trip.fromStation());

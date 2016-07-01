@@ -72,7 +72,7 @@ public class PiecewiseConstantProcess implements ArrivalProcess {
 	public int generateArrival(int time) {
 		double currTime = time;
 		
-		ExponentialDistribution exponential = new ExponentialDistribution(1/lambdaUB);
+		ExponentialDistribution exponential = new ExponentialDistribution(random, 1/lambdaUB);
 		double randomExponential = exponential.sample();
 		currTime += randomExponential;
 		int segment = (int) Math.floor(currTime/segmentWidth);

@@ -31,44 +31,30 @@ public class Main {
 			EventActivityNetwork network = EventActivityNetwork.createTransferNetwork(sample, 0);
 //			EventActivityNetwork network = EventActivityNetwork.createTestNetwork5();
 			
-			BiCriterionDijkstra biDijkstra = new BiCriterionDijkstra(network, Criterion.DISTANCE, Criterion.TRANSFER);
+//			BiCriterionDijkstra biDijkstra = new BiCriterionDijkstra(network, Criterion.DISTANCE, Criterion.TRANSFER);
 //			BiCriterionDijkstra biDijkstra = new BiCriterionDijkstra(network, Criterion.TRANSFER, Criterion.DISTANCE);
-			Path path = biDijkstra.lexicographicallyFirst("vs", "gn", LocalDateTime.parse("2016-04-11T09:10"));
-			System.out.println(path.toString());
+//			Path path = biDijkstra.lexicographicallyFirst("vs", "gn", LocalDateTime.parse("2016-04-11T09:10"));
+//			System.out.println(path.toString());
 			
-			Options options = new Options("data/cico/ritten_20160315.csv", null, 2);
+			Options options = new Options("data/cico/ritten_20160209.csv", null, 2);
 			
-			CiCoData cicoData = CiCoData
-					.importRawData(
-							"data/cico/ritten_20160315.csv",
-							"data/cico/omzettabel_stations.csv",
-							options); // hardcoded
-			cicoData.getJourneySummary();
-			
-//			cicoData.exportPassengers("data/cico/processed/ritten_20160209_processed.csv");
-//			Collection<Passenger> selectedPassengers = cicoData.getPassengersWithJourney("rta", "ut");
-//			Collection<Passenger> selectedPassengers = cicoData.getPassengersAtCheckInStation("rta");
-//			List<Double> frequencies = CiCoData.drawPassengerArrivalRate(selectedPassengers, 10);
-//			cicoData.exportEmpiricalArrivalRateOfCheckInStation(
-//					"rta", 
-//					10*60, 
-//					"data/cico/frequencies/20160209/freqs_rta_10min.csv");
-//			cicoData.exportEmpiricalArrivalRateOfJourney(
-//					"rta",
-//					"ut",
-//					10*60, 
-//					"data/cico/frequencies/20160209/freqs_rta_ut_5min.csv");
+//			CiCoData cicoData = CiCoData
+//					.importRawData(
+//							"data/cico/ritten_20160209.csv",
+//							"data/cico/omzettabel_stations.csv",
+//							options); // hardcoded
+//			cicoData.getJourneySummary();
 			
 //			PiecewiseConstantProcess arrivals = new PiecewiseConstantProcess(selectedPassengers, 10*60, 0);
 //			arrivals.exportDrawsFromProcess(10*60, "data/cico/test.csv");
 //			arrivals.exportArrivalRate("data/cico/rates_piecewise_constant.csv");
 //			System.out.println("p: " + arrivals.kolmogorovSmirnovTest());
 			
-//			SimModel sim = new SimModel(sample, 
-//					network, 
-//					options);
-//			Report report = sim.start();
-//			System.out.println(report.summary());
+			SimModel sim = new SimModel(sample, 
+					network, 
+					options);
+			Report report = sim.start();
+			System.out.println(report.summary());
 		}
 		catch (IOException e) {
 			e.printStackTrace();

@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 
 import wagon.data.CiCoData;
@@ -180,7 +181,7 @@ public class SystemState {
 	
 	private Map<Journey, ArrivalProcess> estimateArrivalProcesses(CiCoData cicoData) {
 		// group passengers based on their journeys
-		Multimap<Journey, Passenger> map = HashMultimap.create();
+		Multimap<Journey, Passenger> map = LinkedHashMultimap.create();
 		for (Passenger passenger : cicoData.getPassengers()) {
 			Station from = passenger.getFromStation();
 			Station to = passenger.getToStation();
@@ -193,7 +194,8 @@ public class SystemState {
 		for (Journey journey : map.keySet()) {
 			Collection<Passenger> passengers = map.get(journey);
 			// TODO: make segment determination automated process
-			ArrivalProcess arrivalProcess = new PiecewiseConstantProcess(passengers, 10*60);
+			int seed = 0;
+			ArrivalProcess arrivalProcess = new PiecewiseConstantProcess(passengers, 10*60, seed);
 			resultMap.put(journey, arrivalProcess);
 		}
 		return resultMap;

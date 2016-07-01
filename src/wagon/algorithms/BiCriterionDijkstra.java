@@ -1,7 +1,9 @@
 package wagon.algorithms;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import wagon.infrastructure.Station;
@@ -27,6 +29,8 @@ public class BiCriterionDijkstra {
 		this.network = network;
 		this.crit1 = crit1;
 		this.crit2 = crit2;
+		
+		log.setLevel(Level.OFF);
 	}
 	
 	public Path lexicographicallyFirst(String from, String to, LocalDateTime departureTime) {

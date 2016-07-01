@@ -40,6 +40,10 @@ public class Path {
 		return sum;
 	}
 	
+	public List<WeightedEdge> getEdges() {
+		return new ArrayList<>(edges);
+	}
+	
 	@Override
 	public boolean equals(Object other) {
 		if (!(other instanceof Path))

@@ -3,8 +3,8 @@ package wagon.simulation;
 import wagon.infrastructure.Station;
 
 public class Journey {
-	private final Station origin;
-	private final Station destination;
+	public final Station origin;
+	public final Station destination;
 	
 	public Journey(Station origin, Station destination) {
 		this.origin = origin;
