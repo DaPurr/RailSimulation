@@ -19,7 +19,6 @@ import java.time.LocalTime;
 public class Options {
 
 	private String pathToRawCiCoData;
-	private String pathToProcessedGroupsData;
 	private int dayOfWeek;
 	private int checkInTimeCorrection;
 	private int checkOutTimeCorrection;
@@ -43,7 +42,6 @@ public class Options {
 			String pathToRawCiCoData,
 			String pathToProcessedGroupsData,
 			int dayOfWeek) {
-		this.pathToProcessedGroupsData = pathToProcessedGroupsData;
 		this.pathToRawCiCoData = pathToRawCiCoData;
 		this.dayOfWeek = dayOfWeek;
 		checkInTimeCorrection = 0;
@@ -54,10 +52,6 @@ public class Options {
 	
 	public String getPathToRawCiCoData() {
 		return pathToRawCiCoData;
-	}
-	
-	public String getPathToProcessedGroupsData() {
-		return pathToProcessedGroupsData;
 	}
 	
 	public int getDayOfWeek() {

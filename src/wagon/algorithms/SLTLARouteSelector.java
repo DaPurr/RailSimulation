@@ -1,3 +1,4 @@
+package wagon.algorithms;
 //package wagon.algorithms;
 //
 //import java.time.Duration;

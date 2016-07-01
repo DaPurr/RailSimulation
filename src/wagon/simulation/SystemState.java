@@ -1,7 +1,13 @@
 package wagon.simulation;
 
 import java.util.*;
+import java.util.Map.Entry;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
+
+import wagon.data.CiCoData;
+import wagon.infrastructure.Station;
 import wagon.network.expanded.EventActivityNetwork;
 import wagon.timetable.*;
 
@@ -17,15 +23,15 @@ import wagon.timetable.*;
  */
 public class SystemState {
 
+	// system state variables
 	private EventActivityNetwork network;
 	private Timetable timetable;
 	private Map<Integer, Double> trainOccupation;
-//	private Map<Integer, List<PassengerGroup>> trainToPassengers;
+	private Map<Journey, ArrivalProcess> arrivalProcesses;
 	
 	// counters
 	private Map<ScheduledTrip, Counter> tripToB; // b_t
 	private Map<ScheduledTrip, Counter> tripToN; // n_t
-//	private Map<ScheduledTrip, Counter> tripToF; // f_t
 	
 	/**
 	 * Constructs the system state of a DES.
@@ -33,15 +39,18 @@ public class SystemState {
 	 * @param network	the network constructed by means of the timetable
 	 * @param timetable	the timetable used in this simulation
 	 */
-	public SystemState(EventActivityNetwork network, Timetable timetable) {
+	public SystemState(
+			EventActivityNetwork network, 
+			Timetable timetable, 
+			CiCoData cicoData) {
 		this.network = network;
 		this.timetable = timetable;
 		trainOccupation = new LinkedHashMap<>();
-//		trainToPassengers = new LinkedHashMap<>();
 		
 		tripToB = new LinkedHashMap<>();
 		tripToN = new LinkedHashMap<>();
-//		tripToF = new LinkedHashMap<>();
+		
+		arrivalProcesses = estimateArrivalProcesses(cicoData);
 	}
 	
 	/**
@@ -133,20 +142,6 @@ public class SystemState {
 	}
 	
 	/**
-	 * Adds a passenger group to a certain train.
-	 * 
-	 * @param trainID	the id of the train
-	 * @param group		the passenger group
-	 */
-//	public void addGroupToTrain(int trainID, PassengerGroup group) {
-//		List<PassengerGroup> groups = trainToPassengers.get(trainID);
-//		if (groups == null) {
-//			groups = new ArrayList<>();
-//		}
-//		groups.add(group);
-//	}
-	
-	/**
 	 * @param trip	the trip
 	 * @return	returns the counter for n_t corresponding to <code>trip</code>
 	 */
@@ -177,5 +172,30 @@ public class SystemState {
 	 */
 	public Set<ScheduledTrip> getRegisteredTrips() {
 		return new LinkedHashSet<>(tripToN.keySet());
+	}
+	
+	public Set<Entry<Journey, ArrivalProcess>> arrivalProcessEntries() {
+		return arrivalProcesses.entrySet();
+	}
+	
+	private Map<Journey, ArrivalProcess> estimateArrivalProcesses(CiCoData cicoData) {
+		// group passengers based on their journeys
+		Multimap<Journey, Passenger> map = HashMultimap.create();
+		for (Passenger passenger : cicoData.getPassengers()) {
+			Station from = passenger.getFromStation();
+			Station to = passenger.getToStation();
+			Journey journey = new Journey(from, to);
+			map.put(journey, passenger);
+		}
+		
+		// for each journey, estimate arrival process
+		Map<Journey, ArrivalProcess> resultMap = new HashMap<>();
+		for (Journey journey : map.keySet()) {
+			Collection<Passenger> passengers = map.get(journey);
+			// TODO: make segment determination automated process
+			ArrivalProcess arrivalProcess = new PiecewiseConstantProcess(passengers, 10*60);
+			resultMap.put(journey, arrivalProcess);
+		}
+		return resultMap;
 	}
 }

@@ -18,10 +18,8 @@ import de.erichseifert.gral.plots.lines.DefaultLineRenderer2D;
 import de.erichseifert.gral.plots.lines.LineRenderer;
 import de.erichseifert.gral.ui.InteractivePanel;
 import wagon.infrastructure.Station;
-import wagon.simulation.ArrivalProcess;
 import wagon.simulation.Options;
 import wagon.simulation.Passenger;
-import wagon.simulation.PiecewiseConstantProcess;
 
 public class CiCoData {
 	private final static int horizon = 24*60*60;
@@ -144,44 +142,8 @@ public class CiCoData {
 		return cicoData;
 	}
 	
-//	public List<PassengerGroup> processPassengersIntoGroups(RouteGeneration generator) {
-//		List<PassengerGroup> groups = new ArrayList<>();
-//		Multiset<DefaultPath> pathsMultiset = HashMultiset.create();
-//		long counter = 0;
-//		log.info("Begin processing CiCo data into passenger groups ...");
-//		for (Passenger passenger : passengers) {
-//			counter++;
-//			List<DefaultPath> paths = generator.generateRoutes(
-//					passenger.getFromStation().name(),
-//					passenger.getToStation().name(), 
-//					passenger.getCheckInTime(), 
-//					passenger.getCheckOutTime());
-//			RouteSelection selector = new SLTLARouteSelection(
-//					passenger.getCheckInTime(), 
-//					passenger.getCheckOutTime(), 
-//					10);
-//			DefaultPath path = selector.selectPath(paths);
-//			if (path != null)
-//				pathsMultiset.add(path);
-//			
-//			if (counter % 1000 == 0)
-//				log.info("... Finish selecting routes for " + counter + " passengers");
-//		}
-//		
-//		// now create the passenger groups with groups size
-//		for (DefaultPath path : pathsMultiset.elementSet()) {
-//			PassengerGroup group = new PassengerGroup(path, pathsMultiset.count(path));
-//			groups.add(group);
-//		}
-//		log.info("... Finish processing CiCo data into passenger groups");
-//		
-//		return groups;
-//	}
-	
 	private static LocalDateTime toLocalDateTimeObject(String text) {
-//		LocalDateTime date = LocalDateTime.parse(text.toLowerCase(), DateTimeFormatter.ofPattern("ddMMMyyyy:HH:mm:ss"));
 		LocalDateTime date = LocalDateTime.parse("2016-04-11T" + text.substring(text.length()-8, text.length()-3));
-//		date = date.withYear(2016).withMonth(4).withDayOfMonth(11);
 		return date;
 	}
 	
@@ -277,33 +239,6 @@ public class CiCoData {
 			frequencies.add( (double)v/interval );
 		}
 		return frequencies;
-		
-		
-		
-		
-//		List<Double> frequencies = new ArrayList<>();
-//		Object[] sortedPassengers = passengers.toArray();
-//		Arrays.sort(sortedPassengers);
-//		LocalTime referenceTime = LocalTime.parse("00:00:00").plusSeconds(interval);
-//		int counter = 0;
-//		for (Object o : sortedPassengers) {
-//			Passenger passenger = (Passenger) o;
-//			LocalTime passengerCheckInTime = passenger.getCheckInTime().toLocalTime();
-//			while (passengerCheckInTime.compareTo(referenceTime) >= 0 && 
-//					referenceTime.compareTo(LocalTime.MIDNIGHT.minusSeconds(interval)) < 0) {
-//				frequencies.add((double)counter/interval);
-//				counter = 0;
-//				referenceTime = referenceTime.plusSeconds(interval);
-//			}
-//			counter++;
-//		}
-//		frequencies.add((double)counter/interval);
-//		
-//		// add 0 padding to end of day
-//		int neededSize = (int)Math.ceil(1440f/interval);
-//		while (frequencies.size() < neededSize)
-//			frequencies.add(0.0);
-//		return frequencies;
 	}
 	
 	public Collection<Passenger> getPassengersWithJourney(String fromStation, String toStation) {
