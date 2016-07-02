@@ -46,7 +46,7 @@ public class BoardingEvent extends Event {
 		// let passengers board
 		double passengersToBoard = 1;
 		state.incrementCounterB(trip, passengersToBoard);
-		state.incrementCounterN(trip, currentOccupation + passengersToBoard);
+		state.setCounterN(trip, currentOccupation + passengersToBoard);
 		
 		// determine new occupation
 		state.setOccupation(trainID, currentOccupation + passengersToBoard);

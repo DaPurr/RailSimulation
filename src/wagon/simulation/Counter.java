@@ -34,6 +34,10 @@ public class Counter {
 		this.name = name;
 	}
 	
+	public void setValue(double val) {
+		count = val;
+	}
+	
 	/**
 	 * Increments the counter by <code>incr</code>.
 	 * 

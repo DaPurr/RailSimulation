@@ -31,7 +31,7 @@ public class AlightingEvent extends Event {
 		
 		// let passengers alight
 		double passengersToAlight = 1;
-		state.incrementCounterN(trip, -passengersToAlight);
+		state.setCounterN(trip, currentOccupation - passengersToAlight);
 		
 		// determine new occupation
 		state.setOccupation(trainID, currentOccupation - passengersToAlight);
