@@ -105,9 +105,14 @@ public class SimModel {
 					journey.destination.name(), 
 					BASE_TIME.plusSeconds(time));
 			List<Path> paths = routeGen.generateRoutes();
-			RouteSelection routeSelector = new EarliestArrivalSelector();
-			Path plannedRoute = routeSelector.selectPath(paths);
-			processArrivalToEvents(plannedRoute);
+			
+			if (!hasNullRoute(paths)) {
+				RouteSelection routeSelector = new EarliestArrivalSelector();
+				Path plannedRoute = routeSelector.selectPath(paths);
+				processArrivalToEvents(plannedRoute);
+			} else {
+				System.out.println("NULL ROUTE: " + BASE_TIME.plusSeconds(time) + " " + journey.origin + " -> " + journey.destination);
+			}
 			
 			time = arrivalProcess.generateArrival(time);
 		}
@@ -136,6 +141,21 @@ public class SimModel {
 				boardingTrip = null;
 			}
 		}
+		
+		// add boarding and alighting
+		BoardingEvent board = new BoardingEvent(boardingTrip, boardingTrip.departureTime());
+		eventQueue.add(board);
+		AlightingEvent alight = new AlightingEvent(alightingTrip, alightingTrip.arrivalTime());
+		eventQueue.add(alight);
+	}
+	
+	private boolean hasNullRoute(List<Path> paths) {
+		for (int i = 0; i < paths.size(); i++) {
+			Path path = paths.get(i);
+			if (path == null)
+				return true;
+		}
+		return false;
 	}
 	
 }
