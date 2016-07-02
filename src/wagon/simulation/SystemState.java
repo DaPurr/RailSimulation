@@ -113,14 +113,28 @@ public class SystemState {
 	 * @return		returns the increment added to the old value
 	 */
 	public double incrementCounterN(ScheduledTrip trip, double incr) {
-		if (trip == null || incr < 0)
+		if (trip == null)
 			throw new IllegalArgumentException("Invalid arguments.");
 		Counter count = tripToN.get(trip);
 		if (count == null) {
 			count = new Counter("n_t#" + trip.toString());
 			tripToN.put(trip, count);
 		}
-		return count.increment(incr);
+		double result = count.increment(incr);
+		if (result < 0.0)
+			throw new IllegalStateException("Number of passengers aboard " + trip + " cannot be " + result);
+		return result;
+	}
+	
+	public void setCounterN(ScheduledTrip trip, double val) {
+		if (trip == null || val < 0.0)
+			throw new IllegalArgumentException("Invalid arguments.");
+		Counter count = tripToN.get(trip);
+		if (count == null) {
+			count = new Counter("n_t#" + trip.toString());
+			tripToN.put(trip, count);
+		}
+		count.setValue(val);
 	}
 	
 	/**
@@ -140,6 +154,17 @@ public class SystemState {
 			tripToB.put(trip, count);
 		}
 		return count.increment(incr);
+	}
+	
+	public void setCounterB(ScheduledTrip trip, double val) {
+		if (trip == null || val < 0.0)
+			throw new IllegalArgumentException("Invalid arguments.");
+		Counter count = tripToB.get(trip);
+		if (count == null) {
+			count = new Counter("b_t#" + trip.toString());
+			tripToB.put(trip, count);
+		}
+		count.setValue(val);
 	}
 	
 	/**
