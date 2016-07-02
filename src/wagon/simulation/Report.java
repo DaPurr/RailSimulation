@@ -33,26 +33,29 @@ public class Report {
 		String s = "";
 		Set<ScheduledTrip> trips = state.getTimetable().getAllTrips();
 		s += "ALL TRIPS" + System.lineSeparator();
-		s += "=========================";
+		s += "=========================" + System.lineSeparator();
 		s += "KPI_{old}=" + calculateKPIOld(trips) + System.lineSeparator();
 		s += "KPI_{new}=" + calculateKPINew(trips) + System.lineSeparator();
 		s += System.lineSeparator();
 		Set<ScheduledTrip> tripsMorningRush = getTripsMorningRushHour(trips);
 		s += "MORNING RUSH HOUR" + System.lineSeparator();
-		s += "=========================";
+		s += "=========================" + System.lineSeparator();
 		s += "KPI_{old}=" + calculateKPIOld(tripsMorningRush) + System.lineSeparator();
 		s += "KPI_{new}=" + calculateKPINew(tripsMorningRush) + System.lineSeparator();
+		s += System.lineSeparator();
 		Set<ScheduledTrip> tripsAfternoonRush = getTripsAfternoonRushHour(trips);
 		s += "AFTERNOON RUSH HOUR" + System.lineSeparator();
-		s += "=========================";
+		s += "=========================" + System.lineSeparator();
 		s += "KPI_{old}=" + calculateKPIOld(tripsAfternoonRush) + System.lineSeparator();
 		s += "KPI_{new}=" + calculateKPINew(tripsAfternoonRush) + System.lineSeparator();
+		s += System.lineSeparator();
 		Set<ScheduledTrip> tripsAllRush = new HashSet<>(tripsMorningRush);
 		tripsAllRush.addAll(tripsAfternoonRush);
 		s += "COMBINED RUSH HOUR" + System.lineSeparator();
-		s += "=========================";
+		s += "=========================" + System.lineSeparator();
 		s += "KPI_{old}=" + calculateKPIOld(tripsAllRush) + System.lineSeparator();
 		s += "KPI_{new}=" + calculateKPINew(tripsAllRush) + System.lineSeparator();
+		s += System.lineSeparator();
 		
 		return s;
 	}

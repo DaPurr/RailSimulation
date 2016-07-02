@@ -44,6 +44,13 @@ public class LexicographicallyFirstGeneration implements RouteGeneration {
 		// generate earliest arrival path
 		BiCriterionDijkstra dijkstra = new BiCriterionDijkstra(network, Criterion.DISTANCE, Criterion.TRANSFER);
 		Path path1 = dijkstra.lexicographicallyFirst(from, to, checkInTime);
+		
+		// if there is no earliest arrival path, there exists no path
+		if (path1 == null) {
+			paths.add(null);
+			return paths;
+		}
+		
 		paths.add(path1);
 		if (path1.numberOfTransfers() == 0)
 			return paths;
