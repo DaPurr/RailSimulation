@@ -216,12 +216,13 @@ public class SystemState {
 		
 		// for each journey, estimate arrival process
 		Map<Journey, ArrivalProcess> resultMap = new HashMap<>();
+		int seed = 0;
 		for (Journey journey : map.keySet()) {
 			Collection<Passenger> passengers = map.get(journey);
 			// TODO: make segment determination automated process
-			int seed = 0;
 			ArrivalProcess arrivalProcess = new PiecewiseConstantProcess(passengers, 10*60, seed);
 			resultMap.put(journey, arrivalProcess);
+			seed++;
 		}
 		return resultMap;
 	}

@@ -47,7 +47,6 @@ public class PiecewiseConstantProcess implements ArrivalProcess {
 	
 	private double[] determineMidpoints(int nSegments) {
 		double[] midpoints = new double[nSegments];
-//		Arrays.fill(midpoints, 0.0);
 		for (Passenger passenger : passengers) {
 			LocalDateTime checkInTime = passenger.getCheckInTime();
 			int intCheckInTime = checkInTime.toLocalTime().toSecondOfDay();
@@ -69,7 +68,7 @@ public class PiecewiseConstantProcess implements ArrivalProcess {
 	}
 
 	@Override
-	public int generateArrival(int time) {
+	public double generateArrival(double time, int horizon) {
 		double currTime = time;
 		
 		ExponentialDistribution exponential = new ExponentialDistribution(random, 1/lambdaUB);
@@ -77,53 +76,54 @@ public class PiecewiseConstantProcess implements ArrivalProcess {
 		currTime += randomExponential;
 		int segment = (int) Math.floor(currTime/segmentWidth);
 		
-		double acceptProb = midpoints[segment]/lambdaUB;
-		double r = random.nextDouble();
-		while (r > acceptProb && currTime <= horizon) {
-			randomExponential = exponential.sample();
-			currTime += randomExponential;
-			segment = (int) Math.floor(currTime/segmentWidth);
-			if (segment >= midpoints.length)
-				segment = midpoints.length-1;
-			
-			acceptProb = midpoints[segment]/lambdaUB;
-			r = random.nextDouble();
+		if (currTime < horizon) {
+			double acceptProb = midpoints[segment] / lambdaUB;
+			double r = random.nextDouble();
+			while (r > acceptProb && currTime < horizon) {
+				randomExponential = exponential.sample();
+				currTime += randomExponential;
+				segment = (int) Math.floor(currTime / segmentWidth);
+				if (segment >= midpoints.length)
+					segment = midpoints.length - 1;
+
+				acceptProb = midpoints[segment] / lambdaUB;
+				r = random.nextDouble();
+			}
 		}
-		int ceiledArrivalTime = (int) Math.ceil(currTime);
-		return ceiledArrivalTime;
+		return currTime;
 	}
 	
-	public List<Integer> generateArrivalsFromProcess() {
-		List<Integer> events = new ArrayList<>();
-		int currTime = 0;
+	public List<Double> generateArrivalsFromProcess(int horizon) {
+		List<Double> events = new ArrayList<>();
+		double currTime = 0;
 		while (currTime < horizon) {
-			int r = generateArrival(currTime);
+			double r = generateArrival(currTime, horizon);
 			currTime = r;
 			events.add(r);
 		}
 		return events;
 	}
 	
-	public void exportDrawsFromProcess(int window, String fileName) throws IOException {
-		int nrWindows = (int) Math.ceil((double)horizon/window);
-		int[] counts = new int[nrWindows];
-		Arrays.fill(counts, 0);
-		List<Integer> events = generateArrivalsFromProcess();
-		for (int v : events) {
-			if (v < horizon)
-				counts[v/window]++;
-		}
-		File file = new File(fileName);
-		BufferedWriter bw = new BufferedWriter(new FileWriter(file));
-		for (int i = 0; i < counts.length; i++) {
-			int v = counts[i];
-			int xAxis = i*window + window/2;
-			bw.write(xAxis + "," + String.valueOf( (double)v/window ));
-			bw.newLine();
-		}
-		bw.flush();
-		bw.close();
-	}
+//	public void exportDrawsFromProcess(int window, String fileName) throws IOException {
+//		int nrWindows = (int) Math.ceil((double)horizon/window);
+//		int[] counts = new int[nrWindows];
+//		Arrays.fill(counts, 0);
+//		List<Double> events = generateArrivalsFromProcess();
+//		for (double v : events) {
+//			if (v < horizon)
+//				counts[v/window]++;
+//		}
+//		File file = new File(fileName);
+//		BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+//		for (int i = 0; i < counts.length; i++) {
+//			int v = counts[i];
+//			int xAxis = i*window + window/2;
+//			bw.write(xAxis + "," + String.valueOf( (double)v/window ));
+//			bw.newLine();
+//		}
+//		bw.flush();
+//		bw.close();
+//	}
 	
 	public void exportArrivalRate(String fileName) throws IOException {
 		File file = new File(fileName);
