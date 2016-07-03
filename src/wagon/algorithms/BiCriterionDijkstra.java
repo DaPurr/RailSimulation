@@ -37,6 +37,11 @@ public class BiCriterionDijkstra {
 		if (from == null || to == null || departureTime == null)
 			throw new IllegalArgumentException("Arguments cannot be null");
 		TransferNode tNode = network.getNextTransferNode(new Station(from), departureTime);
+		
+		// there is no 'next departure', so this route is infeasible
+		if (tNode == null)
+			return null;
+		
 		return lexicographicallyFirst(tNode, to);
 	}
 	
