@@ -17,6 +17,7 @@ public class Passenger implements Comparable<Passenger> {
 	private LocalDateTime checkOut;
 	private Station fromStation;
 	private Station toStation;
+	private final long id;
 	
 	/**
 	 * Constructs a <code>Passenger</code> object.
@@ -26,7 +27,9 @@ public class Passenger implements Comparable<Passenger> {
 	 * @param fromStation	the origin station
 	 * @param toStation		the destination station
 	 */
-	public Passenger(LocalDateTime checkIn,
+	public Passenger(
+			long id,
+			LocalDateTime checkIn,
 			LocalDateTime checkOut,
 			Station fromStation,
 			Station toStation) {
@@ -34,6 +37,11 @@ public class Passenger implements Comparable<Passenger> {
 		this.checkOut = checkOut;
 		this.fromStation = fromStation;
 		this.toStation = toStation;
+		this.id = id;
+	}
+	
+	public long getId() {
+		return id;
 	}
 
 	/**
@@ -75,7 +83,10 @@ public class Passenger implements Comparable<Passenger> {
 		int res3 = fromStation.name().compareTo(o.fromStation.name());
 		if (res3 != 0)
 			return res3;
-		return toStation.name().compareTo(o.toStation.name());
+		int res4 = toStation.name().compareTo(o.toStation.name());
+		if (res4 != 0)
+			return res4;
+		return Long.compare(this.id, o.id);
 	}
 	
 	@Override
@@ -83,19 +94,21 @@ public class Passenger implements Comparable<Passenger> {
 		if (!(o instanceof Passenger))
 			return false;
 		Passenger other = (Passenger) o;
-		boolean b1 = this.checkIn.equals(other.checkIn);
-		boolean b2 = this.checkOut.equals(other.checkOut);
-		boolean b3 = this.fromStation.equals(other.fromStation);
-		boolean b4 = this.toStation.equals(other.toStation);
-		return b1 && b2 && b3 && b4;
+//		boolean b1 = this.checkIn.equals(other.checkIn);
+//		boolean b2 = this.checkOut.equals(other.checkOut);
+//		boolean b3 = this.fromStation.equals(other.fromStation);
+//		boolean b4 = this.toStation.equals(other.toStation);
+//		return b1 && b2 && b3 && b4;
+		return this.id == other.id;
 	}
 	
 	@Override
 	public int hashCode() {
-		return 7*checkIn.hashCode()
-				+ 11*checkOut.hashCode()
-				+ 13*fromStation.hashCode()
-				+ 17*toStation.hashCode();
+//		return 7*checkIn.hashCode()
+//				+ 11*checkOut.hashCode()
+//				+ 13*fromStation.hashCode()
+//				+ 17*toStation.hashCode();
+		return Long.hashCode(id);
 	}
 	
 }

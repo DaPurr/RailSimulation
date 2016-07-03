@@ -9,7 +9,6 @@ import java.util.logging.Logger;
 
 import javax.swing.JFrame;
 
-import com.google.common.collect.HashMultiset;
 import com.google.common.collect.LinkedHashMultiset;
 import com.google.common.collect.Multiset;
 
@@ -126,7 +125,9 @@ public class CiCoData {
 			
 			Station fromStation = toStationObject(parts[11], stationCodeToName);
 			Station toStation = toStationObject(parts[28], stationCodeToName);
-			Passenger passenger = new Passenger(checkInTime, 
+			Passenger passenger = new Passenger(
+					counter,
+					checkInTime, 
 					checkOutTime, 
 					fromStation, 
 					toStation);
