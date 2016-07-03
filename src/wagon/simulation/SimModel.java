@@ -4,6 +4,7 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import wagon.algorithms.*;
@@ -26,6 +27,8 @@ public class SimModel {
 	
 	public SimModel(Timetable timetable, 
 			EventActivityNetwork network, Options options) {
+		
+		log.setLevel(Level.INFO);
 		
 		// initialize basic variables
 		eventQueue = new PriorityQueue<>();
@@ -60,9 +63,10 @@ public class SimModel {
 				passengersToDelete.add(passenger);
 			}
 		}
-		for (Passenger passenger : passengersToDelete)
-			passengers.remove(passenger);
+		passengers.removeAll(passengersToDelete);
+		log.info("Passengers before removal: " + cicoData.getPassengers().size());
 		log.info("Passengers removed with origin/destination not in timetable: " + passengersToDelete.size());
+		log.info("Passengers remaining: " + passengers.size());
 		cicoData.setPassengers(passengers);
 		
 		state = new SystemState(network, timetable, cicoData);
@@ -86,8 +90,7 @@ public class SimModel {
 		for (Entry<Journey, ArrivalProcess> entry : state.arrivalProcessEntries()) {
 			Journey journey = entry.getKey();
 			ArrivalProcess arrivalProcess = entry.getValue();
-			generateJourneyArrivals(journey, arrivalProcess);
-			count++;
+			count += generateJourneyArrivals(journey, arrivalProcess);
 			if (count % 100 == 0)
 				log.info("Processed events for " + count + " passengers...");
 		}
@@ -95,27 +98,35 @@ public class SimModel {
 		log.info("... Finish processing events for " + count + " passengers");
 	}
 	
-	private void generateJourneyArrivals(Journey journey, ArrivalProcess arrivalProcess) {
-		int horizon = 20*60*60; // don't generate after 20:00
-		int time = arrivalProcess.generateArrival(0);
-		while (time < horizon) {
+	private int generateJourneyArrivals(Journey journey, ArrivalProcess arrivalProcess) {
+		int horizon = 24*60*60;
+		
+		// generate arrivals
+		List<Double> listArrivals = arrivalProcess.generateArrivalsFromProcess(horizon);
+		
+		// number of passengers for which we generated routes
+		int countPassengersWithRoutes = 0;
+		
+		// transform arrival times (double) to arrivals (integers)
+		for (double v : listArrivals) {
+			int arrivalTime = (int) Math.floor(v);
 			RouteGeneration routeGen = new LexicographicallyFirstGeneration(
 					state.getNetwork(), 
 					journey.origin.name(), 
 					journey.destination.name(), 
-					BASE_TIME.plusSeconds(time));
+					BASE_TIME.plusSeconds(arrivalTime));
 			List<Path> paths = routeGen.generateRoutes();
 			
 			if (!hasNullRoute(paths)) {
+				countPassengersWithRoutes++;
 				RouteSelection routeSelector = new EarliestArrivalSelector();
 				Path plannedRoute = routeSelector.selectPath(paths);
 				processArrivalToEvents(plannedRoute);
 			} else {
-				System.out.println("NULL ROUTE: " + BASE_TIME.plusSeconds(time) + " " + journey.origin + " -> " + journey.destination);
+				log.fine("NULL ROUTE: " + BASE_TIME.plusSeconds(arrivalTime) + " " + journey.origin + " -> " + journey.destination);
 			}
-			
-			time = arrivalProcess.generateArrival(time);
 		}
+		return listArrivals.size();
 	}
 	
 	private void processArrivalToEvents(Path path) {

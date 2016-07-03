@@ -33,7 +33,7 @@ public class Main {
 			
 //			BiCriterionDijkstra biDijkstra = new BiCriterionDijkstra(network, Criterion.DISTANCE, Criterion.TRANSFER);
 //			BiCriterionDijkstra biDijkstra = new BiCriterionDijkstra(network, Criterion.TRANSFER, Criterion.DISTANCE);
-//			Path path = biDijkstra.lexicographicallyFirst("vs", "gn", LocalDateTime.parse("2016-04-11T09:10"));
+//			Path path = biDijkstra.lexicographicallyFirst("gn", "gln", LocalDateTime.parse("2016-04-11T20:15"));
 //			System.out.println(path.toString());
 			
 			Options options = new Options("data/cico/ritten_20160209.csv", null, 2);
@@ -50,11 +50,15 @@ public class Main {
 //			arrivals.exportArrivalRate("data/cico/rates_piecewise_constant.csv");
 //			System.out.println("p: " + arrivals.kolmogorovSmirnovTest());
 			
+			long startTime = System.nanoTime();
 			SimModel sim = new SimModel(sample, 
 					network, 
 					options);
 			Report report = sim.start();
 			System.out.println(report.summary());
+			long endTime = System.nanoTime();
+			double duration = (endTime - startTime)*1e-9;
+			System.out.println("Simulation took " + duration + " s");
 		}
 		catch (IOException e) {
 			e.printStackTrace();
