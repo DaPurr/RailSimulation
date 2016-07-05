@@ -126,7 +126,7 @@ public class SimModel {
 				log.fine("NULL ROUTE: " + BASE_TIME.plusSeconds(arrivalTime) + " " + journey.origin + " -> " + journey.destination);
 			}
 		}
-		return listArrivals.size();
+		return countPassengersWithRoutes;
 	}
 	
 	private void processArrivalToEvents(Path path) {
