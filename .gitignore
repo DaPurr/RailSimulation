@@ -4,6 +4,6 @@
 
 # ...except for .java files
 !/src/
-!/matlab/
+!/matlab/*.m
 !.gitignore
 !pom.xml
