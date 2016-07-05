@@ -44,11 +44,12 @@ public class Main {
 //							"data/cico/omzettabel_stations.csv",
 //							options); // hardcoded
 //			cicoData.getJourneySummary();
-			
-//			PiecewiseConstantProcess arrivals = new PiecewiseConstantProcess(selectedPassengers, 10*60, 0);
+//			
+//			Collection<Passenger> selectedPassengers = cicoData.getPassengersAtCheckInStation("rtd");
+//			PiecewiseConstantProcess arrivals = new PiecewiseConstantProcess(selectedPassengers, 5*60, 0);
 //			arrivals.exportDrawsFromProcess(10*60, "data/cico/test.csv");
 //			arrivals.exportArrivalRate("data/cico/rates_piecewise_constant.csv");
-//			System.out.println("p: " + arrivals.kolmogorovSmirnovTest());
+//			System.out.println("p: " + arrivals.kolmogorovSmirnovTest("matlab/ks_test_rtd_20160209.csv"));
 			
 			long startTime = System.nanoTime();
 			SimModel sim = new SimModel(sample, 

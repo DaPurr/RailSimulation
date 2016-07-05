@@ -284,7 +284,7 @@ public class CiCoData {
 			journeys.add(s);
 		}
 		List<Integer> counts = new ArrayList<>();
-		for (String journey : journeys) {
+		for (String journey : journeys.elementSet()) {
 			counts.add(journeys.count(journey));
 		}
 		Collections.sort(counts);
