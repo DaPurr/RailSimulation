@@ -5,85 +5,102 @@ import java.util.*;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import com.joptimizer.functions.*;
-import com.joptimizer.optimizers.BarrierMethod;
 import com.joptimizer.optimizers.JOptimizer;
 import com.joptimizer.optimizers.OptimizationRequest;
-import com.joptimizer.optimizers.PrimalDualMethod;
 
 public class PiecewiseLinearML implements ArrivalProcess {
 	
 //	private final int horizon = 24*60*60;
-	private final int horizon = 15;
 	
-	private List<Passenger> passengers;
 	private MersenneTwister random;
 	private int segments;
+	private int segmentWidth;
+	private int beginTime;
+	private int endTime;
 	
 	private double[] intercept;
 	private double[] slope;
 	private double[] w; // knots
 	private List<Double> arrivals;
 	
-	public PiecewiseLinearML(Collection<Passenger> passengers, int segments, int seed) {
+	public PiecewiseLinearML(
+			Collection<Passenger> passengers, 
+			int beginTime, 
+			int endTime, 
+			int segmentWidth, 
+			int seed) {
 		random = new MersenneTwister(seed);
-//		passengers = new ArrayList<>(passengers);
-		this.segments = segments;
+		
+		this.segmentWidth = segmentWidth;
+		this.beginTime = beginTime;
+		this.endTime = endTime;
+		
+		segments = (endTime-beginTime)/segmentWidth;
 		intercept = new double[segments];
 		slope = new double[segments];
-		w = new double[segments];
-//		arrivals = new double[passengers.size()];
-		arrivals = generateArrivalsFromProcess(15);
+		w = new double[segments+1];
+		arrivals = new ArrayList<>();
+		
+//		for (double val : passengers)
+//			arrivals.add(val);
 		
 		// make knots
-		int segmentWidth = horizon/segments;
-		for (int i = 0; i < segments; i++) {
-			w[i] = (i+1)*segmentWidth;
+		for (int i = 0; i < segments+1; i++) {
+			w[i] = beginTime + i*segmentWidth;
 		}
 		
 		// process arrivals
-//		for (int i = 0; i < this.passengers.size(); i++) {
-//			Passenger passenger = this.passengers.get(i);
-//			double arrivalTime = passenger
-//					.getCheckInTime().toLocalTime().toSecondOfDay();
-//			arrivalTime += random.nextDouble();
-//			arrivals[i] = arrivalTime;
-//		}
-//		Arrays.sort(arrivals);
+		for (Passenger passenger : passengers) {
+			double arrivalTime = passenger
+					.getCheckInTime().toLocalTime().toSecondOfDay();
+			arrivalTime += random.nextDouble();
+			
+			if (beginTime <= arrivalTime && arrivalTime <= endTime)
+				arrivals.add(arrivalTime);
+		}
+		Collections.sort(arrivals);
 		
+		// fit the model
 		fitModel();
 	}
 
 	@Override
 	public double generateArrival(double time, int horizon) {
-		double[] a = {10, 0, 30};
-		double[] b = {-1, 1, -2};
+//		double[] a = {10, 0, 30};
+//		double[] b = {-1, 1, -2};
+//		double[] a = {10};
+//		double[] b = {-1};
 		
 		double currTime = time;
 		
+//		double lambdaUB = getMaxLambda();
 		double lambdaUB = 10;
 		ExponentialDistribution exponential = new ExponentialDistribution(random, 1/lambdaUB);
 		double randomExponential = exponential.sample();
 		currTime += randomExponential;
 		
 		if (currTime < horizon) {
-			double acceptProb = a[0] + b[0]*currTime;
-			if (currTime >= 5)
-				acceptProb = a[1] + b[1]*currTime;
-			if (currTime >= 10)
-				acceptProb = a[2] + b[2]*currTime;
+			double acceptProb = intercept[0] + slope[0]*currTime;
+//			if (currTime >= 5)
+//				acceptProb = a[1] + b[1]*currTime;
+//			if (currTime >= 10)
+//				acceptProb = a[2] + b[2]*currTime;
 			acceptProb /= lambdaUB;
 			double r = random.nextDouble();
 			while (r > acceptProb && currTime < horizon) {
 				randomExponential = exponential.sample();
 				currTime += randomExponential;
 
-				acceptProb = a[0] + b[0]*currTime;
-				if (currTime >= 5)
-					acceptProb = a[1] + b[1]*currTime;
-				if (currTime >= 10)
-					acceptProb = a[2] + b[2]*currTime;
+				acceptProb = intercept[0] + slope[0]*currTime;
+//				if (currTime >= 5)
+//					acceptProb = a[1] + b[1]*currTime;
+//				if (currTime >= 10)
+//					acceptProb = a[2] + b[2]*currTime;
 				acceptProb /= lambdaUB;
 				r = random.nextDouble();
 			}
@@ -104,34 +121,48 @@ public class PiecewiseLinearML implements ArrivalProcess {
 		return events;
 	}
 	
+//	private double getMaxLambda() {
+//		double max = Double.NEGATIVE_INFINITY;
+//		for (int i = 0; i < slope.length; i++) {
+//			
+//		}
+//	}
+	
 	private void fitModel() {
-		StrictlyConvexMultivariateRealFunction obj = new ObjFunction(arrivals, horizon, segments, w);
-		
-		double value = obj.value(new double[] {1.0, 1.0, 1.0, 1.0, 1.0, 1.0});
-		System.out.println(value);
-		System.out.println();
-		double[] gradient = obj.gradient(new double[] {1.0, 1.0, 1.0, 1.0, 1.0, 1.0});
-		System.out.print(printVector(gradient));
-		System.out.println();
-		double[][] hessian = obj.hessian(new double[] {1.0, 1.0, 1.0, 1.0, 1.0, 1.0});
-		System.out.println(printMatrix(hessian));
-		System.out.println();
+		StrictlyConvexMultivariateRealFunction obj = new ObjFunction(
+				arrivals, 
+				beginTime, 
+				endTime, 
+				segmentWidth, 
+				w);
 		
 		LinearMultivariateRealFunction[] nonNegativeConstraints = 
 				constraintsNonNegative();
-		double[][] matrixA = constraintsContinuity();
+		
 		// build the model
 		OptimizationRequest or = new OptimizationRequest();
 		or.setF0(obj);
 		or.setFi(nonNegativeConstraints);
-		or.setA(matrixA);
-		or.setB(new double[segments-1]);
+		
+		if (segments-1 > 0) {
+			double[][] matrixA = constraintsContinuity();
+			or.setA(matrixA);
+			or.setB(new double[segments-1]);
+		}
 		or.setTolerance(1e-9);
-		or.setInitialPoint(new double[] {1.0, 1.0, 1.0, 1.0, 1.0, 1.0});
+		double[] initialPoint = new double[2*segments];
+		Arrays.fill(initialPoint, 1.0);
+		or.setInitialPoint(initialPoint);
 		
 		JOptimizer opt = new JOptimizer();
 		opt.setOptimizationRequest(or);
-		BasicConfigurator.configure();
+		
+		List<Logger> loggers = Collections.<Logger>list(LogManager.getCurrentLoggers());
+		loggers.add(LogManager.getRootLogger());
+		for ( Logger logger : loggers ) {
+		    logger.setLevel(Level.OFF);
+		}
+		
 		try {
 			int returnCode = opt.optimize();
 		} catch (Exception e) {
@@ -140,20 +171,30 @@ public class PiecewiseLinearML implements ArrivalProcess {
 		double[] solution = opt.getOptimizationResponse().getSolution();
 		intercept = Arrays.copyOfRange(solution, 0, segments);
 		slope = Arrays.copyOfRange(solution, segments, solution.length);
-		System.out.println(printVector(solution));
+//		System.out.println(printVector(solution));
 	}
 	
 	private LinearMultivariateRealFunction[] constraintsNonNegative() {
 		LinearMultivariateRealFunction[] nonNegativeConstraints = 
 				new LinearMultivariateRealFunction[segments+1];
-		for (int i = 0; i < segments; i++) {
+		
+		// constraints for i = 1, ..., m-1
+		for (int i = 0; i < segments-1; i++) {
 			double[] coeffs = new double[2*segments];
-			coeffs[i] = -1;
+			double w_i = w[i+1];
+			
+			coeffs[i] = -1; // a_i
+			coeffs[segments + i] = -w_i; // b_i
 			nonNegativeConstraints[i] = new LinearMultivariateRealFunction(coeffs, 0);
 		}
 		
-		// the lone nonnegative constraint
+		// constraint on begin
 		double[] coeffs = new double[2*segments];
+		coeffs[0] = -1; // a_1
+		nonNegativeConstraints[segments-1] = new LinearMultivariateRealFunction(coeffs, 0);
+		
+		// constraint on end
+		coeffs = new double[2*segments];
 		coeffs[segments - 1] = -1; // a_m
 		coeffs[2*segments - 1] = -(arrivals.get(arrivals.size()-1)); // b_m
 		nonNegativeConstraints[segments] = new LinearMultivariateRealFunction(coeffs, 0);
@@ -164,57 +205,69 @@ public class PiecewiseLinearML implements ArrivalProcess {
 	private double[][] constraintsContinuity() {
 		double[][] matrix = new double[segments-1][2*segments];
 		for (int i = 0; i < segments-1; i++) {
-			double w_i = w[i];
+			double w_i = w[i+1];
 			
 			matrix[i][i] = -1; // a_i
 			matrix[i][i+1] = 1; // a_{i+1}
 			matrix[i][segments + i] = -w_i; // b_i
 			matrix[i][segments + i+1] = w_i; // b_{i+1}
 		}
-		System.out.println(printMatrix(matrix));
+//		System.out.println(printMatrix(matrix));
 		return matrix;
 	}
 	
-	private String printVector(double[] vector) {
-		String s = "";
-		for (double val : vector)
-			s += String.format("%.3f", val) + System.lineSeparator();
-		return s;
-	}
+//	private String printVector(double[] vector) {
+//		String s = "";
+//		for (double val : vector)
+//			s += String.format("%.3f", val) + System.lineSeparator();
+//		return s;
+//	}
 	
-	private String printMatrix(double[][] matrix) {
-		String s = "";
-		for (int i = 0; i < matrix.length; i++) {
-			for (int j = 0; j < matrix[0].length; j++) {
-				double val = matrix[i][j];
-				s += String.format("%.3f", val) + "\t";
-			}
-			s += System.lineSeparator();
-		}
-		return s;
-	}
+//	private String printMatrix(double[][] matrix) {
+//		String s = "";
+//		for (int i = 0; i < matrix.length; i++) {
+//			for (int j = 0; j < matrix[0].length; j++) {
+//				double val = matrix[i][j];
+//				s += String.format("%.3f", val) + "\t";
+//			}
+//			s += System.lineSeparator();
+//		}
+//		return s;
+//	}
 	
 	private static class ObjFunction implements StrictlyConvexMultivariateRealFunction {
 		
 		private List<List<Double>> matrixArrivals;
 		private int segments;
-		private int segmentWidth;
+//		private int segmentWidth;
 		private double[] w;
 		
-		public ObjFunction(List<Double> arrivals, int horizon, int segments, double[] w) {
+		public ObjFunction(
+				List<Double> arrivals, 
+				int beginTime, 
+				int endTime, 
+				int segmentWidth, 
+				double[] w) {
 			matrixArrivals = new ArrayList<>();
-			this.segments = segments;
+			this.segments = (endTime-beginTime)/segmentWidth;
+//			this.segmentWidth = segmentWidth;
 			this.w = w;
-			segmentWidth = horizon/segments;
 			
 			for (int i = 0; i < segments; i++)
 				matrixArrivals.add(new ArrayList<>());
 			
 			// divide arrivals into segments
 			for (double val : arrivals) {
-				int index = (int) Math.floor(val/segmentWidth);
+				int index = (int) Math.floor( (val-beginTime)/segmentWidth );
 				matrixArrivals.get(index).add(val);
 			}
+			
+			int min_arrivals = Integer.MAX_VALUE;
+			for (int i = 0; i < matrixArrivals.size(); i++) {
+				if (matrixArrivals.get(i).size() < min_arrivals)
+					min_arrivals = matrixArrivals.get(i).size();
+			}
+			System.out.println(String.valueOf(min_arrivals));
 			
 		}
 
@@ -231,9 +284,10 @@ public class PiecewiseLinearML implements ArrivalProcess {
 			for (int i = 0; i < segments; i++) {
 				double a_i = x[i];
 				double b_i = x[segments + i];
-				double w_i_1 = 0.0;
-				if (i > 0)
-					w_i_1 = w[i-1];
+				double w_i_1 = w[i];
+				double w_i = w[i+1];
+//				if (i > 0)
+//					w_i_1 = w[i-1];
 				
 				// first term
 				List<Double> segmentArrivals = matrixArrivals.get(i);
@@ -244,17 +298,17 @@ public class PiecewiseLinearML implements ArrivalProcess {
 				}
 				
 				// second term
-				result[i] += w[i] - w_i_1;
+				result[i] += w_i - w_i_1;
 			}
 			
 			// calculate gradient for b_i
 			for (int i = 0; i < segments; i++) {
 				double a_i = x[i];
 				double b_i = x[segments + i];
-				double w_i_1 = 0.0;
-				double w_i = w[i];
-				if (i > 0)
-					w_i_1 = w[i-1];
+				double w_i_1 = w[i];
+				double w_i = w[i+1];
+//				if (i > 0)
+//					w_i_1 = w[i-1];
 				// second term
 				double term2 = 0.5*w_i*w_i - 0.5*w_i_1*w_i_1;
 				result[segments + i] += term2;
@@ -329,10 +383,10 @@ public class PiecewiseLinearML implements ArrivalProcess {
 			for (int i = 0; i < segments; i++) {
 				double a_i = x[i];
 				double b_i = x[segments + i];
-				double w_i = w[i];
-				double w_i_1 = 0.0;
-				if (i > 0)
-					w_i_1 = w[i-1];
+				double w_i = w[i+1];
+				double w_i_1 = w[i];
+//				if (i > 0)
+//					w_i_1 = w[i-1];
 				
 				// first expression
 				List<Double> segmentArrivals = matrixArrivals.get(i);
