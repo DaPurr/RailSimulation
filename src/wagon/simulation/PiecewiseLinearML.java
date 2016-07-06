@@ -22,6 +22,8 @@ public class PiecewiseLinearML implements ArrivalProcess {
 	private int segmentWidth;
 	private int beginTime;
 	private int endTime;
+	private double leftBorderPoint;
+	private double rightBorderPoint;
 	
 	private double[] intercept;
 	private double[] slope;
@@ -34,11 +36,31 @@ public class PiecewiseLinearML implements ArrivalProcess {
 			int endTime, 
 			int segmentWidth, 
 			int seed) {
+		this(
+				passengers, 
+				beginTime, 
+				endTime, 
+				segmentWidth, 
+				Double.NaN, 
+				Double.NaN, 
+				seed);
+	}
+	
+	public PiecewiseLinearML(
+			Collection<Passenger> passengers, 
+			int beginTime, 
+			int endTime, 
+			int segmentWidth, 
+			double leftBorderPoint, 
+			double rightBorderPoint, 
+			int seed) {
 		random = new MersenneTwister(seed);
 		
 		this.segmentWidth = segmentWidth;
 		this.beginTime = beginTime;
 		this.endTime = endTime;
+		this.leftBorderPoint = leftBorderPoint;
+		this.rightBorderPoint = rightBorderPoint;
 		
 		segments = (endTime-beginTime)/segmentWidth;
 		intercept = new double[segments];
@@ -147,7 +169,9 @@ public class PiecewiseLinearML implements ArrivalProcess {
 		if (segments-1 > 0) {
 			double[][] matrixA = constraintsContinuity();
 			or.setA(matrixA);
-			or.setB(new double[segments-1]);
+			
+			double[] vectorB = continuityRHVector();
+			or.setB(vectorB);
 		}
 		or.setTolerance(1e-9);
 		double[] initialPoint = new double[2*segments];
@@ -203,17 +227,78 @@ public class PiecewiseLinearML implements ArrivalProcess {
 	}
 	
 	private double[][] constraintsContinuity() {
-		double[][] matrix = new double[segments-1][2*segments];
+		
+		List<List<Double>> matrix = new ArrayList<>(segments-1 + 2);
+		for (int i = 0; i < segments-1; i++) {
+			ArrayList<Double> list = new ArrayList<>();
+			appendList(list, 0.0, 2*segments);
+			matrix.add(list);
+		}
+		
+//		double[][] matrix = new double[segments-1 + 2][2*segments];
 		for (int i = 0; i < segments-1; i++) {
 			double w_i = w[i+1];
-			
-			matrix[i][i] = -1; // a_i
-			matrix[i][i+1] = 1; // a_{i+1}
-			matrix[i][segments + i] = -w_i; // b_i
-			matrix[i][segments + i+1] = w_i; // b_{i+1}
+			List<Double> row = matrix.get(i);
+			row.set(i, -1.0); // a_i
+			row.set(i+1, 1.0); // a_{i+1}
+			row.set(segments+i, -w_i); // b_i
+			row.set(segments + i+1, w_i); // b_{i+1}
 		}
+		
+		// left border constraint
+		if (!Double.isNaN(leftBorderPoint)) {
+			double w_0 = w[0];
+			
+			ArrayList<Double> list = new ArrayList<>();
+			appendList(list, 0.0, 2*segments);
+			list.set(0, 1.0);
+			list.set(segments, w_0);
+			
+			matrix.add(list);
+		}
+		
+		// right border constraint
+		if (!Double.isNaN(rightBorderPoint)) {
+			double w_m = w[segments];
+
+			ArrayList<Double> list = new ArrayList<>();
+			appendList(list, 0.0, 2*segments);
+			list.set(segments-1, 1.0);
+			list.set(2*segments-1, w_m);
+			
+			matrix.add(list);
+		}
+		
 //		System.out.println(printMatrix(matrix));
-		return matrix;
+		double[][] arrayMatrix = new double[matrix.size()][matrix.get(0).size()];
+		for (int i = 0; i < arrayMatrix.length; i++) {
+			for (int j = 0; j < arrayMatrix[0].length; j++) {
+				arrayMatrix[i][j] = matrix.get(i).get(j);
+			}
+		}
+		return arrayMatrix;
+	}
+	
+	private <T> void appendList(List<T> list, T obj, int count) {
+		for (int i = 0; i < count; i++)
+			list.add(obj);
+	}
+	
+	private double[] continuityRHVector() {
+		List<Double> vector = new ArrayList<>(segments-1 + 2);
+		appendList(vector, 0.0, segments-1);
+		
+		if (!Double.isNaN(leftBorderPoint))
+			vector.add(leftBorderPoint);
+		
+		if (!Double.isNaN(rightBorderPoint))
+			vector.add(rightBorderPoint);
+		
+		double[] arrayVector = new double[vector.size()];
+		for (int i = 0; i < vector.size(); i++)
+			arrayVector[i] = vector.get(i);
+		
+		return arrayVector;
 	}
 	
 //	private String printVector(double[] vector) {

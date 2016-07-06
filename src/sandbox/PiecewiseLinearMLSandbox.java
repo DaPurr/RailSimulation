@@ -115,11 +115,13 @@ public class PiecewiseLinearMLSandbox {
 //				};
 			
 			PiecewiseLinearML plml = new PiecewiseLinearML(
-					selectedPassengers, 
-					7*60*60, 
-					9*60*60, 
-					5*60, 
-					0);
+					selectedPassengers,		// arrivals
+					7*60*60, 				// start time of window
+					9*60*60, 				// end time of window
+					5*60, 					// segment width
+//					0.05, 					// left border point
+//					0.05, 			// right border point
+					0);						// seed
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
