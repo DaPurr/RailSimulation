@@ -13,7 +13,7 @@ import com.joptimizer.functions.*;
 import com.joptimizer.optimizers.JOptimizer;
 import com.joptimizer.optimizers.OptimizationRequest;
 
-public class PiecewiseLinearML implements ArrivalProcess {
+public class PiecewiseLinearProcess implements ArrivalProcess {
 	
 //	private final int horizon = 24*60*60;
 	
@@ -30,7 +30,7 @@ public class PiecewiseLinearML implements ArrivalProcess {
 	private double[] w; // knots
 	private List<Double> arrivals;
 	
-	public PiecewiseLinearML(
+	public PiecewiseLinearProcess(
 			Collection<Passenger> passengers, 
 			int beginTime, 
 			int endTime, 
@@ -46,7 +46,7 @@ public class PiecewiseLinearML implements ArrivalProcess {
 				seed);
 	}
 	
-	public PiecewiseLinearML(
+	public PiecewiseLinearProcess(
 			Collection<Passenger> passengers, 
 			int beginTime, 
 			int endTime, 

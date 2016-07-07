@@ -114,7 +114,7 @@ public class PiecewiseLinearMLSandbox {
 //					14.02858064,
 //				};
 			
-			PiecewiseLinearML plml = new PiecewiseLinearML(
+			PiecewiseLinearProcess plml = new PiecewiseLinearProcess(
 					selectedPassengers,		// arrivals
 					7*60*60, 				// start time of window
 					9*60*60, 				// end time of window
