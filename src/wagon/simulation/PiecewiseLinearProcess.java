@@ -68,9 +68,6 @@ public class PiecewiseLinearProcess implements ArrivalProcess {
 		w = new double[segments+1];
 		arrivals = new ArrayList<>();
 		
-//		for (double val : passengers)
-//			arrivals.add(val);
-		
 		// make knots
 		for (int i = 0; i < segments+1; i++) {
 			w[i] = beginTime + i*segmentWidth;
@@ -85,6 +82,8 @@ public class PiecewiseLinearProcess implements ArrivalProcess {
 			if (beginTime <= arrivalTime && arrivalTime <= endTime)
 				arrivals.add(arrivalTime);
 		}
+//		for (int i = 0; i < 253; i++)
+//			arrivals.add(7*60*60 + random.nextDouble());
 		Collections.sort(arrivals);
 		
 		// fit the model
@@ -93,36 +92,24 @@ public class PiecewiseLinearProcess implements ArrivalProcess {
 
 	@Override
 	public double generateArrival(double time, int horizon) {
-//		double[] a = {10, 0, 30};
-//		double[] b = {-1, 1, -2};
-//		double[] a = {10};
-//		double[] b = {-1};
 		
 		double currTime = time;
 		
-//		double lambdaUB = getMaxLambda();
-		double lambdaUB = 10;
+		double lambdaUB = getLambdaUpperBound();
 		ExponentialDistribution exponential = new ExponentialDistribution(random, 1/lambdaUB);
 		double randomExponential = exponential.sample();
 		currTime += randomExponential;
 		
 		if (currTime < horizon) {
-			double acceptProb = intercept[0] + slope[0]*currTime;
-//			if (currTime >= 5)
-//				acceptProb = a[1] + b[1]*currTime;
-//			if (currTime >= 10)
-//				acceptProb = a[2] + b[2]*currTime;
+			int currentSegment = (int) Math.floor(currTime/segmentWidth);
+			double acceptProb = intercept[currentSegment] + slope[currentSegment]*currTime;
 			acceptProb /= lambdaUB;
 			double r = random.nextDouble();
 			while (r > acceptProb && currTime < horizon) {
 				randomExponential = exponential.sample();
 				currTime += randomExponential;
 
-				acceptProb = intercept[0] + slope[0]*currTime;
-//				if (currTime >= 5)
-//					acceptProb = a[1] + b[1]*currTime;
-//				if (currTime >= 10)
-//					acceptProb = a[2] + b[2]*currTime;
+				acceptProb = intercept[currentSegment] + slope[currentSegment]*currTime;
 				acceptProb /= lambdaUB;
 				r = random.nextDouble();
 			}
@@ -143,12 +130,26 @@ public class PiecewiseLinearProcess implements ArrivalProcess {
 		return events;
 	}
 	
-//	private double getMaxLambda() {
-//		double max = Double.NEGATIVE_INFINITY;
-//		for (int i = 0; i < slope.length; i++) {
-//			
-//		}
-//	}
+	private double getLambdaUpperBound() {
+		double max = Double.NEGATIVE_INFINITY;
+		
+		// check all segment points
+		for (int i = 0; i < segments; i++) {
+			double lambda = intercept[i] + w[i]*slope[i];
+			if (lambda > max)
+				max = lambda;
+		}
+		
+		int n = arrivals.size();
+		
+		// check first arrival
+		max = Double.max(intercept[0] + slope[0]*arrivals.get(0), max);
+		
+		// check last arrival
+		max = Double.max(intercept[segments-1] + slope[segments-1]*arrivals.get(n-1), max);
+		
+		return max;
+	}
 	
 	private void fitModel() {
 		StrictlyConvexMultivariateRealFunction obj = new ObjFunction(
@@ -159,28 +160,29 @@ public class PiecewiseLinearProcess implements ArrivalProcess {
 				w);
 		
 		LinearMultivariateRealFunction[] nonNegativeConstraints = 
-				constraintsNonNegative();
+				constraintsNonNegativity();
 		
 		// build the model
 		OptimizationRequest or = new OptimizationRequest();
 		or.setF0(obj);
 		or.setFi(nonNegativeConstraints);
 		
-		if (segments-1 > 0) {
-			double[][] matrixA = constraintsContinuity();
+		double[][] matrixA = constraintsContinuity();
+		if (matrixA.length > 0)
 			or.setA(matrixA);
 			
-			double[] vectorB = continuityRHVector();
+		double[] vectorB = continuityRHVector();
+		if (vectorB.length > 0)
 			or.setB(vectorB);
-		}
-		or.setTolerance(1e-9);
-		double[] initialPoint = new double[2*segments];
-		Arrays.fill(initialPoint, 1.0);
+		
+//		or.setTolerance(1e-9);
+		double[] initialPoint = getFeasiblePoint();
 		or.setInitialPoint(initialPoint);
 		
 		JOptimizer opt = new JOptimizer();
 		opt.setOptimizationRequest(or);
 		
+//		BasicConfigurator.configure();
 		List<Logger> loggers = Collections.<Logger>list(LogManager.getCurrentLoggers());
 		loggers.add(LogManager.getRootLogger());
 		for ( Logger logger : loggers ) {
@@ -198,8 +200,35 @@ public class PiecewiseLinearProcess implements ArrivalProcess {
 //		System.out.println(printVector(solution));
 	}
 	
-	private LinearMultivariateRealFunction[] constraintsNonNegative() {
-		LinearMultivariateRealFunction[] nonNegativeConstraints = 
+	private double[] getFeasiblePoint() {
+		double[] point = new double[2*segments];
+		double constant = 1.0;
+		
+		if (!Double.isNaN(leftBorderPoint) && Double.isNaN(rightBorderPoint))
+			constant = leftBorderPoint;
+		else if (Double.isNaN(leftBorderPoint) && !Double.isNaN(rightBorderPoint))
+			constant = rightBorderPoint;
+		else if (!Double.isNaN(leftBorderPoint) && !Double.isNaN(rightBorderPoint)) {
+			constant = rightBorderPoint;
+			
+			for (int i = 0; i < segments; i++)
+				point[i] = constant;
+			
+			double b_1 = (rightBorderPoint-leftBorderPoint)/(w[1]-w[0]);
+			double a_1 = leftBorderPoint - w[0]*b_1;
+			point[0] = a_1;
+			point[segments] = b_1;
+			return point;
+		}
+		
+		for (int i = 0; i < segments; i++)
+			point[i] = constant;
+		
+		return point;
+	}
+	
+	private LinearMultivariateRealFunction[] constraintsNonNegativity() {
+		LinearMultivariateRealFunction[] nonNegativityConstraints = 
 				new LinearMultivariateRealFunction[segments+1];
 		
 		// constraints for i = 1, ..., m-1
@@ -209,21 +238,22 @@ public class PiecewiseLinearProcess implements ArrivalProcess {
 			
 			coeffs[i] = -1; // a_i
 			coeffs[segments + i] = -w_i; // b_i
-			nonNegativeConstraints[i] = new LinearMultivariateRealFunction(coeffs, 0);
+			nonNegativityConstraints[i] = new LinearMultivariateRealFunction(coeffs, 0);
 		}
 		
 		// constraint on begin
 		double[] coeffs = new double[2*segments];
 		coeffs[0] = -1; // a_1
-		nonNegativeConstraints[segments-1] = new LinearMultivariateRealFunction(coeffs, 0);
+		coeffs[segments] = -w[0];
+		nonNegativityConstraints[segments-1] = new LinearMultivariateRealFunction(coeffs, 0);
 		
 		// constraint on end
 		coeffs = new double[2*segments];
 		coeffs[segments - 1] = -1; // a_m
 		coeffs[2*segments - 1] = -(arrivals.get(arrivals.size()-1)); // b_m
-		nonNegativeConstraints[segments] = new LinearMultivariateRealFunction(coeffs, 0);
+		nonNegativityConstraints[segments] = new LinearMultivariateRealFunction(coeffs, 0);
 		
-		return nonNegativeConstraints;
+		return nonNegativityConstraints;
 	}
 	
 	private double[][] constraintsContinuity() {
@@ -270,6 +300,8 @@ public class PiecewiseLinearProcess implements ArrivalProcess {
 		}
 		
 //		System.out.println(printMatrix(matrix));
+		if (matrix.size() == 0)
+			return new double[0][0];
 		double[][] arrayMatrix = new double[matrix.size()][matrix.get(0).size()];
 		for (int i = 0; i < arrayMatrix.length; i++) {
 			for (int j = 0; j < arrayMatrix[0].length; j++) {
