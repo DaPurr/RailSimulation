@@ -47,7 +47,7 @@ public class Main {
 			cicoData.exportEmpiricalArrivalRateOfJourney(
 					"rta", 
 					"rtd", 
-					15*60, 
+					5*60, 
 					"data/cico/rta_rtd_20160209.csv");
 //			
 //			Collection<Passenger> selectedPassengers = cicoData.getPassengersAtCheckInStation("rtd");

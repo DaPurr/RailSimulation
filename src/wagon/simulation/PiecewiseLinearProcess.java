@@ -130,6 +130,18 @@ public class PiecewiseLinearProcess implements ArrivalProcess {
 		return events;
 	}
 	
+	public double getIntercept(int segment) {
+		if (segment < 0 || segment >= segments)
+			throw new IllegalArgumentException("Segment number is not valid.");
+		return intercept[segment];
+	}
+	
+	public double getSlope(int segment) {
+		if (segment < 0 || segment >= segments)
+			throw new IllegalArgumentException("Segment number is not valid.");
+		return slope[segment];
+	}
+	
 	private double getLambdaUpperBound() {
 		double max = Double.NEGATIVE_INFINITY;
 		
@@ -191,12 +203,14 @@ public class PiecewiseLinearProcess implements ArrivalProcess {
 		
 		try {
 			int returnCode = opt.optimize();
+			double[] solution = opt.getOptimizationResponse().getSolution();
+			intercept = Arrays.copyOfRange(solution, 0, segments);
+			slope = Arrays.copyOfRange(solution, segments, solution.length);
 		} catch (Exception e) {
 			e.printStackTrace();
+			Arrays.fill(intercept, Double.NaN);
+			Arrays.fill(slope, Double.NaN);
 		}
-		double[] solution = opt.getOptimizationResponse().getSolution();
-		intercept = Arrays.copyOfRange(solution, 0, segments);
-		slope = Arrays.copyOfRange(solution, segments, solution.length);
 //		System.out.println(printVector(solution));
 	}
 	
@@ -250,7 +264,8 @@ public class PiecewiseLinearProcess implements ArrivalProcess {
 		// constraint on end
 		coeffs = new double[2*segments];
 		coeffs[segments - 1] = -1; // a_m
-		coeffs[2*segments - 1] = -(arrivals.get(arrivals.size()-1)); // b_m
+//		coeffs[2*segments - 1] = -(arrivals.get(arrivals.size()-1)); // b_m
+		coeffs[2*segments - 1] = -w[w.length-1];
 		nonNegativityConstraints[segments] = new LinearMultivariateRealFunction(coeffs, 0);
 		
 		return nonNegativityConstraints;
@@ -441,6 +456,7 @@ public class PiecewiseLinearProcess implements ArrivalProcess {
 			return result;
 		}
 
+		// TODO: CHECK FOR SUMMATION!!
 		@Override
 		public double[][] hessian(double[] x) {
 			// assuming outer arrays represent columns, inner arrays rows
