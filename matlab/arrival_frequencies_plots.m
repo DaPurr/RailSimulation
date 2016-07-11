@@ -21,8 +21,8 @@ data_rta_rtd_20160209 = csvread('../data/cico/rta_rtd_20160209.csv');
 
 %x = 1:length(data_rta_20160209);
 %x_hf = 1:length(data_rta_rtd_hf);
-figure;
-plot(data_rta_rtd_20160209(:,1), data_rta_rtd_20160209(:,2));
+%figure;
+plot(data_rta_rtd_20160209(:,1), data_rta_rtd_20160209(:,2), 'Color', 'blue');
 %hold on
 %plot(arrival_rates_rta_20160209(:,1), arrival_rates_rta_20160209(:,2), 'color', 'red');
 %hold off
