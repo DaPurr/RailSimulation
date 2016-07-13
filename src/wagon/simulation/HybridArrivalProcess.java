@@ -2,7 +2,9 @@ package wagon.simulation;
 
 import java.util.*;
 
+import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.apache.commons.math3.random.MersenneTwister;
+import org.apache.poi.hssf.record.RightMarginRecord;
 
 public class HybridArrivalProcess implements ArrivalProcess {
 	
@@ -183,14 +185,59 @@ public class HybridArrivalProcess implements ArrivalProcess {
 
 	@Override
 	public double generateArrival(double time, int horizon) {
-		// TODO Auto-generated method stub
-		return 0;
+		double currTime = time;
+		
+		double lambdaUB = getLambdaUpperBound();
+		ExponentialDistribution exponential = new ExponentialDistribution(random, 1/lambdaUB);
+		double randomExponential = exponential.sample();
+		currTime += randomExponential;
+		
+		if (currTime < horizon) {
+			int currentSegment = (int) Math.floor(currTime/segmentWidth);
+			double acceptProb = intercept[currentSegment] + slope[currentSegment]*currTime;
+			acceptProb /= lambdaUB;
+			double r = random.nextDouble();
+			while (r > acceptProb && currTime < horizon) {
+				randomExponential = exponential.sample();
+				currTime += randomExponential;
+
+				acceptProb = intercept[currentSegment] + slope[currentSegment]*currTime;
+				acceptProb /= lambdaUB;
+				r = random.nextDouble();
+			}
+		}
+		return currTime;
 	}
 
 	@Override
 	public List<Double> generateArrivalsFromProcess(int horizon) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	private double getLambdaUpperBound() {
+		double max = Double.NEGATIVE_INFINITY;
+		
+		// check all segment points
+		for (int i = 0; i < segments; i++) {
+			int w_i = i*segmentWidth;
+			double lambda = intercept[i] + w_i*slope[i];
+			if (lambda > max)
+				max = lambda;
+		}
+		
+		// check for last boundary
+		max = Double.max(max, intercept[segments-1] + slope[segments-1]*(segments*segmentWidth));
+		
+//		int n = passengers.size();
+//		
+//		// check first arrival
+//		max = Double.max(intercept[0] + slope[0]*arrivals.get(0), max);
+//		
+//		// check last arrival
+//		max = Double.max(intercept[segments-1] + slope[segments-1]*arrivals.get(n-1), max);
+		
+		return max;
 	}
 
 }
