@@ -78,7 +78,7 @@ public class Report {
 			if (counterN == null)
 				throw new IllegalArgumentException("Counters for trip cannot be found.");
 			double countN = counterN.getValue();
-			int normCapacity = trip.composition().normCapacity();
+			int normCapacity = trip.composition().normCapacity2(trip.getNorm());
 			numerator += countN*Math.min(normCapacity/countN, 1);
 			denominator += countN;
 		}

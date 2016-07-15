@@ -399,7 +399,7 @@ public class PiecewiseLinearProcess implements ArrivalProcess {
 				if (matrixArrivals.get(i).size() < min_arrivals)
 					min_arrivals = matrixArrivals.get(i).size();
 			}
-			System.out.println(String.valueOf(min_arrivals));
+//			System.out.println(String.valueOf(min_arrivals));
 			
 		}
 

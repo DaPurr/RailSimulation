@@ -17,15 +17,14 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.monitorjbl.xlsx.StreamingReader;
 
 import wagon.infrastructure.Station;
-import wagon.rollingstock.ComfortNorm;
-import wagon.rollingstock.Composition;
-import wagon.rollingstock.TrainType;
+import wagon.rollingstock.*;
 
 /**
  * This class represents a train timetable, where we store the departures per station. 
@@ -244,43 +243,45 @@ public class Timetable implements Iterable<ScheduledTrip> {
 			Station fromStation = extractStationFromCell(row.getCell(cellRef.getCol()));
 			cellRef = new CellReference("D");
 			Station toStation = extractStationFromCell(row.getCell(cellRef.getCol()));
-			cellRef = new CellReference("AU");
-			int nrWagons = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
-			cellRef = new CellReference("BF");
-			int capSeats1 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
-			cellRef = new CellReference("BG");
-			int capSeats2 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
-			cellRef = new CellReference("BH");
-			int capSeats2Fold = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
-			cellRef = new CellReference("BI");
-			int capStand2 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
-			cellRef = new CellReference("AY");
-			int capNormC1 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
-			cellRef = new CellReference("AZ");
-			int capNormC2 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
-			cellRef = new CellReference("BA");
-			int capNormA2 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
-			cellRef = new CellReference("BB");
-			int capNormV2 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
+//			cellRef = new CellReference("AU");
+//			int nrWagons = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
+//			cellRef = new CellReference("BF");
+//			int capSeats1 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
+//			cellRef = new CellReference("BG");
+//			int capSeats2 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
+//			cellRef = new CellReference("BH");
+//			int capSeats2Fold = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
+//			cellRef = new CellReference("BI");
+//			int capStand2 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
+//			cellRef = new CellReference("AY");
+//			int capNormC1 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
+//			cellRef = new CellReference("AZ");
+//			int capNormC2 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
+//			cellRef = new CellReference("BA");
+//			int capNormA2 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
+//			cellRef = new CellReference("BB");
+//			int capNormV2 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
 			cellRef = new CellReference("G");
 			ComfortNorm norm = ComfortNorm.valueOf(row.getCell(cellRef.getCol()).getStringCellValue());
-			cellRef = new CellReference("H");
-			TrainType trainType = extractTrainTypeFromCell(row.getCell(cellRef.getCol()));
+//			cellRef = new CellReference("H");
+//			TrainType trainType = extractTrainTypeFromCell(row.getCell(cellRef.getCol()));
+			cellRef = new CellReference("AV");
+			String combination = row.getCell(cellRef.getCol()).getStringCellValue();
 			
-			Composition comp = new Composition(trainNr, trainType, nrWagons, 
-					capSeats1, capSeats2, capSeats2Fold, capStand2, capNormC1, 
-					capNormC2, capNormA2, capNormV2, norm);
+//			Composition comp = new Composition(trainNr, trainType, nrWagons, 
+//					capSeats1, capSeats2, capSeats2Fold, capStand2, capNormC1, 
+//					capNormC2, capNormA2, capNormV2, norm);
+			
+			Composition comp = timetable.parseComposition(trainNr, combination);
+			
 			ScheduledTrip trip = new ScheduledTrip(comp, departureTime, arrivalTime, 
-					fromStation, toStation);
+					fromStation, toStation, norm);
 			List<ScheduledTrip> trips = trainRoutes.get(comp);
 			if (trips == null) {
 				trips = new ArrayList<>();
 				trainRoutes.put(comp, trips);
 			}
 			trips.add(trip);
-//			timetable.addStation(fromStation, trip);
-//			timetable.stations.add(fromStation);
-//			timetable.stations.add(toStation);
 			if (rowCount % 500 == 0)
 				timetable.log.info("...Processed row " + rowCount);
 			rowCount++;
@@ -307,6 +308,48 @@ public class Timetable implements Iterable<ScheduledTrip> {
 		timetable.log.info("Number of stations: (dep & arr) " + timetable.departures.keySet().size());
 		
 		return timetable;
+	}
+	
+	private Composition parseComposition(int id, String combination) {
+		String[] parts = combination.split("-");
+		List<RollingStockUnit> units = new ArrayList<>();
+		for (String part : parts) {
+			
+			if (part.equals("LK"))
+				units.add(new DDM4Unit());
+			
+			else if (part.equals("LBM"))
+				units.add(new DDZ4Unit());
+			else if (part.equals("LAM"))
+				units.add(new DDZ6Unit());
+			
+			else if (part.equals("ZN"))
+				units.add(new DM902Unit());
+			
+			else if (part.equals("OH"))
+				units.add(new ICM3Unit());
+			else if (part.equals("OC"))
+				units.add(new ICM4Unit());
+			
+			else if (part.equals("LV"))
+				units.add(new SGM2Unit());
+			else if (part.equals("LM"))
+				units.add(new SGM3Unit());
+			
+			else if (part.equals("LE"))
+				units.add(new SLT4Unit());
+			else if (part.equals("LC"))
+				units.add(new SLT6Unit());
+			
+			else if (part.equals("AD"))
+				units.add(new VIRM4Unit());
+			else if (part.equals("OA"))
+				units.add(new VIRM6Unit());
+		}
+		
+		Composition composition = new Composition(id, units);
+		
+		return composition;
 	}
 	
 	private static void fixTripTimes(Map<Composition, List<ScheduledTrip>> trainRoutes) {
@@ -361,39 +404,43 @@ public class Timetable implements Iterable<ScheduledTrip> {
 			
 			Element composition = (Element) trip.getElementsByTagName("composition").item(0);
 			String id = composition.getAttribute("id");
-			String type = composition.getAttribute("type");
-			String nrUnits = composition.getAttribute("nrUnits");
-			String seats1 = composition.getAttribute("seats1");
-			String seats2 = composition.getAttribute("seats2");
-			String foldable = composition.getAttribute("foldable");
-			String standArea = composition.getAttribute("standArea");
-			String normC1 = composition.getAttribute("normC1");
-			String normC2 = composition.getAttribute("normC2");
-			String normA2 = composition.getAttribute("normA2");
-			String normV2 = composition.getAttribute("normV2");
-			String norm = composition.getAttribute("norm");
-			Composition comp = new Composition(Integer.parseInt(id), 
-					TrainType.valueOf(type), 
-					Integer.valueOf(nrUnits),
-					Integer.valueOf(seats1),
-					Integer.valueOf(seats2),
-					Integer.valueOf(foldable),
-					Integer.valueOf(standArea),
-					Integer.valueOf(normC1),
-					Integer.valueOf(normC2),
-					Integer.valueOf(normA2),
-					Integer.valueOf(normV2),
-					ComfortNorm.valueOf(norm));
+//			String type = composition.getAttribute("type");
+//			String nrUnits = composition.getAttribute("nrUnits");
+//			String seats1 = composition.getAttribute("seats1");
+//			String seats2 = composition.getAttribute("seats2");
+//			String foldable = composition.getAttribute("foldable");
+//			String standArea = composition.getAttribute("standArea");
+//			String normC1 = composition.getAttribute("normC1");
+//			String normC2 = composition.getAttribute("normC2");
+//			String normA2 = composition.getAttribute("normA2");
+//			String normV2 = composition.getAttribute("normV2");
+//			String norm = composition.getAttribute("norm");
+//			Composition comp = new Composition(Integer.parseInt(id), 
+//					TrainType.valueOf(type), 
+//					Integer.valueOf(nrUnits),
+//					Integer.valueOf(seats1),
+//					Integer.valueOf(seats2),
+//					Integer.valueOf(foldable),
+//					Integer.valueOf(standArea),
+//					Integer.valueOf(normC1),
+//					Integer.valueOf(normC2),
+//					Integer.valueOf(normA2),
+//					Integer.valueOf(normV2),
+//					ComfortNorm.valueOf(norm));
+			
+			Composition comp = new Composition(Integer.parseInt(id), timetable.parseUnitsFromComposition(composition));
 			
 			String departureDate = trip.getAttribute("departureTime");
 			String arrivalDate = trip.getAttribute("arrivalTime");
 			String from = trip.getAttribute("from");
 			String to = trip.getAttribute("to");
 			Station fromStation = new Station(from);
+			ComfortNorm norm = ComfortNorm.valueOf(trip.getAttribute("norm"));
 			ScheduledTrip st = new ScheduledTrip(comp, 
 					LocalDateTime.parse(departureDate), 
 					LocalDateTime.parse(arrivalDate), 
-					fromStation, new Station(to));
+					fromStation, new Station(to), 
+					norm);
 			
 			timetable.addStation(fromStation, st);
 			tripCount++;
@@ -405,6 +452,45 @@ public class Timetable implements Iterable<ScheduledTrip> {
 		timetable.log.info("...Finished import of XML timetable");
 		
 		return timetable;
+	}
+	
+	private List<RollingStockUnit> parseUnitsFromComposition(Element e) {
+		List<RollingStockUnit> units = new ArrayList<>();
+		String[] parts = e.getAttribute("units").split("-");
+		
+		for (String part : parts) {
+			if (part.equals("DM902"))
+				units.add(new DM902Unit());
+			
+			else if (part.equals("DDM4"))
+				units.add(new DDM4Unit());
+			
+			else if (part.equals("DDZ4"))
+				units.add(new DDZ4Unit());
+			else if (part.equals("DDZ6"))
+				units.add(new DDZ6Unit());
+			
+			else if (part.equals("ICM3"))
+				units.add(new ICM3Unit());
+			else if (part.equals("ICM4"))
+				units.add(new ICM4Unit());
+			
+			else if (part.equals("SGM2"))
+				units.add(new SGM2Unit());
+			else if (part.equals("SGM3"))
+				units.add(new SGM3Unit());
+			
+			else if (part.equals("SLT4"))
+				units.add(new SLT4Unit());
+			else if (part.equals("SLT6"))
+				units.add(new SLT6Unit());
+			
+			else if (part.equals("VIRM4"))
+				units.add(new VIRM4Unit());
+			else if (part.equals("VIRM6"))
+				units.add(new VIRM6Unit());
+		}
+		return units;
 	}
 	
 	public void export(String file_name) throws IOException {
@@ -428,22 +514,35 @@ public class Timetable implements Iterable<ScheduledTrip> {
 		s += "from=\"" + trip.fromStation().name() + "\" ";
 		s += "to=\"" + trip.toStation().name() + "\" ";
 		s += "departureTime=\"" + trip.departureTime().toString() + "\" ";
-		s += "arrivalTime=\"" + trip.arrivalTime().toString() + "\">" + System.lineSeparator();
-		s += indent(indentLevel + 1) + "<composition ";
+		s += "arrivalTime=\"" + trip.arrivalTime().toString() + "\" ";
+		s += "norm=\"" + trip.getNorm().toString() + "\">";
+		s += System.lineSeparator();
+		
 		Composition comp = trip.composition();
-		s += "id=\"" + comp.id() + "\" ";
-		s += "type=\"" + comp.type().toString() + "\" ";
-		s += "nrUnits=\"" + comp.getNrWagons() + "\" ";
-		s += "seats1=\"" + comp.getSeats1() + "\" ";
-		s += "seats2=\"" + comp.getSeats2() + "\" ";
-		s += "foldable=\"" + comp.getFoldableSeats2() + "\" ";
-		s += "standArea=\"" + comp.getStandArea2() + "\" ";
-		s += "normC1=\"" + comp.getNormC1() + "\" ";
-		s += "normC2=\"" + comp.getNormC2() + "\" ";
-		s += "normA2=\"" + comp.getNormA2() + "\" ";
-		s += "normV2=\"" + comp.getNormV2() + "\" ";
-		s += "norm=\"" + comp.getNorm() + "\" /> " + System.lineSeparator();
+		s += compositionToXML(comp, indentLevel + 1);
+		s += System.lineSeparator();
+		
 		s += indent(indentLevel) + "</trip>";
+		return s;
+	}
+	
+	private String compositionToXML(Composition comp, int indentLevel) {
+		String s = indent(indentLevel) + "<composition ";
+		s += "id=\"" + comp.id() + "\" ";
+		s += "units=\"" + compositionToString(comp) + "\" ";
+		s += "/>";
+		
+		return s;
+	}
+	
+	private String compositionToString(Composition comp) {
+		String s = "";
+		List<RollingStockUnit> units = comp.getUnits();
+		for (int i = 0; i < units.size(); i++) {
+			if (i != 0)
+				s += "-";
+			s += units.get(i).toString();
+		}
 		return s;
 	}
 	
@@ -481,11 +580,11 @@ public class Timetable implements Iterable<ScheduledTrip> {
 		return new Station(cell.getStringCellValue());
 	}
 	
-	private static TrainType extractTrainTypeFromCell(Cell cell) {
-		if (cell.getCellType() != Cell.CELL_TYPE_STRING)
-			throw new IllegalArgumentException("Wrong cell type for train types.");
-		return TrainType.valueOf(cell.getStringCellValue());
-	}
+//	private static TrainType extractTrainTypeFromCell(Cell cell) {
+//		if (cell.getCellType() != Cell.CELL_TYPE_STRING)
+//			throw new IllegalArgumentException("Wrong cell type for train types.");
+//		return TrainType.valueOf(cell.getStringCellValue());
+//	}
 
 	@Override
 	public Iterator<ScheduledTrip> iterator() {

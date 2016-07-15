@@ -21,6 +21,7 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 	private LocalDateTime depTime;
 	private Station toStation;
 	private Station fromStation;
+	private ComfortNorm norm;
 	
 	/**
 	 * Constructs a <code>ScheduldDeparture</code> object.
@@ -29,12 +30,14 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 	 * @param time			scheduled departure time
 	 */
 	public ScheduledTrip(Composition composition, LocalDateTime depTime, 
-			LocalDateTime arrTime, Station fromStation, Station toStation) {
+			LocalDateTime arrTime, Station fromStation, Station toStation, 
+			ComfortNorm norm) {
 		this.composition = composition;
 		this.depTime = depTime;
 		this.arrTime = arrTime;
 		this.fromStation = fromStation;
 		this.toStation = toStation;
+		this.norm = norm;
 	}
 	
 	/**
@@ -42,6 +45,14 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 	 */
 	public Composition composition() {
 		return composition;
+	}
+	
+	/**
+	 * @return	returns the norm for this trip, which is a member of 
+	 * 			<code>ComfortNorm</code>.
+	 */
+	public ComfortNorm getNorm() {
+		return norm;
 	}
 	
 	/**
@@ -114,7 +125,6 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 			return false;
 		ScheduledTrip o = (ScheduledTrip) other;
 		boolean b1 = this.arrTime.equals(o.arrTime);
-//		boolean b2 = this.composition.equals(o.composition);
 		boolean b3 = this.depTime.equals(o.depTime);
 		boolean b4 = this.fromStation.equals(o.fromStation);
 		boolean b5 = this.toStation.equals(o.toStation);

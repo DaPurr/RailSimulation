@@ -9,14 +9,10 @@ import org.jgrapht.graph.DefaultDirectedGraph;
 import com.google.common.collect.*;
 
 import wagon.infrastructure.Station;
-import wagon.network.Edge;
-import wagon.network.Node;
+import wagon.network.*;
 import wagon.network.WeightedEdge;
-import wagon.rollingstock.ComfortNorm;
-import wagon.rollingstock.Composition;
-import wagon.rollingstock.TrainType;
-import wagon.timetable.ScheduledTrip;
-import wagon.timetable.Timetable;
+import wagon.rollingstock.*;
+import wagon.timetable.*;
 
 public class EventActivityNetwork {
 	
@@ -40,7 +36,7 @@ public class EventActivityNetwork {
 		arrivalsByStation = new HashMap<>();
 		transfersByStation = new HashMap<>();
 		
-		log.setLevel(Level.OFF);
+		log.setLevel(Level.INFO);
 	}
 	
 	/**
@@ -97,38 +93,43 @@ public class EventActivityNetwork {
 		Station station2 = new Station("Cps");
 		Station station3 = new Station("Rta");
 		
-		Composition comp1 = new Composition(1, TrainType.SGM,
-				3, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
-		Composition comp2 = new Composition(2, TrainType.SGM, 
-				3, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
-		Composition comp3 = new Composition(3, TrainType.SGM, 
-				6, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
+		List<RollingStockUnit> units1 = new ArrayList<>();
+		units1.add(new SGM3Unit());
+		Composition comp1 = new Composition(1, units1);
+		
+		List<RollingStockUnit> units2 = new ArrayList<>();
+		units2.add(new SGM3Unit());
+		Composition comp2 = new Composition(2, units2);
+		
+		List<RollingStockUnit> units3 = new ArrayList<>();
+		units3.add(new SGM3Unit());
+		Composition comp3 = new Composition(3, units3);
 		
 		ScheduledTrip sd1 = new ScheduledTrip(comp1, 
 				LocalDateTime.parse("2016-04-11T06:47"), 
 				LocalDateTime.parse("2016-04-11T06:50"), 
-				station1, station2);
+				station1, station2, ComfortNorm.C);
 		ScheduledTrip sd2 = new ScheduledTrip(comp2, 
 				LocalDateTime.parse("2016-04-11T07:17"), 
 				LocalDateTime.parse("2016-04-11T07:20"), 
-				station1, station2);
+				station1, station2, ComfortNorm.C);
 		ScheduledTrip sd3 = new ScheduledTrip(comp3, 
 				LocalDateTime.parse("2016-04-11T07:47"), 
 				LocalDateTime.parse("2016-04-11T07:50"), 
-				station1, station2);
+				station1, station2, ComfortNorm.C);
 		
 		ScheduledTrip sd4 = new ScheduledTrip(comp1, 
 				LocalDateTime.parse("2016-04-11T06:50"), 
 				LocalDateTime.parse("2016-04-11T06:53"), 
-				station2, station3);
+				station2, station3, ComfortNorm.C);
 		ScheduledTrip sd5 = new ScheduledTrip(comp2, 
 				LocalDateTime.parse("2016-04-11T07:20"), 
 				LocalDateTime.parse("2016-04-11T07:23"), 
-				station2, station3);
+				station2, station3, ComfortNorm.C);
 		ScheduledTrip sd6 = new ScheduledTrip(comp3, 
 				LocalDateTime.parse("2016-04-11T07:50"), 
 				LocalDateTime.parse("2016-04-11T07:53"), 
-				station2, station3);
+				station2, station3, ComfortNorm.C);
 		
 		Timetable timetable = new Timetable();
 		timetable.addStation(station1, sd1);
@@ -154,23 +155,26 @@ public class EventActivityNetwork {
 		Station stationB = new Station("B");
 		Station stationC = new Station("C");
 		
-		Composition comp1 = new Composition(1, TrainType.SLT, 
-				3, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
-		Composition comp2 = new Composition(2, TrainType.SLT, 
-				6, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
+		List<RollingStockUnit> units1 = new ArrayList<>();
+		units1.add(new SLT4Unit());
+		Composition comp1 = new Composition(1, units1);
+		
+		List<RollingStockUnit> units2 = new ArrayList<>();
+		units2.add(new SLT4Unit());
+		Composition comp2 = new Composition(2, units2);
 		
 		ScheduledTrip trip1 = new ScheduledTrip(comp1, 
 				LocalDateTime.parse("2016-04-19T10:53"), 
 				LocalDateTime.parse("2016-04-19T11:00"), 
-				stationA, stationB);
+				stationA, stationB, ComfortNorm.C);
 		ScheduledTrip trip2 = new ScheduledTrip(comp1, 
 				LocalDateTime.parse("2016-04-19T11:00"), 
 				LocalDateTime.parse("2016-04-19T11:30"), 
-				stationB, stationC);
+				stationB, stationC, ComfortNorm.C);
 		ScheduledTrip trip3 = new ScheduledTrip(comp2, 
 				LocalDateTime.parse("2016-04-19T11:10"), 
 				LocalDateTime.parse("2016-04-19T11:30"), 
-				stationB, stationC);
+				stationB, stationC, ComfortNorm.C);
 		
 		Timetable timetable = new Timetable();
 		timetable.addStation(stationA, trip1);
@@ -193,27 +197,30 @@ public class EventActivityNetwork {
 		Station stationB = new Station("B");
 		Station stationC = new Station("C");
 		
-		Composition comp1 = new Composition(1, TrainType.SLT, 
-				3, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
-		Composition comp2 = new Composition(2, TrainType.SLT, 
-				6, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
+		List<RollingStockUnit> units1 = new ArrayList<>();
+		units1.add(new SLT4Unit());
+		Composition comp1 = new Composition(1, units1);
+		
+		List<RollingStockUnit> units2 = new ArrayList<>();
+		units2.add(new SLT4Unit());
+		Composition comp2 = new Composition(2, units2);
 		
 		ScheduledTrip trip1 = new ScheduledTrip(comp1, 
 				LocalDateTime.parse("2016-04-19T12:00"), 
 				LocalDateTime.parse("2016-04-19T12:01"), 
-				stationA, stationB);
+				stationA, stationB, ComfortNorm.C);
 		ScheduledTrip trip2 = new ScheduledTrip(comp1, 
 				LocalDateTime.parse("2016-04-19T12:01"), 
 				LocalDateTime.parse("2016-04-19T12:02"), 
-				stationB, stationA);
+				stationB, stationA, ComfortNorm.C);
 		ScheduledTrip trip3 = new ScheduledTrip(comp2, 
 				LocalDateTime.parse("2016-04-19T12:02"), 
 				LocalDateTime.parse("2016-04-19T12:03"), 
-				stationA, stationB);
+				stationA, stationB, ComfortNorm.C);
 		ScheduledTrip trip4 = new ScheduledTrip(comp2, 
 				LocalDateTime.parse("2016-04-19T12:03"), 
 				LocalDateTime.parse("2016-04-19T12:04"), 
-				stationB, stationC);
+				stationB, stationC, ComfortNorm.C);
 		
 		Timetable timetable = new Timetable();
 		timetable.addStation(stationA, trip1);
@@ -238,29 +245,34 @@ public class EventActivityNetwork {
 		Station stationC = new Station("C");
 		Station stationD = new Station("D");
 		
-		Composition comp1 = new Composition(1, TrainType.SLT, 
-				3, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
-		Composition comp2 = new Composition(2, TrainType.SLT, 
-				6, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
-		Composition comp3 = new Composition(3, TrainType.SLT, 
-				6, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
+		List<RollingStockUnit> units1 = new ArrayList<>();
+		units1.add(new SLT4Unit());
+		Composition comp1 = new Composition(1, units1);
+		
+		List<RollingStockUnit> units2 = new ArrayList<>();
+		units2.add(new SLT4Unit());
+		Composition comp2 = new Composition(2, units2);
+		
+		List<RollingStockUnit> units3 = new ArrayList<>();
+		units3.add(new SLT4Unit());
+		Composition comp3 = new Composition(3, units3);
 		
 		ScheduledTrip trip1 = new ScheduledTrip(comp1, 
 				LocalDateTime.parse("2016-04-19T10:53"), 
 				LocalDateTime.parse("2016-04-19T11:00"), 
-				stationA, stationB);
+				stationA, stationB, ComfortNorm.C);
 		ScheduledTrip trip2 = new ScheduledTrip(comp1, 
 				LocalDateTime.parse("2016-04-19T11:05"), 
 				LocalDateTime.parse("2016-04-19T11:30"), 
-				stationB, stationC);
+				stationB, stationC, ComfortNorm.C);
 		ScheduledTrip trip3 = new ScheduledTrip(comp2, 
 				LocalDateTime.parse("2016-04-19T11:10"), 
 				LocalDateTime.parse("2016-04-19T11:30"), 
-				stationB, stationC);
+				stationB, stationC, ComfortNorm.C);
 		ScheduledTrip trip4 = new ScheduledTrip(comp3, 
 				LocalDateTime.parse("2016-04-19T11:35"), 
 				LocalDateTime.parse("2016-04-19T11:40"), 
-				stationC, stationD);
+				stationC, stationD, ComfortNorm.C);
 		
 		Timetable timetable = new Timetable();
 		timetable.addStation(stationA, trip1);
@@ -285,29 +297,34 @@ public class EventActivityNetwork {
 		Station stationB = new Station("B");
 		Station stationC = new Station("C");
 		
-		Composition comp1 = new Composition(1, TrainType.SLT, 
-				3, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
-		Composition comp2 = new Composition(2, TrainType.SLT, 
-				6, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
-		Composition comp3 = new Composition(3, TrainType.SLT, 
-				6, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
+		List<RollingStockUnit> units1 = new ArrayList<>();
+		units1.add(new SLT4Unit());
+		Composition comp1 = new Composition(1, units1);
+		
+		List<RollingStockUnit> units2 = new ArrayList<>();
+		units2.add(new SLT4Unit());
+		Composition comp2 = new Composition(2, units2);
+		
+		List<RollingStockUnit> units3 = new ArrayList<>();
+		units3.add(new SLT4Unit());
+		Composition comp3 = new Composition(3, units3);
 		
 		ScheduledTrip trip1 = new ScheduledTrip(comp1, 
 				LocalDateTime.parse("2016-04-19T11:05"), 
 				LocalDateTime.parse("2016-04-19T11:19"), 
-				stationA, stationB);
+				stationA, stationB, ComfortNorm.C);
 		ScheduledTrip trip2 = new ScheduledTrip(comp1, 
 				LocalDateTime.parse("2016-04-19T11:19"), 
 				LocalDateTime.parse("2016-04-19T12:10"), 
-				stationB, stationC);
+				stationB, stationC, ComfortNorm.C);
 		ScheduledTrip trip3 = new ScheduledTrip(comp2, 
 				LocalDateTime.parse("2016-04-19T11:06"), 
 				LocalDateTime.parse("2016-04-19T11:07"), 
-				stationA, stationB);
+				stationA, stationB, ComfortNorm.C);
 		ScheduledTrip trip4 = new ScheduledTrip(comp3, 
 				LocalDateTime.parse("2016-04-19T11:18"), 
 				LocalDateTime.parse("2016-04-19T12:00"), 
-				stationB, stationC);
+				stationB, stationC, ComfortNorm.C);
 		
 		Timetable timetable = new Timetable();
 		timetable.addStation(stationA, trip1);
@@ -632,13 +649,16 @@ public class EventActivityNetwork {
 			throw new IllegalArgumentException("Arguments cannot be null");
 		Station station = new Station(name);
 		NavigableSet<DepartureNode> set = departuresByStation.get(station);
+		
+		List<RollingStockUnit> units1 = new ArrayList<>();
+		units1.add(new VIRM4Unit());
 		ScheduledTrip dummyTrip = new ScheduledTrip(
-				new Composition(0, TrainType.VIRM, 
-						0, 0, 0, 20, 20, 20, 20, 20, 20, ComfortNorm.C), 
+				new Composition(0, units1), 
 				time, 
 				time, 
 				new Station(name), 
-				new Station(name));
+				new Station(name), 
+				ComfortNorm.C);
 		DepartureNode returnNode = set.ceiling(new DepartureNode(dummyTrip));
 		return returnNode;
 	}
@@ -662,13 +682,15 @@ public class EventActivityNetwork {
 			throw new IllegalArgumentException("Arguments cannot be null");
 		Station station = new Station(name);
 		NavigableSet<ArrivalNode> set = arrivalsByStation.get(station);
+		List<RollingStockUnit> units1 = new ArrayList<>();
+		units1.add(new VIRM4Unit());
 		ScheduledTrip dummyTrip = new ScheduledTrip(
-				new Composition(0, TrainType.VIRM, 
-						0, 0, 0, 20, 20, 20, 20, 20, 20, ComfortNorm.C), 
+				new Composition(0, units1), 
 				time, 
 				time, 
 				new Station(name), 
-				new Station(name));
+				new Station(name), 
+				ComfortNorm.C);
 		ArrivalNode returnNode = set.floor(new ArrivalNode(dummyTrip));
 		return returnNode;
 	}

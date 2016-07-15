@@ -101,8 +101,6 @@ public class BiCriterionDijkstra {
 				}
 			}
 		}
-
-//		throw new IllegalStateException("Cannot find nodes belonging to destination!");
 		
 		// can't find a path
 		return null;

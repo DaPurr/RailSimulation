@@ -1,5 +1,10 @@
 package wagon.rollingstock;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import wagon.timetable.ComfortNorm;
+
 /**
  * This class is used to model a train composition in the simulation. Most
  * importantly, it is necessary to know the composition capacity as that
@@ -10,152 +15,114 @@ package wagon.rollingstock;
  */
 
 public class Composition {
-
-	private int nrWagons;
-	private TrainType type;
-	private int seats1;
-	private int seats2;
-	private int foldable;
-	private int standArea;
+	
 	private int id;
+	private List<RollingStockUnit> wagons;
 	
-	private int normC1;
-	private int normC2;
-	private int normA2;
-	private int normV2;
-	
-	private ComfortNorm norm;
-
-	/**
-	 * Constructs a <code>Composition</code> object reflecting a simplified 
-	 * train composition.
-	 * 
-	 * @param type		the type of rolling stock
-	 * @param nrWagons	number of trains in the composition
-	 * @param seats1	number of seats for business class
-	 * @param seats2	number of seats for economy class
-	 * @param foldable	number of foldable seats in economy class
-	 * @param standArea	stand area capacity for economy class
-	 * @param normC1	norm 'C' capacity for business class
-	 * @param normC2	norm 'C' capacity for economy class
-	 * @param normA2	norm 'A' capacity for economy class
-	 * @param normV2	norm 'V' capacity for economy class
-	 * @param norm		the comfort norm for this trip
-	 */
-	public Composition(int id, TrainType type, int nrWagons, int seats1, int seats2,
-			int foldable, int standArea, int normC1, int normC2, int normA2, 
-			int normV2, ComfortNorm norm) {
-		this.type = type;
-		this.nrWagons = nrWagons;
-		this.seats1 = seats1;
-		this.seats2 = seats2;
-		this.foldable = foldable;
+	public Composition(int id, List<RollingStockUnit> wagons) {
 		this.id = id;
-		this.standArea = standArea;
-		
-		this.normC1 = normC1;
-		this.normC2 = normC2;
-		this.normA2 = normA2;
-		this.normV2 = normV2;
-		this.norm = norm;
+		this.wagons = wagons;
 	}
-	
-	/**
-	 * @return	this composition's ID
-	 */
+
 	public int id() {
 		return id;
 	}
+	
+	public List<RollingStockUnit> getUnits() {
+		return new ArrayList<>(wagons);
+	}
 
-	/**
-	 * @return	number of wagons in composition
-	 */
 	public int getNrWagons() {
-		return nrWagons;
+		int count = 0;
+		for (RollingStockUnit unit : wagons)
+			count += unit.getNrWagons();
+		return count;
 	}
 
-	/**
-	 * @return	the rolling stock type of this composition
-	 */
 	public TrainType type() {
-		return type;
+		return TrainType.VIRM;
 	}
-	
-	/**
-	 * @return	all available capacity
-	 */
+
 	public int getAllSeats() {
-		return seats1 + seats2;
+		return getSeats1() + getSeats2();
 	}
 
-	/**
-	 * @return	business class passenger seats
-	 */
 	public int getSeats1() {
-		return seats1;
+		int count = 0;
+		for (RollingStockUnit unit : wagons)
+			count += unit.getSeats1();
+		return count;
 	}
 
-	/**
-	 * @return	economy class passenger seats
-	 */
 	public int getSeats2() {
-		return seats2;
+		int count = 0;
+		for (RollingStockUnit unit : wagons)
+			count += unit.getSeats2();
+		return count;
 	}
-	
-	/**
-	 * @return	economy class foldable seats
-	 */
-	public int getFoldableSeats2() {
-		return foldable;
+
+	public int getFoldableSeats() {
+		int count = 0;
+		for (RollingStockUnit unit : wagons)
+			count += unit.getFoldableSeats();
+		return count;
 	}
-	
-	/**
-	 * @return	economy class stand area capacity
-	 */
-	public int getStandArea2() {
-		return standArea;
+
+	public int getStandArea() {
+		int count = 0;
+		for (RollingStockUnit unit : wagons)
+			count += unit.getStandArea();
+		return count;
 	}
-	
-	/**
-	 * @return	business class 'C' norm
-	 */
+
 	public int getNormC1() {
-		return normC1;
+		int count = 0;
+		for (RollingStockUnit unit : wagons)
+			count += unit.getNormC1();
+		return count;
 	}
 
-	/**
-	 * @return	economy class 'C' norm
-	 */
 	public int getNormC2() {
-		return normC2;
-	}
-	
-	/**
-	 * @return	economy class 'A' norm
-	 */
-	public int getNormA2() {
-		return normA2;
+		int count = 0;
+		for (RollingStockUnit unit : wagons)
+			count += unit.getNormC2();
+		return count;
 	}
 
-	/**
-	 * @return	economy class 'V' norm
-	 */
+	public int getNormA2() {
+		int count = 0;
+		for (RollingStockUnit unit : wagons)
+			count += unit.getNormA2();
+		return count;
+	}
+
 	public int getNormV2() {
-		return normV2;
+		int count = 0;
+		for (RollingStockUnit unit : wagons)
+			count += unit.getNormV2();
+		return count;
 	}
 	
-	public ComfortNorm getNorm() {
-		return norm;
+	public int normCapacity1(ComfortNorm norm) {
+		return getSeats1();
 	}
 	
-	public int normCapacity() {
+	public int normCapacity2(ComfortNorm norm) {
+		int count = 0;
+		
 		switch (norm) {
 		case A:
-			return normA2 + seats1;
+			for (RollingStockUnit unit : wagons)
+				count += unit.getNormA2();
+			return count;
 		case C:
-			return normC1 + normC2;
+			for (RollingStockUnit unit : wagons)
+				count += unit.getNormC2();
+			return count;
 		case V:
-			return normV2 + seats1;
+			for (RollingStockUnit unit : wagons)
+				count += unit.getNormV2();
+			return count;
 		}
 		
 		throw new IllegalStateException("There cannot be another comfort norm.");
@@ -163,7 +130,7 @@ public class Composition {
 	
 	@Override
 	public boolean equals(Object other) {
-		if (!(other instanceof Composition))
+		if (!(other instanceof Composition)) 
 			return false;
 		Composition o = (Composition) other;
 		return this.id == o.id;

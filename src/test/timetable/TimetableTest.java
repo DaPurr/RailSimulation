@@ -3,18 +3,13 @@ package test.timetable;
 import static org.junit.Assert.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import org.junit.Test;
 
 import wagon.infrastructure.Station;
-import wagon.rollingstock.ComfortNorm;
-import wagon.rollingstock.Composition;
-import wagon.rollingstock.TrainType;
-import wagon.timetable.ScheduledTrip;
-import wagon.timetable.Timetable;
+import wagon.rollingstock.*;
+import wagon.timetable.*;
 
 public class TimetableTest {
 	
@@ -26,8 +21,10 @@ public class TimetableTest {
 		Timetable[] actualTimetables = new Timetable[nrTimetables];
 		Station stationFrom = new Station("from");
 		Station stationTo = new Station("to");
-		Composition comp = new Composition(1, TrainType.VIRM, 
-				6, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
+		
+		List<RollingStockUnit> units1 = new ArrayList<>();
+		units1.add(new VIRM6Unit());
+		Composition comp = new Composition(1, units1);
 		
 		for (int i = 0; i < nrTimetables; i++) {
 			LocalDateTime time = LocalDateTime.parse("2016-04-11T12:00:00");
@@ -37,7 +34,7 @@ public class TimetableTest {
 			for (int j = 0; j < nrDeps; j++) {
 				time = time.plusMinutes(5);
 				ScheduledTrip departure = 
-						new ScheduledTrip(comp, time, time.plusMinutes(5), stationFrom, stationTo);
+						new ScheduledTrip(comp, time, time.plusMinutes(5), stationFrom, stationTo, ComfortNorm.C);
 				listDeps.add(departure);
 			}
 			expectedTimetable.addStation(stationFrom, listDeps);
@@ -65,8 +62,10 @@ public class TimetableTest {
 		Timetable[] actualTimetables = new Timetable[nrTimetables];
 		Station stationFrom = new Station("from");
 		Station stationTo = new Station("to");
-		Composition comp = new Composition(1, TrainType.VIRM, 
-				6, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
+
+		List<RollingStockUnit> units1 = new ArrayList<>();
+		units1.add(new VIRM6Unit());
+		Composition comp = new Composition(1, units1);
 		
 		for (int i = 0; i < nrTimetables; i++) {
 			LocalDateTime time = LocalDateTime.parse("2016-04-11T12:00:00");
@@ -76,7 +75,7 @@ public class TimetableTest {
 			for (int j = 0; j < nrDeps; j++) {
 				time = time.plusMinutes(5);
 				ScheduledTrip departure = 
-						new ScheduledTrip(comp, time, time.plusMinutes(5), stationFrom, stationTo);
+						new ScheduledTrip(comp, time, time.plusMinutes(5), stationFrom, stationTo, ComfortNorm.C);
 				listDeps.add(departure);
 			}
 			for (ScheduledTrip dep : listDeps)
@@ -107,15 +106,16 @@ public class TimetableTest {
 		Station to2 = new Station("Rta");
 		Station to3 = new Station("Rtd");
 		
-		Composition comp1 = new Composition(1, TrainType.SLT, 
-				3, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
+		List<RollingStockUnit> units1 = new ArrayList<>();
+		units1.add(new SLT4Unit());
+		Composition comp = new Composition(1, units1);
 		
 		LocalDateTime time1 = LocalDateTime.parse("2016-04-11T12:00:00");
-		ScheduledTrip sd1 = new ScheduledTrip(comp1, time1, time1.plusMinutes(2), from1, to1);
+		ScheduledTrip sd1 = new ScheduledTrip(comp, time1, time1.plusMinutes(2), from1, to1, ComfortNorm.C);
 		LocalDateTime time2 = LocalDateTime.parse("2016-04-11T12:04:00");
-		ScheduledTrip sd2 = new ScheduledTrip(comp1, time2, time2.plusMinutes(2), from2, to2);
+		ScheduledTrip sd2 = new ScheduledTrip(comp, time2, time2.plusMinutes(2), from2, to2, ComfortNorm.C);
 		LocalDateTime time3 = LocalDateTime.parse("2016-04-11T12:09:00");
-		ScheduledTrip sd3 = new ScheduledTrip(comp1, time3, time3.plusMinutes(3), from3, to3);
+		ScheduledTrip sd3 = new ScheduledTrip(comp, time3, time3.plusMinutes(3), from3, to3, ComfortNorm.C);
 		
 		Timetable timetable = new Timetable();
 		timetable.addStation(from1, sd1);
@@ -146,24 +146,27 @@ public class TimetableTest {
 		Station to2 = new Station("Rta");
 		Station to3 = new Station("Rtd");
 		
-		Composition comp1 = new Composition(1, TrainType.SLT, 
-				3, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
-		Composition comp2 = new Composition(2, TrainType.SGM, 
-				3, 100, 20, 20, 20, 20, 20, 20, 20, ComfortNorm.C);
+		List<RollingStockUnit> units1 = new ArrayList<>();
+		units1.add(new SLT4Unit());
+		Composition comp1 = new Composition(1, units1);
+		
+		List<RollingStockUnit> units2 = new ArrayList<>();
+		units2.add(new SGM3Unit());
+		Composition comp2 = new Composition(1, units2);
 		
 		LocalDateTime time1 = LocalDateTime.parse("2016-04-11T12:00:00");
-		ScheduledTrip sd1 = new ScheduledTrip(comp1, time1, time1.plusMinutes(2), from1, to1);
+		ScheduledTrip sd1 = new ScheduledTrip(comp1, time1, time1.plusMinutes(2), from1, to1, ComfortNorm.C);
 		LocalDateTime time2 = LocalDateTime.parse("2016-04-11T12:04:00");
-		ScheduledTrip sd2 = new ScheduledTrip(comp1, time2, time2.plusMinutes(2), from2, to2);
+		ScheduledTrip sd2 = new ScheduledTrip(comp1, time2, time2.plusMinutes(2), from2, to2, ComfortNorm.C);
 		LocalDateTime time3 = LocalDateTime.parse("2016-04-11T12:09:00");
-		ScheduledTrip sd3 = new ScheduledTrip(comp1, time3, time3.plusMinutes(3), from3, to3);
+		ScheduledTrip sd3 = new ScheduledTrip(comp1, time3, time3.plusMinutes(3), from3, to3, ComfortNorm.C);
 		
 		LocalDateTime time4 = LocalDateTime.parse("2016-04-11T15:00:00");
-		ScheduledTrip sd4 = new ScheduledTrip(comp2, time4, time4.plusMinutes(2), from1, to1);
+		ScheduledTrip sd4 = new ScheduledTrip(comp2, time4, time4.plusMinutes(2), from1, to1, ComfortNorm.C);
 		LocalDateTime time5 = LocalDateTime.parse("2016-04-11T15:04:00");
-		ScheduledTrip sd5 = new ScheduledTrip(comp2, time5, time5.plusMinutes(2), from2, to2);
+		ScheduledTrip sd5 = new ScheduledTrip(comp2, time5, time5.plusMinutes(2), from2, to2, ComfortNorm.C);
 		LocalDateTime time6 = LocalDateTime.parse("2016-04-11T15:09:00");
-		ScheduledTrip sd6 = new ScheduledTrip(comp2, time6, time6.plusMinutes(3), from3, to3);
+		ScheduledTrip sd6 = new ScheduledTrip(comp2, time6, time6.plusMinutes(3), from3, to3, ComfortNorm.C);
 		
 		Timetable timetable = new Timetable();
 		timetable.addStation(from1, sd1);
