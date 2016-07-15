@@ -133,11 +133,12 @@ public class Composition {
 		if (!(other instanceof Composition)) 
 			return false;
 		Composition o = (Composition) other;
-		return this.id == o.id;
+		return this.id == o.id && 
+				this.wagons.equals(o.wagons);
 	}
 	
 	@Override
 	public int hashCode() {
-		return Integer.hashCode(id);
+		return 7*Integer.hashCode(id) + 13*wagons.hashCode();
 	}
 }
