@@ -23,6 +23,8 @@ import wagon.timetable.*;
  *
  */
 public class SystemState {
+	
+	private final int horizon = 24*60*60;
 
 	// system state variables
 	private EventActivityNetwork network;
@@ -219,8 +221,8 @@ public class SystemState {
 		int seed = 0;
 		for (Journey journey : map.keySet()) {
 			Collection<Passenger> passengers = map.get(journey);
-			// TODO: make segment determination automated process
-			ArrivalProcess arrivalProcess = new PiecewiseConstantProcess(passengers, 10*60, seed);
+			ArrivalProcess arrivalProcess = new HybridArrivalProcess(passengers, 0, horizon, 5*60, seed);
+//			ArrivalProcess arrivalProcess = new PiecewiseConstantProcess(passengers, 5*60, seed);
 			resultMap.put(journey, arrivalProcess);
 			seed++;
 		}

@@ -28,27 +28,27 @@ public class Main {
 			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/full_dataset_day2_export.xml");
 //			sample.export("data/materieelplan/processed/full_dataset_day2_export.xml");
 //			sample.export("data/materieelplan/processed/smaller_sample_schedule1_day2_export.xml");
-//			EventActivityNetwork network = EventActivityNetwork.createTransferNetwork(sample, 0);
+			EventActivityNetwork network = EventActivityNetwork.createTransferNetwork(sample, 1);
 //			EventActivityNetwork network = EventActivityNetwork.createTestNetwork5();
 			
 //			BiCriterionDijkstra biDijkstra = new BiCriterionDijkstra(network, Criterion.DISTANCE, Criterion.TRANSFER);
 //			BiCriterionDijkstra biDijkstra = new BiCriterionDijkstra(network, Criterion.TRANSFER, Criterion.DISTANCE);
-//			Path path = biDijkstra.lexicographicallyFirst("gn", "gln", LocalDateTime.parse("2016-04-11T20:15"));
+//			Path path = biDijkstra.lexicographicallyFirst("vs", "gn", LocalDateTime.parse("2016-04-11T10:00"));
 //			System.out.println(path.toString());
 			
 			Options options = new Options("data/cico/ritten_20160209.csv", null, 2);
-			
-			CiCoData cicoData = CiCoData
-					.importRawData(
-							"data/cico/ritten_20160209.csv",
-							"data/cico/omzettabel_stations.csv",
-							options); // hardcoded
-			cicoData.getJourneySummary();
-			cicoData.exportEmpiricalArrivalRateOfJourney(
-					"rta", 
-					"rtd", 
-					5*60, 
-					"data/cico/rta_rtd_20160209.csv");
+//			
+//			CiCoData cicoData = CiCoData
+//					.importRawData(
+//							"data/cico/ritten_20160209.csv",
+//							"data/cico/omzettabel_stations.csv",
+//							options); // hardcoded
+//			cicoData.getJourneySummary();
+//			cicoData.exportEmpiricalArrivalRateOfJourney(
+//					"rta", 
+//					"rtd", 
+//					5*60, 
+//					"data/cico/rta_rtd_20160209.csv");
 //			
 //			Collection<Passenger> selectedPassengers = cicoData.getPassengersAtCheckInStation("rtd");
 //			PiecewiseConstantProcess arrivals = new PiecewiseConstantProcess(selectedPassengers, 5*60, 0);
@@ -56,15 +56,15 @@ public class Main {
 //			arrivals.exportArrivalRate("data/cico/rates_piecewise_constant.csv");
 //			System.out.println("p: " + arrivals.kolmogorovSmirnovTest("matlab/ks_test_rtd_20160209.csv"));
 			
-//			long startTime = System.nanoTime();
-//			SimModel sim = new SimModel(sample, 
-//					network, 
-//					options);
-//			Report report = sim.start();
-//			System.out.println(report.summary());
-//			long endTime = System.nanoTime();
-//			double duration = (endTime - startTime)*1e-9;
-//			System.out.println("Simulation took " + duration + " s");
+			long startTime = System.nanoTime();
+			SimModel sim = new SimModel(sample, 
+					network, 
+					options);
+			Report report = sim.start();
+			System.out.println(report.summary());
+			long endTime = System.nanoTime();
+			double duration = (endTime - startTime)*1e-9;
+			System.out.println("Simulation took " + duration + " s");
 		}
 		catch (IOException e) {
 			e.printStackTrace();

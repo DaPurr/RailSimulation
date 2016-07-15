@@ -201,6 +201,9 @@ public class HybridArrivalProcess implements ArrivalProcess {
 				randomExponential = exponential.sample();
 				currTime += randomExponential;
 
+				currentSegment = (int) Math.floor(currTime/segmentWidth);
+				if (currTime >= horizon)
+					break;
 				acceptProb = intercept[currentSegment] + slope[currentSegment]*currTime;
 				acceptProb /= lambdaUB;
 				r = random.nextDouble();
@@ -211,8 +214,15 @@ public class HybridArrivalProcess implements ArrivalProcess {
 
 	@Override
 	public List<Double> generateArrivalsFromProcess(int horizon) {
-		// TODO Auto-generated method stub
-		return null;
+		List<Double> events = new ArrayList<>();
+		double currTime = 0;
+		while (currTime < horizon) {
+			double r = generateArrival(currTime, horizon);
+			currTime = r;
+			if (r < horizon)
+				events.add(r);
+		}
+		return events;
 	}
 	
 	private double getLambdaUpperBound() {
