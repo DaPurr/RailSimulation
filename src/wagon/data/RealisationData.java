@@ -16,38 +16,58 @@ public class RealisationData {
 		entriesPerTrain = new HashMap<>();
 	}
 	
-	public static RealisationData importFromFile(String fileName) throws IOException {
+	public static RealisationData importFromFile(String fileName, String fileTrainNumbers) throws IOException {
+		
+		// create a set of train numbers from which we want realisation data
+		Set<Integer> setTrainNumbers = importTrainNumbers(fileTrainNumbers);
+		
 		if (!fileName.matches(".*\\.csv"))
 			throw new IllegalArgumentException("File needs to be excel format.");
 		File file = new File(fileName);
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		RealisationData rdata = new RealisationData();
+		br.readLine(); // throw away header
 		for (String line = br.readLine(); line != null; line = br.readLine()) {
 			String[] parts = line.split(",");
 			int trainNr = Integer.parseInt(parts[1]);
-			LocalDateTime realizedDepartureTime = rdata.toLocalDateTimeObject(parts[3]);
-			LocalDateTime plannedDepartureTime = rdata.toLocalDateTimeObject(parts[4]);
-			Station departureStation = new Station(parts[5]);
-			LocalDateTime realizedArrivalTime = rdata.toLocalDateTimeObject(parts[6]);
-			LocalDateTime plannedArrivalTime = rdata.toLocalDateTimeObject(parts[7]);
-			Station arrivalStation = new Station(parts[8]);
-			Composition plannedComposition = rdata.toComposition(trainNr, parts[9]);
-			Composition realizedComposition = rdata.toComposition(trainNr, parts[12]);
 			
-			RealisationDataEntry entry = rdata.addEntry(
-					trainNr, 
-					realizedDepartureTime, 
-					plannedDepartureTime, 
-					departureStation, 
-					realizedArrivalTime, 
-					plannedArrivalTime, 
-					arrivalStation, 
-					plannedComposition, 
-					realizedComposition);
+			if (setTrainNumbers.contains(trainNr)) {
+				LocalDateTime realizedDepartureTime = rdata.toLocalDateTimeObjectRealized(parts[3]);
+				LocalDateTime plannedDepartureTime = rdata.toLocalDateTimeObjectPlanned(parts[4]);
+				Station departureStation = new Station(parts[5]);
+				LocalDateTime realizedArrivalTime = rdata.toLocalDateTimeObjectRealized(parts[6]);
+				LocalDateTime plannedArrivalTime = rdata.toLocalDateTimeObjectPlanned(parts[7]);
+				Station arrivalStation = new Station(parts[8]);
+				Composition plannedComposition = rdata.toComposition(trainNr, parts[9]);
+				Composition realizedComposition = rdata.toComposition(trainNr, parts[12]);
+
+				RealisationDataEntry entry = rdata.addEntry(
+						trainNr, 
+						realizedDepartureTime, 
+						plannedDepartureTime, 
+						departureStation, 
+						realizedArrivalTime, 
+						plannedArrivalTime, 
+						arrivalStation, 
+						plannedComposition, 
+						realizedComposition);
+			}
 		}
 		
 		br.close();
 		return rdata;
+	}
+	
+	private static Set<Integer> importTrainNumbers(String fileName) throws IOException {
+		Set<Integer> trainNumbers = new HashSet<>();
+		File file = new File(fileName);
+		BufferedReader br = new BufferedReader(new FileReader(file));
+		for (String line = br.readLine(); line != null; line = br.readLine()) {
+			int trainNr = Integer.parseInt(line);
+			trainNumbers.add(trainNr);
+		}
+		br.close();
+		return trainNumbers;
 	}
 	
 	private RealisationDataEntry addEntry(
@@ -79,16 +99,25 @@ public class RealisationData {
 		return entry;
 	}
 	
-	private LocalDateTime toLocalDateTimeObject(String text) {
+	private LocalDateTime toLocalDateTimeObjectRealized(String text) {
 		LocalDateTime date = LocalDateTime.parse(
 				text.toLowerCase(), 
-				DateTimeFormatter.ofPattern("ddMMMyyyy:HHmm:ss"));
+				DateTimeFormatter.ofPattern("ddMMMyyyy:HH:mm:ss"));
+		return date;
+	}
+	
+	private LocalDateTime toLocalDateTimeObjectPlanned(String text) {
+		LocalDateTime date = LocalDateTime.parse(
+				text.toLowerCase(), 
+				DateTimeFormatter.ofPattern("ddMMMyy:HH:mm:ss"));
 		return date;
 	}
 	
 	private Composition toComposition(int trainNr, String text) {
 		if (text == null)
 			throw new NullPointerException("Argument cannot be null");
+		else if (text.equals(""))
+			return new Composition(trainNr, new ArrayList<>());
 		String[] parts = text.split(",");
 		List<RollingStockUnit> units = new ArrayList<>();
 		for (int i = 0; i < parts.length; i++) {
