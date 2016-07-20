@@ -46,9 +46,13 @@ public class Main {
 //			cicoData.getJourneySummary();
 //			cicoData.exportEmpiricalArrivalRateOfJourney(
 //					"rta", 
-//					"rtd", 
-//					5*60, 
-//					"data/cico/rta_rtd_20160209.csv");
+//					"ut", 
+//					10*60, 
+//					"data/cico/rta_ut_20160209.csv");
+//			cicoData.exportEmpiricalArrivalRateOfCheckInStation(
+//					"rta", 
+//					10*60, 
+//					"data/cico/rta_20160209.csv");
 //			
 //			Collection<Passenger> selectedPassengers = cicoData.getPassengersAtCheckInStation("rtd");
 //			PiecewiseConstantProcess arrivals = new PiecewiseConstantProcess(selectedPassengers, 5*60, 0);

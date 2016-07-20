@@ -145,7 +145,7 @@ public class CiCoData {
 	}
 	
 	private static LocalDateTime toLocalDateTimeObject(String text) {
-		LocalDateTime date = LocalDateTime.parse("2016-04-11T" + text.substring(text.length()-8, text.length()-3));
+		LocalDateTime date = LocalDateTime.parse("2016-04-11T" + text.substring(text.length()-8, text.length()));
 		return date;
 	}
 	

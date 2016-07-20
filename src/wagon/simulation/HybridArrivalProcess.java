@@ -148,6 +148,60 @@ public class HybridArrivalProcess implements ArrivalProcess {
 		rightBound = segments-1;
 		if (rightBound-leftBound > 0) {
 			// fit a process
+			
+			// 1 segment
+			if (rightBound-leftBound == 1) {
+				if (leftBound > 0 && rightBound < segments-1) {
+
+					// constant process
+					slope[leftBound] = 0;
+					intercept[leftBound] = (double) arrivalsPerSegment.get(leftBound).size()/segmentWidth;
+				} else {
+					// at least one side is free, so fit piecewise-linear model
+					double leftPoint = Double.NaN;
+					double rightPoint = Double.NaN;
+					if (leftBound == 0) {
+						rightPoint = intercept[rightBound+1];
+					} else {
+						leftPoint = intercept[leftBound-1];
+					}
+					fitLinearProcess(
+							arrivalsPerSegment.get(leftBound), 
+							arrivalsPerSegment, 
+							leftBound*segmentWidth, 
+							rightBound*segmentWidth, 
+							segmentWidth, 
+							leftPoint, 
+							rightPoint);
+				}
+			}
+			// >1 segment
+			else if (rightBound-leftBound > 1) {
+				// retrieve passengers
+				List<Passenger> selectedPassengers = new ArrayList<>();
+				for (int i = leftBound; i < rightBound; i++) {
+					selectedPassengers.addAll(arrivalsPerSegment.get(i));
+				}
+
+				double leftPoint = Double.NaN;
+				double rightPoint = Double.NaN;
+
+				if (leftBound > 0) {
+					leftPoint = intercept[leftBound-1] + slope[leftBound-1]*(leftBound*segmentWidth);
+				}
+				if (rightBound < segments-1) {
+					rightPoint = intercept[rightBound+1] + slope[rightBound+1]*(rightBound*segmentWidth);
+				}
+
+				fitLinearProcess(
+						selectedPassengers, 
+						arrivalsPerSegment, 
+						leftBound*segmentWidth, 
+						rightBound*segmentWidth, 
+						segmentWidth, 
+						leftPoint, 
+						rightPoint);
+			}
 		}
 	}
 	
@@ -175,12 +229,35 @@ public class HybridArrivalProcess implements ArrivalProcess {
 			
 			if (Double.isNaN(intercept)) {
 				this.slope[correspondingSegment] = 0;
-				this.intercept[correspondingSegment] = (double) arrivalsPerSegment.get(correspondingSegment).size()/segmentWidth;
+				this.intercept[correspondingSegment] = lambdaMaximumLikelihood(arrivalsPerSegment.get(correspondingSegment));
 			} else {
 				this.intercept[correspondingSegment] = intercept;
 				this.slope[correspondingSegment] = slope;
 			}
 		}
+	}
+	
+	private double lambdaMaximumLikelihood(List<Passenger> passengers) {
+		List<Double> interArrivalTimes = new ArrayList<>();
+		List<Double> arrivals = new ArrayList<>();
+		
+		for (Passenger passenger : passengers)
+			arrivals.add(passenger.getCheckInTime().toLocalTime().toSecondOfDay() + random.nextDouble());
+		Collections.sort(arrivals);
+		
+		for (int i = 0; i < arrivals.size()-1; i++) {
+			double arrival1 = arrivals.get(i);
+			double arrival2 = arrivals.get(i+1);
+			double interArrivalTime = arrival2 - arrival1;
+			interArrivalTimes.add(interArrivalTime);
+		}
+		
+		double sum = 0;
+		for (double val : interArrivalTimes) {
+			sum += val;
+		}
+		double mean = sum/interArrivalTimes.size();
+		return 1/mean;
 	}
 
 	@Override
