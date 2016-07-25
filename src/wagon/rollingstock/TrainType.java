@@ -14,5 +14,6 @@ public enum TrainType {
 	ICM,
 	SGM,
 	SLT,
-	VIRM 
+	VIRM,
+	MAT64
 }

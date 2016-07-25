@@ -108,8 +108,10 @@ public abstract class RollingStockUnit {
 			else if (nrUnits == 6)
 				return new SLT6Unit();
 		case DDM:
-			if (nrUnits == 4)
+			if (nrUnits == 4 || nrUnits == 3)
 				return new DDM4Unit();
+		case MAT64:
+			return new MAT642Unit();
 		}
 		
 		// no match
