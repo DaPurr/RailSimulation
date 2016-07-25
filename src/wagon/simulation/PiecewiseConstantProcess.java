@@ -7,7 +7,6 @@ import java.util.*;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
-import org.apache.poi.util.SystemOutLogger;
 
 public class PiecewiseConstantProcess implements ArrivalProcess {
 	

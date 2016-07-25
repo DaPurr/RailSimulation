@@ -4,7 +4,6 @@ import java.util.*;
 
 import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.apache.commons.math3.random.MersenneTwister;
-import org.apache.poi.hssf.record.RightMarginRecord;
 
 public class HybridArrivalProcess implements ArrivalProcess {
 	
@@ -17,7 +16,6 @@ public class HybridArrivalProcess implements ArrivalProcess {
 	private double[] slope;
 	
 	private MersenneTwister random;
-	private int seed = 0;
 	
 	public HybridArrivalProcess(
 			Collection<Passenger> passengers, 
@@ -83,16 +81,6 @@ public class HybridArrivalProcess implements ArrivalProcess {
 			// 1 segment
 			if (rightBound-leftBound == 1) {
 				if (leftBound > 0 && rightBound < segments-1) {
-//					// there is only one line
-//					int w_0 = leftBound*segmentWidth;
-//					int w_1 = rightBound*segmentWidth;
-//					double leftPoint = intercept[leftBound-1] + slope[leftBound-1]*w_0;
-//					double rightPoint = intercept[rightBound+1] + slope[rightBound+1]*w_1;
-//					
-//					// 'fit' model
-//					slope[leftBound] = (rightPoint-leftPoint)/(w_1-w_0);
-//					intercept[leftBound] = leftPoint - w_0*slope[leftBound];
-					
 					// constant process
 					slope[leftBound] = 0;
 					intercept[leftBound] = (double) arrivalsPerSegment.get(leftBound).size()/segmentWidth;
@@ -229,35 +217,12 @@ public class HybridArrivalProcess implements ArrivalProcess {
 			
 			if (Double.isNaN(intercept)) {
 				this.slope[correspondingSegment] = 0;
-				this.intercept[correspondingSegment] = lambdaMaximumLikelihood(arrivalsPerSegment.get(correspondingSegment));
+				this.intercept[correspondingSegment] = (double) arrivalsPerSegment.get(correspondingSegment).size()/segmentWidth;
 			} else {
 				this.intercept[correspondingSegment] = intercept;
 				this.slope[correspondingSegment] = slope;
 			}
 		}
-	}
-	
-	private double lambdaMaximumLikelihood(List<Passenger> passengers) {
-		List<Double> interArrivalTimes = new ArrayList<>();
-		List<Double> arrivals = new ArrayList<>();
-		
-		for (Passenger passenger : passengers)
-			arrivals.add(passenger.getCheckInTime().toLocalTime().toSecondOfDay() + random.nextDouble());
-		Collections.sort(arrivals);
-		
-		for (int i = 0; i < arrivals.size()-1; i++) {
-			double arrival1 = arrivals.get(i);
-			double arrival2 = arrivals.get(i+1);
-			double interArrivalTime = arrival2 - arrival1;
-			interArrivalTimes.add(interArrivalTime);
-		}
-		
-		double sum = 0;
-		for (double val : interArrivalTimes) {
-			sum += val;
-		}
-		double mean = sum/interArrivalTimes.size();
-		return 1/mean;
 	}
 
 	@Override
@@ -302,7 +267,7 @@ public class HybridArrivalProcess implements ArrivalProcess {
 		return events;
 	}
 	
-	private double getLambdaUpperBound() {
+	public double getLambdaUpperBound() {
 		double max = Double.NEGATIVE_INFINITY;
 		
 		// check all segment points
@@ -315,14 +280,6 @@ public class HybridArrivalProcess implements ArrivalProcess {
 		
 		// check for last boundary
 		max = Double.max(max, intercept[segments-1] + slope[segments-1]*(segments*segmentWidth));
-		
-//		int n = passengers.size();
-//		
-//		// check first arrival
-//		max = Double.max(intercept[0] + slope[0]*arrivals.get(0), max);
-//		
-//		// check last arrival
-//		max = Double.max(intercept[segments-1] + slope[segments-1]*arrivals.get(n-1), max);
 		
 		return max;
 	}
