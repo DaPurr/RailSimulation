@@ -22,19 +22,19 @@ public class Main {
 
 	public static void main(String[] args) {
 		try {
-//			Timetable sample = Timetable.importFromExcel("data/materieelplan/full_dataset.xlsx", 2);
+			Timetable sample = Timetable.importFromExcel("data/materieelplan/full_dataset.xlsx");
 //			Timetable sample = Timetable.importFromExcel("data/materieelplan/smaller_sample_schedule1.xlsx", 2);
 //			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/smaller_sample_schedule1_export.xml");
-			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/full_dataset_day2_export.xml");
-//			sample.export("data/materieelplan/processed/full_dataset_day2_export.xml");
+//			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/full_dataset_export.xml");
+			sample.export("data/materieelplan/processed/full_dataset_export.xml");
 //			sample.export("data/materieelplan/processed/smaller_sample_schedule1_day2_export.xml");
-			EventActivityNetwork network = EventActivityNetwork.createTransferNetwork(sample, 1);
+			EventActivityNetwork network = EventActivityNetwork.createTransferNetwork(sample, 2, 1);
 //			EventActivityNetwork network = EventActivityNetwork.createTestNetwork5();
 			
-//			BiCriterionDijkstra biDijkstra = new BiCriterionDijkstra(network, Criterion.DISTANCE, Criterion.TRANSFER);
+			BiCriterionDijkstra biDijkstra = new BiCriterionDijkstra(network, Criterion.DISTANCE, Criterion.TRANSFER);
 //			BiCriterionDijkstra biDijkstra = new BiCriterionDijkstra(network, Criterion.TRANSFER, Criterion.DISTANCE);
-//			Path path = biDijkstra.lexicographicallyFirst("vs", "gn", LocalDateTime.parse("2016-04-11T10:00"));
-//			System.out.println(path.toString());
+			Path path = biDijkstra.lexicographicallyFirst("vs", "gn", LocalDateTime.parse("2016-04-11T10:00"));
+			System.out.println(path.toString());
 			
 			Options options = new Options("data/cico/ritten_20160209.csv", null, 2);
 //			
@@ -74,18 +74,18 @@ public class Main {
 		catch (IOException e) {
 			e.printStackTrace();
 		} 
-		catch (SAXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
-//		catch (InvalidFormatException e) {
+//		catch (SAXException e) {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
+//		catch (ParserConfigurationException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		} 
+		catch (InvalidFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }

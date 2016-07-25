@@ -4,6 +4,7 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 
 import wagon.infrastructure.Station;
@@ -75,6 +76,14 @@ public class RealisationData {
 		br.close();
 		rdata.log.info("... Finish processing realisation data");
 		return rdata;
+	}
+	
+	public Set<Entry<Integer, SortedSet<RealisationDataEntry>>> entrySet() {
+		return entriesPerTrain.entrySet();
+	}
+	
+	public SortedSet<RealisationDataEntry> getEntriesByTrain(int trainNr) {
+		return new TreeSet<>(entriesPerTrain.get(trainNr));
 	}
 	
 	private static String fixLine(String line) {

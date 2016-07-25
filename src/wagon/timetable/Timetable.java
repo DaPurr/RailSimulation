@@ -15,10 +15,7 @@ import org.apache.poi.hssf.util.CellReference;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
 import com.monitorjbl.xlsx.StreamingReader;
@@ -33,11 +30,11 @@ import wagon.rollingstock.*;
  * @author Nemanja Milovanovic
  * 
  */
-public class Timetable implements Iterable<ScheduledTrip> {
+public class Timetable {
 	
 	// reference date-time
 	private static final LocalDateTime referenceDateTime = 
-			LocalDateTime.of(2016, 04, 11, 0, 0);
+			LocalDateTime.of(2016, 4, 11, 0, 0);
 	
 	private Map<Station, List<ScheduledTrip>> departures;
 	private Map<Composition, SortedSet<ScheduledTrip>> routes;
@@ -113,6 +110,17 @@ public class Timetable implements Iterable<ScheduledTrip> {
 		if (!routes.containsKey(comp))
 			return null;
 		return new ArrayList<>(routes.get(comp));
+	}
+	
+	public List<ScheduledTrip> getRoute(Composition comp, int dayOfWeek) {
+		if (!routes.containsKey(comp))
+			return null;
+		List<ScheduledTrip> trips = new ArrayList<>();
+		for (ScheduledTrip trip : routes.get(comp)) {
+			if (trip.getDayOfWeek() == dayOfWeek)
+				trips.add(trip);
+		}
+		return trips;
 	}
 	
 	/**
@@ -191,7 +199,7 @@ public class Timetable implements Iterable<ScheduledTrip> {
 	 * @throws InvalidFormatException
 	 * @throws IOException
 	 */
-	public static Timetable importFromExcel(String filename, int day) 
+	public static Timetable importFromExcel(String filename) 
 			throws InvalidFormatException, IOException {
 		// only allow xls(x) files
 		if (!filename.matches(".*\\.xls.?"))
@@ -223,14 +231,12 @@ public class Timetable implements Iterable<ScheduledTrip> {
 			if (cell.getCellType() == Cell.CELL_TYPE_STRING)
 				continue;
 			
-			// TODO: save timetable per day of the week
-			
 			CellReference cellRef = new CellReference("L");
 			
 			int dayOfWeek = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
-			// only save mondays
-			if (dayOfWeek != day)
-				continue;
+			
+//			if (dayOfWeek != day)
+//				continue;
 			
 			// init variables to store timetable
 			cellRef = new CellReference("A");
@@ -243,39 +249,15 @@ public class Timetable implements Iterable<ScheduledTrip> {
 			Station fromStation = extractStationFromCell(row.getCell(cellRef.getCol()));
 			cellRef = new CellReference("D");
 			Station toStation = extractStationFromCell(row.getCell(cellRef.getCol()));
-//			cellRef = new CellReference("AU");
-//			int nrWagons = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
-//			cellRef = new CellReference("BF");
-//			int capSeats1 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
-//			cellRef = new CellReference("BG");
-//			int capSeats2 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
-//			cellRef = new CellReference("BH");
-//			int capSeats2Fold = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
-//			cellRef = new CellReference("BI");
-//			int capStand2 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
-//			cellRef = new CellReference("AY");
-//			int capNormC1 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
-//			cellRef = new CellReference("AZ");
-//			int capNormC2 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
-//			cellRef = new CellReference("BA");
-//			int capNormA2 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
-//			cellRef = new CellReference("BB");
-//			int capNormV2 = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
 			cellRef = new CellReference("G");
 			ComfortNorm norm = ComfortNorm.valueOf(row.getCell(cellRef.getCol()).getStringCellValue());
-//			cellRef = new CellReference("H");
-//			TrainType trainType = extractTrainTypeFromCell(row.getCell(cellRef.getCol()));
 			cellRef = new CellReference("AV");
 			String combination = row.getCell(cellRef.getCol()).getStringCellValue();
-			
-//			Composition comp = new Composition(trainNr, trainType, nrWagons, 
-//					capSeats1, capSeats2, capSeats2Fold, capStand2, capNormC1, 
-//					capNormC2, capNormA2, capNormV2, norm);
 			
 			Composition comp = timetable.parseComposition(trainNr, combination);
 			
 			ScheduledTrip trip = new ScheduledTrip(comp, departureTime, arrivalTime, 
-					fromStation, toStation, norm);
+					fromStation, toStation, norm, dayOfWeek);
 			List<ScheduledTrip> trips = trainRoutes.get(comp);
 			if (trips == null) {
 				trips = new ArrayList<>();
@@ -404,29 +386,6 @@ public class Timetable implements Iterable<ScheduledTrip> {
 			
 			Element composition = (Element) trip.getElementsByTagName("composition").item(0);
 			String id = composition.getAttribute("id");
-//			String type = composition.getAttribute("type");
-//			String nrUnits = composition.getAttribute("nrUnits");
-//			String seats1 = composition.getAttribute("seats1");
-//			String seats2 = composition.getAttribute("seats2");
-//			String foldable = composition.getAttribute("foldable");
-//			String standArea = composition.getAttribute("standArea");
-//			String normC1 = composition.getAttribute("normC1");
-//			String normC2 = composition.getAttribute("normC2");
-//			String normA2 = composition.getAttribute("normA2");
-//			String normV2 = composition.getAttribute("normV2");
-//			String norm = composition.getAttribute("norm");
-//			Composition comp = new Composition(Integer.parseInt(id), 
-//					TrainType.valueOf(type), 
-//					Integer.valueOf(nrUnits),
-//					Integer.valueOf(seats1),
-//					Integer.valueOf(seats2),
-//					Integer.valueOf(foldable),
-//					Integer.valueOf(standArea),
-//					Integer.valueOf(normC1),
-//					Integer.valueOf(normC2),
-//					Integer.valueOf(normA2),
-//					Integer.valueOf(normV2),
-//					ComfortNorm.valueOf(norm));
 			
 			Composition comp = new Composition(Integer.parseInt(id), timetable.parseUnitsFromComposition(composition));
 			
@@ -436,11 +395,13 @@ public class Timetable implements Iterable<ScheduledTrip> {
 			String to = trip.getAttribute("to");
 			Station fromStation = new Station(from);
 			ComfortNorm norm = ComfortNorm.valueOf(trip.getAttribute("norm"));
+			int dayOfWeek = Integer.parseInt(trip.getAttribute("day"));
 			ScheduledTrip st = new ScheduledTrip(comp, 
 					LocalDateTime.parse(departureDate), 
 					LocalDateTime.parse(arrivalDate), 
 					fromStation, new Station(to), 
-					norm);
+					norm, 
+					dayOfWeek);
 			
 			timetable.addStation(fromStation, st);
 			tripCount++;
@@ -515,6 +476,7 @@ public class Timetable implements Iterable<ScheduledTrip> {
 		s += "to=\"" + trip.toStation().name() + "\" ";
 		s += "departureTime=\"" + trip.departureTime().toString() + "\" ";
 		s += "arrivalTime=\"" + trip.arrivalTime().toString() + "\" ";
+		s += "day=\"" + trip.getDayOfWeek() + "\" ";
 		s += "norm=\"" + trip.getNorm().toString() + "\">";
 		s += System.lineSeparator();
 		
@@ -579,21 +541,15 @@ public class Timetable implements Iterable<ScheduledTrip> {
 			throw new IllegalArgumentException("Wrong cell type for stations.");
 		return new Station(cell.getStringCellValue());
 	}
-	
-//	private static TrainType extractTrainTypeFromCell(Cell cell) {
-//		if (cell.getCellType() != Cell.CELL_TYPE_STRING)
-//			throw new IllegalArgumentException("Wrong cell type for train types.");
-//		return TrainType.valueOf(cell.getStringCellValue());
-//	}
 
-	@Override
-	public Iterator<ScheduledTrip> iterator() {
-		Set<ScheduledTrip> newSet = new LinkedHashSet<>();
-		for (Set<ScheduledTrip> set : routes.values()) {
-			newSet.addAll(set);
-		}
-		return newSet.iterator();
-	}
+//	@Override
+//	public Iterator<ScheduledTrip> iterator() {
+//		Set<ScheduledTrip> newSet = new LinkedHashSet<>();
+//		for (Set<ScheduledTrip> set : routes.values()) {
+//			newSet.addAll(set);
+//		}
+//		return newSet.iterator();
+//	}
 	
 	/**
 	 * @return	returns all trips associated to the timetable
@@ -603,6 +559,18 @@ public class Timetable implements Iterable<ScheduledTrip> {
 		for (Entry<Composition, SortedSet<ScheduledTrip>> entry : routes.entrySet()) {
 			Set<ScheduledTrip> set = entry.getValue();
 			trips.addAll(set);
+		}
+		return trips;
+	}
+	
+	public Set<ScheduledTrip> getAllTrips(int dayOfWeek) {
+		Set<ScheduledTrip> trips = new LinkedHashSet<>();
+		for (Entry<Composition, SortedSet<ScheduledTrip>> entry : routes.entrySet()) {
+			Set<ScheduledTrip> set = entry.getValue();
+			for (ScheduledTrip trip : set) {
+				if (trip.getDayOfWeek() == dayOfWeek)
+					trips.add(trip);
+			}
 		}
 		return trips;
 	}

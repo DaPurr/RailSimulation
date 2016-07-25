@@ -1,6 +1,7 @@
 package wagon.timetable;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import wagon.infrastructure.Station;
 import wagon.rollingstock.Composition;
@@ -17,11 +18,12 @@ import wagon.rollingstock.Composition;
 public class ScheduledTrip implements Comparable<ScheduledTrip> {
 
 	private Composition composition;
-	private LocalDateTime arrTime;
-	private LocalDateTime depTime;
+	private LocalTime arrTime;
+	private LocalTime depTime;
 	private Station toStation;
 	private Station fromStation;
 	private ComfortNorm norm;
+	private int dayOfWeek;
 	
 	/**
 	 * Constructs a <code>ScheduldDeparture</code> object.
@@ -29,15 +31,16 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 	 * @param composition	train composition
 	 * @param time			scheduled departure time
 	 */
-	public ScheduledTrip(Composition composition, LocalDateTime depTime, 
-			LocalDateTime arrTime, Station fromStation, Station toStation, 
-			ComfortNorm norm) {
+	public ScheduledTrip(Composition composition, LocalTime depTime, 
+			LocalTime arrTime, Station fromStation, Station toStation, 
+			ComfortNorm norm, int dayOfWeek) {
 		this.composition = composition;
 		this.depTime = depTime;
 		this.arrTime = arrTime;
 		this.fromStation = fromStation;
 		this.toStation = toStation;
 		this.norm = norm;
+		this.dayOfWeek = dayOfWeek;
 	}
 	
 	/**
@@ -58,15 +61,23 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 	/**
 	 * @return	scheduled departure time
 	 */
-	public LocalDateTime departureTime() {
+	public LocalTime departureTime() {
 		return depTime;
+	}
+	
+	public void setDepartureTime(LocalTime time) {
+		depTime = time;
 	}
 	
 	/**
 	 * @return	scheduled arrival time
 	 */
-	public LocalDateTime arrivalTime() {
+	public LocalTime arrivalTime() {
 		return arrTime;
+	}
+	
+	public void setArrivalTime(LocalTime time) {
+		arrTime = time;
 	}
 	
 	/**
@@ -83,40 +94,8 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 		return fromStation;
 	}
 	
-	/**
-	 * Sets the current arrival time to <code>time</code>.
-	 * 
-	 * @param time	the new arrival time
-	 */
-	public void setArrivalTime(LocalDateTime time) {
-		arrTime = time;
-	}
-	
-	/**
-	 * Sets the current departure time to <code>time</code>.
-	 * 
-	 * @param time	the new departure time
-	 */
-	public void setDepartureTime(LocalDateTime time) {
-		depTime = time;
-	}
-	
-	/**
-	 * Sets the current origin station to <code>station</code>.
-	 * 
-	 * @param time	the new origin station
-	 */
-	public void setFromStation(Station station) {
-		fromStation = station;
-	}
-	
-	/**
-	 * Sets the current destination station to <code>station</code>.
-	 * 
-	 * @param time	the new destination station
-	 */
-	public void setToStation(Station station) {
-		toStation = station;
+	public int getDayOfWeek() {
+		return dayOfWeek;
 	}
 	
 	@Override
@@ -128,25 +107,29 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 		boolean b3 = this.depTime.equals(o.depTime);
 		boolean b4 = this.fromStation.equals(o.fromStation);
 		boolean b5 = this.toStation.equals(o.toStation);
-		return b1 && b3 && b4 && b5;
+		boolean b6 = this.dayOfWeek == o.dayOfWeek;
+		return b6 && b1 && b3 && b4 && b5;
 	}
 
 	@Override
 	public int compareTo(ScheduledTrip that) {
-		int res1 = departureTime().compareTo(that.departureTime());
+		int res1 = Integer.compare(this.dayOfWeek, that.dayOfWeek);
 		if (res1 != 0)
 			return res1;
-		int res2 = arrivalTime().compareTo(that.arrivalTime());
+		int res2 = departureTime().compareTo(that.departureTime());
 		if (res2 != 0)
-			return res2;		
-		int res3 = fromStation().name().compareTo(that.fromStation().name());
+			return res2;
+		int res3 = arrivalTime().compareTo(that.arrivalTime());
 		if (res3 != 0)
-			return res3;
+			return res3;		
+		int res4 = fromStation().name().compareTo(that.fromStation().name());
+		if (res4 != 0)
+			return res4;
 		return toStation().name().compareTo(that.toStation().name());
 	}
 	
 	@Override
 	public String toString() {
-		return "[" + depTime + ": " + fromStation + "\t" + toStation + " " + arrTime + " (" + composition.type() + ")]";
+		return "[day: " + dayOfWeek + ", " + depTime + ": " + fromStation + "\t" + toStation + " " + arrTime + " (" + composition.type() + ")]";
 	}
 }
