@@ -35,10 +35,13 @@ public abstract class Event implements Comparable<Event> {
 	
 	@Override
 	public int compareTo(Event other) {
-		int comp_time = time().compareTo(other.time());
-		if (comp_time != 0)
-			return comp_time;
-		return this.getClass().getName().compareTo(other.getClass().getName());
+		int res1 = time().compareTo(other.time());
+		if (res1 != 0)
+			return res1;
+		// for a trip from A -> B, when we say we board for this trip, we board at A and 
+		// when we say we alight this trip we alight at B, so first we process boarding 
+		// events, then alighting events.
+		return -this.getClass().getName().compareTo(other.getClass().getName());
 	}
 	
 }
