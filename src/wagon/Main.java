@@ -66,6 +66,7 @@ public class Main {
 					options);
 			Report report = sim.start();
 			System.out.println(report.summary());
+			System.out.println(report.reportBestAndWorstTrains());
 			long endTime = System.nanoTime();
 			double duration = (endTime - startTime)*1e-9;
 			System.out.println("Simulation took " + duration + " s");

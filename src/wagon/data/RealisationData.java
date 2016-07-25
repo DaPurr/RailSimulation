@@ -4,6 +4,7 @@ import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.logging.Logger;
 
 import wagon.infrastructure.Station;
 import wagon.rollingstock.*;
@@ -11,6 +12,9 @@ import wagon.rollingstock.*;
 public class RealisationData {
 
 	private Map<Integer, SortedSet<RealisationDataEntry>> entriesPerTrain;
+	private final static LocalDateTime DUMMY = LocalDateTime.of(1992, 12, 05, 12, 0, 0);
+	
+	private Logger log = Logger.getLogger(this.getClass().getName());
 	
 	public RealisationData() {
 		entriesPerTrain = new HashMap<>();
@@ -27,16 +31,28 @@ public class RealisationData {
 		BufferedReader br = new BufferedReader(new FileReader(file));
 		RealisationData rdata = new RealisationData();
 		br.readLine(); // throw away header
+		long count = 0;
+		rdata.log.info("Begin processing realisation data...");
 		for (String line = br.readLine(); line != null; line = br.readLine()) {
-			String[] parts = line.split(",");
+			line = fixLine(line);
+			String[] parts = line.split(";");
 			int trainNr = Integer.parseInt(parts[1]);
 			
 			if (setTrainNumbers.contains(trainNr)) {
-				LocalDateTime realizedDepartureTime = rdata.toLocalDateTimeObjectRealized(parts[3]);
-				LocalDateTime plannedDepartureTime = rdata.toLocalDateTimeObjectPlanned(parts[4]);
+				count++;
+				LocalDateTime realizedDepartureTime = RealisationData.DUMMY;
+				if (!parts[3].equals(""))
+					realizedDepartureTime = rdata.toLocalDateTimeObjectRealized(parts[3]);
+				LocalDateTime plannedDepartureTime = RealisationData.DUMMY;
+				if (!parts[4].equals(""))
+					plannedDepartureTime = rdata.toLocalDateTimeObjectPlanned(parts[4]);
 				Station departureStation = new Station(parts[5]);
-				LocalDateTime realizedArrivalTime = rdata.toLocalDateTimeObjectRealized(parts[6]);
-				LocalDateTime plannedArrivalTime = rdata.toLocalDateTimeObjectPlanned(parts[7]);
+				LocalDateTime realizedArrivalTime = RealisationData.DUMMY;
+				if (!parts[6].equals(""))
+					realizedArrivalTime = rdata.toLocalDateTimeObjectRealized(parts[6]);
+				LocalDateTime plannedArrivalTime = RealisationData.DUMMY;
+				if (!parts[7].equals(""))
+					plannedArrivalTime = rdata.toLocalDateTimeObjectPlanned(parts[7]);
 				Station arrivalStation = new Station(parts[8]);
 				Composition plannedComposition = rdata.toComposition(trainNr, parts[9]);
 				Composition realizedComposition = rdata.toComposition(trainNr, parts[12]);
@@ -51,11 +67,33 @@ public class RealisationData {
 						arrivalStation, 
 						plannedComposition, 
 						realizedComposition);
+				if (count % 1000 == 0)
+					rdata.log.info("Processed " + count + " entries...");
 			}
 		}
 		
 		br.close();
+		rdata.log.info("... Finish processing realisation data");
 		return rdata;
+	}
+	
+	private static String fixLine(String line) {
+		String newLine = "";
+		String delimiter = ";";
+		for (int i = 0; i < line.length(); i++) {
+			String c = line.substring(i,i+1);
+			if (c.equals(","))
+				newLine = newLine.concat(delimiter);
+			else if (c.equals("\"")) {
+				if (delimiter.equals(","))
+					delimiter = ";";
+				else
+					delimiter = ",";
+			} else {
+				newLine = newLine.concat(c);
+			}
+		}
+		return newLine;
 	}
 	
 	private static Set<Integer> importTrainNumbers(String fileName) throws IOException {
@@ -118,6 +156,7 @@ public class RealisationData {
 			throw new NullPointerException("Argument cannot be null");
 		else if (text.equals(""))
 			return new Composition(trainNr, new ArrayList<>());
+		text = text.replaceAll("[^ ,a-zA-Z0-9]", "");
 		String[] parts = text.split(",");
 		List<RollingStockUnit> units = new ArrayList<>();
 		for (int i = 0; i < parts.length; i++) {
@@ -131,6 +170,12 @@ public class RealisationData {
 		if (text == null)
 			throw new NullPointerException("Argument cannot be null");
 		String[] parts = text.split(" ");
-		return RollingStockUnit.toUnit(TrainType.valueOf(parts[0]), Integer.parseInt(parts[1]));
+		String type = parts[0];
+		int nrWagons = Integer.parseInt(parts[1]);
+		if (type.equals("SGMM") || type.equals("SGMW"))
+			type = "SGM";
+		else if (type.equals("DDAR") && nrWagons == 3)
+			type= "DDM";
+		return RollingStockUnit.toUnit(TrainType.valueOf(type), nrWagons);
 	}
 }
