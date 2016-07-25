@@ -218,12 +218,16 @@ public class SystemState {
 		
 		// for each journey, estimate arrival process
 		Map<Journey, ArrivalProcess> resultMap = new HashMap<>();
-		int seed = 0;
+		int seed = 1;
+		double maxLambda = Double.NEGATIVE_INFINITY;
 		for (Journey journey : map.keySet()) {
 			Collection<Passenger> passengers = map.get(journey);
-			ArrivalProcess arrivalProcess = new HybridArrivalProcess(passengers, 0, horizon, 5*60, seed);
+			HybridArrivalProcess arrivalProcess = new HybridArrivalProcess(passengers, 0, horizon, 5*60, seed);
 //			ArrivalProcess arrivalProcess = new PiecewiseConstantProcess(passengers, 5*60, seed);
 			resultMap.put(journey, arrivalProcess);
+			double lambda = arrivalProcess.getLambdaUpperBound();
+			if (lambda > maxLambda)
+				maxLambda = lambda;
 			seed++;
 		}
 		return resultMap;
