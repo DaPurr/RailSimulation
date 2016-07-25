@@ -88,8 +88,16 @@ public class CiCoData {
 		cicoData.log.info("Start reading CiCo data from location: " + cicoFileName + " ...");
 		long counter = 0;
 		while (line != null) {
-			counter++;
 			String[] parts = line.split(",");
+			
+			// skip if 1st class
+			if (!parts[4].equals("2")) {
+				line = br.readLine();
+				continue;
+			}
+			
+			counter++;
+			
 			LocalDateTime checkInTime = toLocalDateTimeObject(parts[10]);
 			LocalDateTime checkOutTime = toLocalDateTimeObject(parts[27]);
 			
