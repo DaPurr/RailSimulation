@@ -83,7 +83,10 @@ public class RealisationData {
 	}
 	
 	public SortedSet<RealisationDataEntry> getEntriesByTrain(int trainNr) {
-		return new TreeSet<>(entriesPerTrain.get(trainNr));
+		SortedSet<RealisationDataEntry> trainEntries = entriesPerTrain.get(trainNr);
+		if (trainEntries == null)
+			return null;
+		return new TreeSet<>(trainEntries);
 	}
 	
 	private static String fixLine(String line) {

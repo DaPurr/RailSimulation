@@ -1,6 +1,7 @@
 package wagon.data;
 
 import java.util.*;
+import java.util.Map.Entry;
 
 import wagon.rollingstock.*;
 import wagon.timetable.*;
@@ -10,7 +11,7 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 	private Timetable timetable;
 	private RealisationData rdata;
 	
-	private Map<List<RollingStockUnit>, Map<RollingStockUnit, Double>> probabilities;
+	private Map<Set<RollingStockUnit>, Map<Set<RollingStockUnit>, Double>> probabilities;
 	
 	public RollingStockComposerBasic(
 			Timetable timetable,
@@ -47,14 +48,35 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 					// increment counters: go through all trips in realisation data with same 
 					// train number and day
 					SortedSet<RealisationDataEntry> entries = rdata.getEntriesByTrain(comp.id());
-					for (RealisationDataEntry entry : entries) {
-						if (tripEqualsEntry(trip, entry))
-							counts.incrementCount(
-									new HashSet<>(trip.composition().getUnits()), 
-									new HashSet<>(entry.getRealizedComposition().getUnits()));
+					if (entries != null) {
+						for (RealisationDataEntry entry : entries) {
+							if (tripEqualsEntry(trip, entry))
+								counts.incrementCount(
+										new HashSet<>(trip.composition().getUnits()), 
+										new HashSet<>(entry.getRealizedComposition().getUnits()));
+						}
 					}
 				}
 			}
+		}
+		
+		// now that we have the counts, convert them to probabilities
+		for (Set<RollingStockUnit> comp : counts.keySet()) {
+			int count = 0;
+			Set<Set<RollingStockUnit>> y = counts.mapOfComposition(comp).keySet();
+			for (Set<RollingStockUnit> y_i : y) {
+				int toAdd = counts.mapOfComposition(comp).get(y_i);
+				count += toAdd;
+			}
+			Map<Set<RollingStockUnit>, Double> map = probabilities.get(comp);
+			if (map == null) {
+				map = new HashMap<>();
+			}
+			for (Set<RollingStockUnit> y_i : y) {
+				double prob = (double) counts.getCount(comp, y_i)/count;
+				map.put(y_i, prob);
+			}
+			probabilities.put(comp, map);
 		}
 	}
 	
@@ -64,6 +86,32 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 		boolean b3 = trip.toStation().equals(entry.getArrivalStation());
 		boolean b4 = trip.getDayOfWeek() == entry.getPlannedDepartureTime().getDayOfWeek().getValue();
 		return b1 && b2 && b3 && b4;
+	}
+	
+	@Override
+	public String toString() {
+		String s = "";
+		for (Entry<Set<RollingStockUnit>, Map<Set<RollingStockUnit>, Double>> kingEntry : probabilities.entrySet()) {
+			String x = parseUnits(kingEntry.getKey());
+			s += x + " | ";
+			s += kingEntry.getValue().toString();
+			s += System.lineSeparator();
+		}
+		return s;
+	}
+	
+	private String parseUnits(Collection<RollingStockUnit> units) {
+		String s = "";
+		boolean first = true;
+		for (RollingStockUnit unit : units) {
+			if (first) {
+				first = false;
+			} else {
+				s += "-";
+			}
+			s += unit.toString();
+		}
+		return s;
 	}
 	
 	private static class MismatchCounter {
@@ -98,6 +146,47 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 			}
 			map.put(y, prevCount + 1);
 			return prevCount + 1;
+		}
+		
+		public Map<Set<RollingStockUnit>, Integer> mapOfComposition(Set<RollingStockUnit> comp) {
+			Map<Set<RollingStockUnit>, Integer> map = kingMap.get(comp);
+			if (map == null)
+				return null;
+			return new HashMap<>(map);
+		}
+		
+		public Set<Entry<Set<RollingStockUnit>, Map<Set<RollingStockUnit>, Integer>>> entrySet() {
+			return kingMap.entrySet();
+		}
+		
+		public Set<Set<RollingStockUnit>> keySet() {
+			return kingMap.keySet();
+		}
+		
+		@Override
+		public String toString() {
+			String s = "";
+			for (Entry<Set<RollingStockUnit>, Map<Set<RollingStockUnit>, Integer>> kingEntry : kingMap.entrySet()) {
+				String x = parseUnits(kingEntry.getKey());
+				s += x + " | ";
+				s += kingEntry.getValue().toString();
+				s += System.lineSeparator();
+			}
+			return s;
+		}
+		
+		private String parseUnits(Collection<RollingStockUnit> units) {
+			String s = "";
+			boolean first = true;
+			for (RollingStockUnit unit : units) {
+				if (first) {
+					first = false;
+				} else {
+					s += "-";
+				}
+				s += unit.toString();
+			}
+			return s;
 		}
 	}
 
