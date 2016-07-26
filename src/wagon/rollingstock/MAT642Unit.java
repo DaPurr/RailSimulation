@@ -51,5 +51,10 @@ public class MAT642Unit extends RollingStockUnit {
 	public int getNormV2() {
 		return 237;
 	}
+	
+	@Override
+	public String toString() {
+		return "MAT64";
+	}
 
 }
