@@ -62,7 +62,8 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 		boolean b1 = trip.composition().id() == entry.getTrainNr();
 		boolean b2 = trip.fromStation().equals(entry.getDepartureStation());
 		boolean b3 = trip.toStation().equals(entry.getArrivalStation());
-		return b1 && b2 && b3;
+		boolean b4 = trip.getDayOfWeek() == entry.getPlannedDepartureTime().getDayOfWeek().getValue();
+		return b1 && b2 && b3 && b4;
 	}
 	
 	private static class MismatchCounter {

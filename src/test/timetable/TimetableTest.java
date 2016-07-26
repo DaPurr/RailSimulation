@@ -3,6 +3,7 @@ package test.timetable;
 import static org.junit.Assert.*;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 
 import org.junit.Test;
@@ -27,7 +28,7 @@ public class TimetableTest {
 		Composition comp = new Composition(1, units1);
 		
 		for (int i = 0; i < nrTimetables; i++) {
-			LocalDateTime time = LocalDateTime.parse("2016-04-11T12:00:00");
+			LocalTime time = LocalTime.parse("12:00:00");
 			Timetable actualTimetable = new Timetable();
 			Timetable expectedTimetable = new Timetable();
 			List<ScheduledTrip> listDeps = new ArrayList<>();
@@ -68,7 +69,7 @@ public class TimetableTest {
 		Composition comp = new Composition(1, units1);
 		
 		for (int i = 0; i < nrTimetables; i++) {
-			LocalDateTime time = LocalDateTime.parse("2016-04-11T12:00:00");
+			LocalTime time = LocalTime.parse("12:00:00");
 			Timetable actualTimetable = new Timetable();
 			Timetable expectedTimetable = new Timetable();
 			List<ScheduledTrip> listDeps = new ArrayList<>();
@@ -110,11 +111,11 @@ public class TimetableTest {
 		units1.add(new SLT4Unit());
 		Composition comp = new Composition(1, units1);
 		
-		LocalDateTime time1 = LocalDateTime.parse("2016-04-11T12:00:00");
+		LocalTime time1 = LocalTime.parse("12:00:00");
 		ScheduledTrip sd1 = new ScheduledTrip(comp, time1, time1.plusMinutes(2), from1, to1, ComfortNorm.C, 2);
-		LocalDateTime time2 = LocalDateTime.parse("2016-04-11T12:04:00");
+		LocalTime time2 = LocalTime.parse("12:04:00");
 		ScheduledTrip sd2 = new ScheduledTrip(comp, time2, time2.plusMinutes(2), from2, to2, ComfortNorm.C, 2);
-		LocalDateTime time3 = LocalDateTime.parse("2016-04-11T12:09:00");
+		LocalTime time3 = LocalTime.parse("12:09:00");
 		ScheduledTrip sd3 = new ScheduledTrip(comp, time3, time3.plusMinutes(3), from3, to3, ComfortNorm.C, 2);
 		
 		Timetable timetable = new Timetable();
@@ -154,18 +155,18 @@ public class TimetableTest {
 		units2.add(new SGM3Unit());
 		Composition comp2 = new Composition(1, units2);
 		
-		LocalDateTime time1 = LocalDateTime.parse("2016-04-11T12:00:00");
+		LocalTime time1 = LocalTime.parse("12:00:00");
 		ScheduledTrip sd1 = new ScheduledTrip(comp1, time1, time1.plusMinutes(2), from1, to1, ComfortNorm.C, 2);
-		LocalDateTime time2 = LocalDateTime.parse("2016-04-11T12:04:00");
+		LocalTime time2 = LocalTime.parse("12:04:00");
 		ScheduledTrip sd2 = new ScheduledTrip(comp1, time2, time2.plusMinutes(2), from2, to2, ComfortNorm.C, 2);
-		LocalDateTime time3 = LocalDateTime.parse("2016-04-11T12:09:00");
+		LocalTime time3 = LocalTime.parse("12:09:00");
 		ScheduledTrip sd3 = new ScheduledTrip(comp1, time3, time3.plusMinutes(3), from3, to3, ComfortNorm.C, 2);
 		
-		LocalDateTime time4 = LocalDateTime.parse("2016-04-11T15:00:00");
+		LocalTime time4 = LocalTime.parse("15:00:00");
 		ScheduledTrip sd4 = new ScheduledTrip(comp2, time4, time4.plusMinutes(2), from1, to1, ComfortNorm.C, 2);
-		LocalDateTime time5 = LocalDateTime.parse("2016-04-11T15:04:00");
+		LocalTime time5 = LocalTime.parse("15:04:00");
 		ScheduledTrip sd5 = new ScheduledTrip(comp2, time5, time5.plusMinutes(2), from2, to2, ComfortNorm.C, 2);
-		LocalDateTime time6 = LocalDateTime.parse("2016-04-11T15:09:00");
+		LocalTime time6 = LocalTime.parse("15:09:00");
 		ScheduledTrip sd6 = new ScheduledTrip(comp2, time6, time6.plusMinutes(3), from3, to3, ComfortNorm.C, 2);
 		
 		Timetable timetable = new Timetable();

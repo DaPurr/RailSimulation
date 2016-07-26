@@ -1,6 +1,7 @@
 package wagon.simulation;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 /**
  * This abstract class is used to model events for a discrete-event simulation.
@@ -31,7 +32,7 @@ public abstract class Event implements Comparable<Event> {
 	 * @return	the <code>LocalDateTime</code> representation of the 
 	 * 			timing of the event
 	 */
-	public abstract LocalDateTime time();
+	public abstract LocalTime time();
 	
 	@Override
 	public int compareTo(Event other) {

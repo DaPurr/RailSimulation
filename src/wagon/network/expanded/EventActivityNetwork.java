@@ -106,29 +106,29 @@ public class EventActivityNetwork {
 		Composition comp3 = new Composition(3, units3);
 		
 		ScheduledTrip sd1 = new ScheduledTrip(comp1, 
-				LocalDateTime.parse("2016-04-11T06:47"), 
-				LocalDateTime.parse("2016-04-11T06:50"), 
+				LocalTime.parse("06:47"), 
+				LocalTime.parse("06:50"), 
 				station1, station2, ComfortNorm.C, 2);
 		ScheduledTrip sd2 = new ScheduledTrip(comp2, 
-				LocalDateTime.parse("2016-04-11T07:17"), 
-				LocalDateTime.parse("2016-04-11T07:20"), 
+				LocalTime.parse("07:17"), 
+				LocalTime.parse("07:20"), 
 				station1, station2, ComfortNorm.C, 2);
 		ScheduledTrip sd3 = new ScheduledTrip(comp3, 
-				LocalDateTime.parse("2016-04-11T07:47"), 
-				LocalDateTime.parse("2016-04-11T07:50"), 
+				LocalTime.parse("07:47"), 
+				LocalTime.parse("07:50"), 
 				station1, station2, ComfortNorm.C, 2);
 		
 		ScheduledTrip sd4 = new ScheduledTrip(comp1, 
-				LocalDateTime.parse("2016-04-11T06:50"), 
-				LocalDateTime.parse("2016-04-11T06:53"), 
+				LocalTime.parse("06:50"), 
+				LocalTime.parse("06:53"), 
 				station2, station3, ComfortNorm.C, 2);
 		ScheduledTrip sd5 = new ScheduledTrip(comp2, 
-				LocalDateTime.parse("2016-04-11T07:20"), 
-				LocalDateTime.parse("2016-04-11T07:23"), 
+				LocalTime.parse("07:20"), 
+				LocalTime.parse("07:23"), 
 				station2, station3, ComfortNorm.C, 2);
 		ScheduledTrip sd6 = new ScheduledTrip(comp3, 
-				LocalDateTime.parse("2016-04-11T07:50"), 
-				LocalDateTime.parse("2016-04-11T07:53"), 
+				LocalTime.parse("07:50"), 
+				LocalTime.parse("07:53"), 
 				station2, station3, ComfortNorm.C, 2);
 		
 		Timetable timetable = new Timetable();
@@ -164,16 +164,16 @@ public class EventActivityNetwork {
 		Composition comp2 = new Composition(2, units2);
 		
 		ScheduledTrip trip1 = new ScheduledTrip(comp1, 
-				LocalDateTime.parse("2016-04-19T10:53"), 
-				LocalDateTime.parse("2016-04-19T11:00"), 
+				LocalTime.parse("10:53"), 
+				LocalTime.parse("11:00"), 
 				stationA, stationB, ComfortNorm.C, 2);
 		ScheduledTrip trip2 = new ScheduledTrip(comp1, 
-				LocalDateTime.parse("2016-04-19T11:00"), 
-				LocalDateTime.parse("2016-04-19T11:30"), 
+				LocalTime.parse("11:00"), 
+				LocalTime.parse("11:30"), 
 				stationB, stationC, ComfortNorm.C, 2);
 		ScheduledTrip trip3 = new ScheduledTrip(comp2, 
-				LocalDateTime.parse("2016-04-19T11:10"), 
-				LocalDateTime.parse("2016-04-19T11:30"), 
+				LocalTime.parse("11:10"), 
+				LocalTime.parse("11:30"), 
 				stationB, stationC, ComfortNorm.C, 2);
 		
 		Timetable timetable = new Timetable();
@@ -206,20 +206,20 @@ public class EventActivityNetwork {
 		Composition comp2 = new Composition(2, units2);
 		
 		ScheduledTrip trip1 = new ScheduledTrip(comp1, 
-				LocalDateTime.parse("2016-04-19T12:00"), 
-				LocalDateTime.parse("2016-04-19T12:01"), 
+				LocalTime.parse("12:00"), 
+				LocalTime.parse("12:01"), 
 				stationA, stationB, ComfortNorm.C, 2);
 		ScheduledTrip trip2 = new ScheduledTrip(comp1, 
-				LocalDateTime.parse("2016-04-19T12:01"), 
-				LocalDateTime.parse("2016-04-19T12:02"), 
+				LocalTime.parse("12:01"), 
+				LocalTime.parse("12:02"), 
 				stationB, stationA, ComfortNorm.C, 2);
 		ScheduledTrip trip3 = new ScheduledTrip(comp2, 
-				LocalDateTime.parse("2016-04-19T12:02"), 
-				LocalDateTime.parse("2016-04-19T12:03"), 
+				LocalTime.parse("12:02"), 
+				LocalTime.parse("12:03"), 
 				stationA, stationB, ComfortNorm.C, 2);
 		ScheduledTrip trip4 = new ScheduledTrip(comp2, 
-				LocalDateTime.parse("2016-04-19T12:03"), 
-				LocalDateTime.parse("2016-04-19T12:04"), 
+				LocalTime.parse("12:03"), 
+				LocalTime.parse("12:04"), 
 				stationB, stationC, ComfortNorm.C, 2);
 		
 		Timetable timetable = new Timetable();
@@ -258,20 +258,20 @@ public class EventActivityNetwork {
 		Composition comp3 = new Composition(3, units3);
 		
 		ScheduledTrip trip1 = new ScheduledTrip(comp1, 
-				LocalDateTime.parse("2016-04-19T10:53"), 
-				LocalDateTime.parse("2016-04-19T11:00"), 
+				LocalTime.parse("10:53"), 
+				LocalTime.parse("11:00"), 
 				stationA, stationB, ComfortNorm.C, 2);
 		ScheduledTrip trip2 = new ScheduledTrip(comp1, 
-				LocalDateTime.parse("2016-04-19T11:05"), 
-				LocalDateTime.parse("2016-04-19T11:30"), 
+				LocalTime.parse("11:05"), 
+				LocalTime.parse("11:30"), 
 				stationB, stationC, ComfortNorm.C, 2);
 		ScheduledTrip trip3 = new ScheduledTrip(comp2, 
-				LocalDateTime.parse("2016-04-19T11:10"), 
-				LocalDateTime.parse("2016-04-19T11:30"), 
+				LocalTime.parse("11:10"), 
+				LocalTime.parse("11:30"), 
 				stationB, stationC, ComfortNorm.C, 2);
 		ScheduledTrip trip4 = new ScheduledTrip(comp3, 
-				LocalDateTime.parse("2016-04-19T11:35"), 
-				LocalDateTime.parse("2016-04-19T11:40"), 
+				LocalTime.parse("11:35"), 
+				LocalTime.parse("11:40"), 
 				stationC, stationD, ComfortNorm.C, 2);
 		
 		Timetable timetable = new Timetable();
@@ -310,20 +310,20 @@ public class EventActivityNetwork {
 		Composition comp3 = new Composition(3, units3);
 		
 		ScheduledTrip trip1 = new ScheduledTrip(comp1, 
-				LocalDateTime.parse("2016-04-19T11:05"), 
-				LocalDateTime.parse("2016-04-19T11:19"), 
+				LocalTime.parse("11:05"), 
+				LocalTime.parse("11:19"), 
 				stationA, stationB, ComfortNorm.C, 2);
 		ScheduledTrip trip2 = new ScheduledTrip(comp1, 
-				LocalDateTime.parse("2016-04-19T11:19"), 
-				LocalDateTime.parse("2016-04-19T12:10"), 
+				LocalTime.parse("11:19"), 
+				LocalTime.parse("12:10"), 
 				stationB, stationC, ComfortNorm.C, 2);
 		ScheduledTrip trip3 = new ScheduledTrip(comp2, 
-				LocalDateTime.parse("2016-04-19T11:06"), 
-				LocalDateTime.parse("2016-04-19T11:07"), 
+				LocalTime.parse("11:06"), 
+				LocalTime.parse("11:07"), 
 				stationA, stationB, ComfortNorm.C, 2);
 		ScheduledTrip trip4 = new ScheduledTrip(comp3, 
-				LocalDateTime.parse("2016-04-19T11:18"), 
-				LocalDateTime.parse("2016-04-19T12:00"), 
+				LocalTime.parse("11:18"), 
+				LocalTime.parse("12:00"), 
 				stationB, stationC, ComfortNorm.C, 2);
 		
 		Timetable timetable = new Timetable();
@@ -435,7 +435,7 @@ public class EventActivityNetwork {
 						an.trip().arrivalTime().plusMinutes(transferTime), 
 						station);
 				TransferNode tNode = network.transfersByStation.get(station).ceiling(dummyTransfer);
-				if (tNode != null) {
+				if (tNode != null && an.trip().arrivalTime().compareTo(tNode.getTime()) < 0) {
 					TransferEdge transEdge = new TransferEdge(
 							an, tNode, 
 							duration(an.trip().arrivalTime(), tNode.getTime()));
@@ -588,8 +588,8 @@ public class EventActivityNetwork {
 					prevEvent = event;
 					continue;
 				}
-				LocalDateTime time1 = null;
-				LocalDateTime time2 = null;
+				LocalTime time1 = null;
+				LocalTime time2 = null;
 				if (prevEvent instanceof DepartureNode)
 					time1 = prevEvent.trip().departureTime();
 				else
@@ -622,13 +622,13 @@ public class EventActivityNetwork {
 		return network;
 	}
 	
-	private static int duration(LocalDateTime time1, LocalDateTime time2) {
+	private static int duration(LocalTime time1, LocalTime time2) {
 		Duration duration = Duration.between(time1, time2);
 		int minutes = (int) duration.toMinutes();
 		return minutes;
 	}
 	
-	public TransferNode getNextTransferNode(Station station, LocalDateTime time) {
+	public TransferNode getNextTransferNode(Station station, LocalTime time) {
 		TransferNode dummy = new TransferNode(time, station);
 		return transfersByStation.get(station).ceiling(dummy);
 	}
@@ -647,7 +647,7 @@ public class EventActivityNetwork {
 	 * @param time	departure time
 	 * @return	departure node
 	 */
-	public DepartureNode getStationDepartureNode(String name, LocalDateTime time) {
+	public DepartureNode getStationDepartureNode(String name, LocalTime time) {
 		if (name == null || time == null)
 			throw new IllegalArgumentException("Arguments cannot be null");
 		Station station = new Station(name);
@@ -681,7 +681,7 @@ public class EventActivityNetwork {
 	 * @param time	departure time
 	 * @return	departure node
 	 */
-	public ArrivalNode getStationArrivalNode(String name, LocalDateTime time) {
+	public ArrivalNode getStationArrivalNode(String name, LocalTime time) {
 		if (name == null || time == null)
 			throw new IllegalArgumentException("Arguments cannot be null");
 		Station station = new Station(name);

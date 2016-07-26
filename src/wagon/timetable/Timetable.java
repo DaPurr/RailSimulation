@@ -1,7 +1,7 @@
 package wagon.timetable;
 
 import java.io.*;
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -33,8 +33,8 @@ import wagon.rollingstock.*;
 public class Timetable {
 	
 	// reference date-time
-	private static final LocalDateTime referenceDateTime = 
-			LocalDateTime.of(2016, 4, 11, 0, 0);
+//	private static final LocalDateTime referenceDateTime = 
+//			LocalDateTime.of(2016, 4, 11, 0, 0);
 	
 	private Map<Station, List<ScheduledTrip>> departures;
 	private Map<Composition, SortedSet<ScheduledTrip>> routes;
@@ -240,9 +240,9 @@ public class Timetable {
 			
 			// init variables to store timetable
 			cellRef = new CellReference("A");
-			LocalDateTime departureTime = extractDateFromCell(row.getCell(cellRef.getCol()));
+			LocalTime departureTime = extractTimeFromCell(row.getCell(cellRef.getCol()));
 			cellRef = new CellReference("BS");
-			LocalDateTime arrivalTime = extractDateFromCell(row.getCell(cellRef.getCol()));
+			LocalTime arrivalTime = extractTimeFromCell(row.getCell(cellRef.getCol()));
 			cellRef = new CellReference("B");
 			int trainNr = (int) row.getCell(cellRef.getCol()).getNumericCellValue();
 			cellRef = new CellReference("C");
@@ -255,6 +255,10 @@ public class Timetable {
 			String combination = row.getCell(cellRef.getCol()).getStringCellValue();
 			
 			Composition comp = timetable.parseComposition(trainNr, combination);
+			
+			// only import trips with departure and arrival times before 00:00:00
+//			if (departureTime.compareTo(arrivalTime) > 0)
+//				continue;
 			
 			ScheduledTrip trip = new ScheduledTrip(comp, departureTime, arrivalTime, 
 					fromStation, toStation, norm, dayOfWeek);
@@ -272,7 +276,7 @@ public class Timetable {
 		reader.close();
 		
 		// fixing departure/arrival times
-		fixTripTimes(trainRoutes);
+		trainRoutes = fixTripTimes(trainRoutes);
 		for (Entry<Composition, List<ScheduledTrip>> entry : trainRoutes.entrySet()) {
 			for (ScheduledTrip trip : entry.getValue()) {
 				Station fromStation = trip.fromStation();
@@ -334,32 +338,21 @@ public class Timetable {
 		return composition;
 	}
 	
-	private static void fixTripTimes(Map<Composition, List<ScheduledTrip>> trainRoutes) {
+	private static Map<Composition, List<ScheduledTrip>> fixTripTimes(
+			Map<Composition, List<ScheduledTrip>> trainRoutes) {
+		Map<Composition, List<ScheduledTrip>> newRoutes = new HashMap<>();
 		for (Entry<Composition, List<ScheduledTrip>> entry : trainRoutes.entrySet()) {
 			List<ScheduledTrip> trips = entry.getValue();
+			List<ScheduledTrip> newTrips = new ArrayList<>();
 			
-			LocalDateTime previousDateTime = null;
 			for (ScheduledTrip trip : trips) {
-				LocalDateTime departureDateTime = trip.departureTime();
-				
-				// case 1: departure before 00:00, arrival after 00:00
-				if (trip.departureTime().compareTo(trip.arrivalTime()) > 0)
-					trip.setArrivalTime(trip.arrivalTime().plusDays(1));
-				
-				if (previousDateTime == null) {
-					previousDateTime = departureDateTime;
-					continue;
-				}
-				
-				// case 2: both departure and arrival after 00:00
-				if (departureDateTime.compareTo(previousDateTime) < 0) {
-					departureDateTime = trip.departureTime().plusDays(1);
-					trip.setDepartureTime(departureDateTime);
-					trip.setArrivalTime(trip.arrivalTime().plusDays(1));
-				}
-				previousDateTime = departureDateTime;
+				if (trip.departureTime().compareTo(trip.arrivalTime()) < 0)
+					newTrips.add(trip);
+				else break;
 			}
+			newRoutes.put(entry.getKey(), newTrips);
 		}
+		return newRoutes;
 	}
 	
 	public static Timetable importFromXML(String file_name) throws SAXException, IOException, ParserConfigurationException {
@@ -397,8 +390,8 @@ public class Timetable {
 			ComfortNorm norm = ComfortNorm.valueOf(trip.getAttribute("norm"));
 			int dayOfWeek = Integer.parseInt(trip.getAttribute("day"));
 			ScheduledTrip st = new ScheduledTrip(comp, 
-					LocalDateTime.parse(departureDate), 
-					LocalDateTime.parse(arrivalDate), 
+					LocalTime.parse(departureDate), 
+					LocalTime.parse(arrivalDate), 
 					fromStation, new Station(to), 
 					norm, 
 					dayOfWeek);
@@ -515,7 +508,7 @@ public class Timetable {
 		return s;
 	}
 	
-	private static LocalDateTime extractDateFromCell(Cell cell) {
+	private static LocalTime extractTimeFromCell(Cell cell) {
 		if (cell.getCellType() != Cell.CELL_TYPE_NUMERIC)
 			throw new IllegalArgumentException("Wrong cell type for dates.");
 		// hopefully we have been supplied a valid timestamp
@@ -530,10 +523,10 @@ public class Timetable {
 		number -= second*10;
 		int first = number;
 //		String date = "2016-04-11T" + fourth + third + ":" + second + first + ":00";
-		LocalDateTime datetime = referenceDateTime
-				.withHour(fourth*10 + third)
-				.withMinute(second*10 + first);
-		return datetime;
+		LocalTime time = LocalTime.of(
+				fourth*10 + third,
+				second*10 + first);
+		return time;
 	}
 	
 	private static Station extractStationFromCell(Cell cell) {
@@ -541,15 +534,6 @@ public class Timetable {
 			throw new IllegalArgumentException("Wrong cell type for stations.");
 		return new Station(cell.getStringCellValue());
 	}
-
-//	@Override
-//	public Iterator<ScheduledTrip> iterator() {
-//		Set<ScheduledTrip> newSet = new LinkedHashSet<>();
-//		for (Set<ScheduledTrip> set : routes.values()) {
-//			newSet.addAll(set);
-//		}
-//		return newSet.iterator();
-//	}
 	
 	/**
 	 * @return	returns all trips associated to the timetable

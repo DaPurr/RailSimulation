@@ -1,16 +1,17 @@
 package wagon.network.expanded;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import wagon.infrastructure.Station;
 import wagon.network.Node;
 
 public class TransferNode implements Node, Comparable<TransferNode> {
 	
-	private LocalDateTime time;
+	private LocalTime time;
 	private Station station;
 	
-	public TransferNode(LocalDateTime time, Station station) {
+	public TransferNode(LocalTime time, Station station) {
 		this.time = time;
 		this.station = station;
 	}
@@ -19,7 +20,7 @@ public class TransferNode implements Node, Comparable<TransferNode> {
 		return station;
 	}
 	
-	public LocalDateTime getTime() {
+	public LocalTime getTime() {
 		return time;
 	}
 	

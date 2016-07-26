@@ -33,7 +33,7 @@ public class BiCriterionDijkstra {
 		log.setLevel(Level.OFF);
 	}
 	
-	public Path lexicographicallyFirst(String from, String to, LocalDateTime departureTime) {
+	public Path lexicographicallyFirst(String from, String to, LocalTime departureTime) {
 		if (from == null || to == null || departureTime == null)
 			throw new IllegalArgumentException("Arguments cannot be null");
 		TransferNode tNode = network.getNextTransferNode(new Station(from), departureTime);

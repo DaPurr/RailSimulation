@@ -1,6 +1,7 @@
 package wagon.network.expanded;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import wagon.network.Node;
 import wagon.timetable.ScheduledTrip;
@@ -40,8 +41,8 @@ public abstract class EventNode implements Node, Comparable<EventNode> {
 	
 	@Override
 	public int compareTo(EventNode other) {
-		LocalDateTime time1 = null;
-		LocalDateTime time2 = null;
+		LocalTime time1 = null;
+		LocalTime time2 = null;
 		String name1 = null;
 		String name2 = null;
 		String name3 = null;

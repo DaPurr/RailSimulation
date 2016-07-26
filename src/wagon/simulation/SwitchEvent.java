@@ -1,6 +1,7 @@
 package wagon.simulation;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 public class SwitchEvent extends Event {
 
@@ -10,7 +11,7 @@ public class SwitchEvent extends Event {
 	}
 
 	@Override
-	public LocalDateTime time() {
+	public LocalTime time() {
 		// TODO Auto-generated method stub
 		return null;
 	}

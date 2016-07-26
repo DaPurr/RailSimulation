@@ -12,7 +12,7 @@ public class LexicographicallyFirstGeneration implements RouteGeneration {
 	private EventActivityNetwork network;
 	private String from;
 	private String to;
-	private LocalDateTime checkInTime;
+	private LocalTime checkInTime;
 	
 	private Logger log = Logger.getLogger(this.getClass().getName());
 	
@@ -27,7 +27,7 @@ public class LexicographicallyFirstGeneration implements RouteGeneration {
 			EventActivityNetwork network, 
 			String from, 
 			String to, 
-			LocalDateTime checkInTime) {
+			LocalTime checkInTime) {
 		this.network = network;
 		this.from = from;
 		this.to = to;
@@ -46,19 +46,19 @@ public class LexicographicallyFirstGeneration implements RouteGeneration {
 		Path path1 = dijkstra.lexicographicallyFirst(from, to, checkInTime);
 		
 		// if there is no earliest arrival path, there exists no path
-		if (path1 == null) {
-			paths.add(null);
-			return paths;
-		}
+//		if (path1 == null) {
+//			paths.add(null);
+//			return paths;
+//		}
 		
 		paths.add(path1);
-		if (path1.numberOfTransfers() == 0)
-			return paths;
-		
-		// generate minimum number of transfers path
-		dijkstra = new BiCriterionDijkstra(network, Criterion.TRANSFER, Criterion.DISTANCE);
-		Path path2 = dijkstra.lexicographicallyFirst(from, to, checkInTime);
-		paths.add(path2);
+//		if (path1.numberOfTransfers() == 0)
+//			return paths;
+//		
+//		// generate minimum number of transfers path
+//		dijkstra = new BiCriterionDijkstra(network, Criterion.TRANSFER, Criterion.DISTANCE);
+//		Path path2 = dijkstra.lexicographicallyFirst(from, to, checkInTime);
+//		paths.add(path2);
 		
 		log.info("...Finish generating routes");
 		

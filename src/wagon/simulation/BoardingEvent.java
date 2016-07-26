@@ -1,6 +1,7 @@
 package wagon.simulation;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import wagon.rollingstock.Composition;
 import wagon.timetable.ScheduledTrip;
@@ -14,7 +15,7 @@ import wagon.timetable.ScheduledTrip;
  */
 public class BoardingEvent extends Event {
 	
-	private LocalDateTime time;
+	private LocalTime time;
 	private ScheduledTrip trip;
 
 	/**
@@ -24,14 +25,14 @@ public class BoardingEvent extends Event {
 	 * @param groups	the passenger groups about to board the train
 	 * @param time		the time at which the event takes place
 	 */
-	public BoardingEvent(ScheduledTrip trip, LocalDateTime time) {
+	public BoardingEvent(ScheduledTrip trip, LocalTime time) {
 		super();
 		this.trip = trip;
 		this.time = time;
 	}
 
 	@Override
-	public LocalDateTime time() {
+	public LocalTime time() {
 		return time;
 	}
 

@@ -1,7 +1,6 @@
 package wagon.simulation;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.Map.Entry;
@@ -11,6 +10,7 @@ import wagon.timetable.ScheduledTrip;
 public class Report {
 
 	private SystemState state;
+	private int dayOfWeek;
 	
 	/**
 	 * TODO: create new class representing n simulation iterations, 
@@ -20,8 +20,9 @@ public class Report {
 	 * 
 	 * @param state	the system state after simulation
 	 */
-	public Report(SystemState state) {
+	public Report(SystemState state, int dayOfWeek) {
 		this.state = state;
+		this.dayOfWeek = dayOfWeek;
 	}
 	
 	/**
@@ -32,7 +33,7 @@ public class Report {
 	 */
 	public String summary() {
 		String s = "";
-		Set<ScheduledTrip> trips = state.getTimetable().getAllTrips();
+		Set<ScheduledTrip> trips = state.getTimetable().getAllTrips(dayOfWeek);
 		s += "ALL TRIPS" + System.lineSeparator();
 		s += "=========================" + System.lineSeparator();
 		s += "KPI_{old}=" + calculateKPIOld(trips) + System.lineSeparator();
@@ -140,7 +141,7 @@ public class Report {
 	
 	public String reportBestAndWorstTrains() {
 		Map<Integer, Collection<ScheduledTrip>> trainMap = new HashMap<>();
-		Collection<ScheduledTrip> trips = state.getTimetable().getAllTrips();
+		Collection<ScheduledTrip> trips = state.getTimetable().getAllTrips(dayOfWeek);
 		
 		// add trips to all train numbers
 		for (ScheduledTrip trip : trips) {
@@ -198,10 +199,10 @@ public class Report {
 	public Set<ScheduledTrip> getTripsBetweenTimes(Collection<ScheduledTrip> trips, LocalTime time1, LocalTime time2) {
 		Set<ScheduledTrip> setTrips = new HashSet<>();
 		for (ScheduledTrip trip : trips) {
-			LocalDateTime tripDepartureTime = trip.departureTime();
-			LocalDateTime tripArrivalTime = trip.arrivalTime();
-			if (tripArrivalTime.toLocalTime().compareTo(time2) <= 0
-					&& tripDepartureTime.toLocalTime().compareTo(time1) >= 0) {
+			LocalTime tripDepartureTime = trip.departureTime();
+			LocalTime tripArrivalTime = trip.arrivalTime();
+			if (tripArrivalTime.compareTo(time2) <= 0
+					&& tripDepartureTime.compareTo(time1) >= 0) {
 				setTrips.add(trip);
 			}
 		}

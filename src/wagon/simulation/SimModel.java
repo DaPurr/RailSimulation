@@ -2,6 +2,7 @@ package wagon.simulation;
 
 import java.io.*;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -17,7 +18,7 @@ import wagon.timetable.Timetable;
 
 public class SimModel {
 	
-	public final static LocalDateTime BASE_TIME = LocalDateTime.of(2016, 4, 11, 0, 0, 0);
+	public final static LocalTime BASE_TIME = LocalTime.of(0, 0, 0);
 
 	private SystemState state;
 	private PriorityQueue<Event> eventQueue;
@@ -80,7 +81,7 @@ public class SimModel {
 			event.process(state);
 		}
 		
-		return new Report(state);
+		return new Report(state, options.getDayOfWeek());
 	}
 	
 	private void initialize() {

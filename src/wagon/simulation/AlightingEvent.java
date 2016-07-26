@@ -1,23 +1,24 @@
 package wagon.simulation;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import wagon.rollingstock.Composition;
 import wagon.timetable.ScheduledTrip;
 
 public class AlightingEvent extends Event {
 	
-	private LocalDateTime time;
+	private LocalTime time;
 	private ScheduledTrip trip;
 
-	public AlightingEvent(ScheduledTrip trip, LocalDateTime time) {
+	public AlightingEvent(ScheduledTrip trip, LocalTime time) {
 		super();
 		this.trip = trip;
 		this.time = time;
 	}
 
 	@Override
-	public LocalDateTime time() {
+	public LocalTime time() {
 		return time;
 	}
 
