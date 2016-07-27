@@ -37,7 +37,7 @@ public class Main {
 //			Path path = biDijkstra.lexicographicallyFirst("gn", "btl", LocalTime.parse("18:43"));
 //			System.out.println(path.toString());
 			
-			Options options = new Options("data/cico/ritten_20160209.csv", null, 2);
+			Options options = new Options("data/cico/ritten_20160209.csv", 2);
 //			
 //			CiCoData cicoData = CiCoData
 //					.importRawData(

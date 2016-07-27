@@ -9,7 +9,7 @@ import wagon.simulation.*;
 public class PiecewiseLinearProcessSandbox {
 
 	public static void main(String[] args) {
-		Options options = new Options("data/cico/ritten_20160209.csv", null, 2);
+		Options options = new Options("data/cico/ritten_20160209.csv", 2);
 		CiCoData cicoData;
 		try {
 			cicoData = CiCoData

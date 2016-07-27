@@ -18,7 +18,7 @@ import java.time.LocalTime;
  */
 public class Options {
 
-	private String pathToRawCiCoData;
+	private String pathToCiCoData;
 	private int dayOfWeek;
 	private int checkInTimeCorrection;
 	private int checkOutTimeCorrection;
@@ -39,10 +39,9 @@ public class Options {
 	 * @param dayOfWeek					the day of the week
 	 */
 	public Options(
-			String pathToRawCiCoData,
-			String pathToProcessedGroupsData,
+			String pathToCiCoData,
 			int dayOfWeek) {
-		this.pathToRawCiCoData = pathToRawCiCoData;
+		this.pathToCiCoData = pathToCiCoData;
 		this.dayOfWeek = dayOfWeek;
 		checkInTimeCorrection = 0;
 		checkOutTimeCorrection = 0;
@@ -50,8 +49,8 @@ public class Options {
 		timeUpperBound = LocalTime.parse("23:59:59");
 	}
 	
-	public String getPathToRawCiCoData() {
-		return pathToRawCiCoData;
+	public String getPathToCiCoData() {
+		return pathToCiCoData;
 	}
 	
 	public int getDayOfWeek() {
