@@ -84,11 +84,11 @@ public class SimModel {
 		}
 		if (rdata == null)
 			throw new IllegalStateException("Failed to load realisation data");
-		RollingStockComposer rcomposer = new RollingStockComposerBasic(timetable, rdata);
-		Timetable realizedTimetable = new Timetable(timetable);
-		generateMismatches(realizedTimetable, rcomposer);
+//		RollingStockComposer rcomposer = new RollingStockComposerBasic(timetable, rdata);
+//		Timetable realizedTimetable = new Timetable(timetable);
+//		generateMismatches(realizedTimetable, rcomposer);
 		
-		state = new SystemState(network, timetable, realizedTimetable, cicoData);
+		state = new SystemState(network, timetable, timetable, cicoData);
 	}
 	
 	public Report start() {
@@ -203,6 +203,7 @@ public class SimModel {
 					if (generate) {
 						realizedComposition = composer.realizedComposition(trip.composition(), trip);
 						generate = false;
+						currentPlannedUnits = trip.composition().getUnits();
 					}
 					trip.setComposition(realizedComposition);
 				}

@@ -57,7 +57,7 @@ public class Timetable {
 				new LinkedHashMap<>();
 		Set<Station> newStations = new LinkedHashSet<>();
 		Set<Composition> newCompositions = new LinkedHashSet<>();
-		for (Entry<Integer, SortedSet<ScheduledTrip>> entry : routes.entrySet()) {
+		for (Entry<Integer, SortedSet<ScheduledTrip>> entry : timetable.routes.entrySet()) {
 			SortedSet<ScheduledTrip> sortedTrips = entry.getValue();
 			SortedSet<ScheduledTrip> newSortedTrips = new TreeSet<>();
 			for (ScheduledTrip trip : sortedTrips) {
@@ -79,6 +79,13 @@ public class Timetable {
 			}
 			newRoutes.put(entry.getKey(), newSortedTrips);
 		}
+		
+		departures = newDepartures;
+		routes = newRoutes;
+		stations = newStations;
+		compositions = newCompositions;
+		
+		log.setLevel(Level.ALL);
 	}
 	
 	/**

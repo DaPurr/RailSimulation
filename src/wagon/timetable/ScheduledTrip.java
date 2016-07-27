@@ -146,6 +146,6 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 	
 	@Override
 	public String toString() {
-		return "[day: " + dayOfWeek + ", " + depTime + ": " + fromStation + "\t" + toStation + " " + arrTime + " (" + composition.type() + ")]";
+		return "[day: " + dayOfWeek + ", " + depTime + ": " + fromStation + "\t" + toStation + " " + arrTime + " (" + composition.toString() + ")]";
 	}
 }
