@@ -93,15 +93,15 @@ public class EventActivityNetwork {
 		Station station2 = new Station("Cps");
 		Station station3 = new Station("Rta");
 		
-		List<RollingStockUnit> units1 = new ArrayList<>();
+		Set<RollingStockUnit> units1 = new HashSet<>();
 		units1.add(new SGM3Unit());
 		Composition comp1 = new Composition(1, units1);
 		
-		List<RollingStockUnit> units2 = new ArrayList<>();
+		Set<RollingStockUnit> units2 = new HashSet<>();
 		units2.add(new SGM3Unit());
 		Composition comp2 = new Composition(2, units2);
 		
-		List<RollingStockUnit> units3 = new ArrayList<>();
+		Set<RollingStockUnit> units3 = new HashSet<>();
 		units3.add(new SGM3Unit());
 		Composition comp3 = new Composition(3, units3);
 		
@@ -155,11 +155,11 @@ public class EventActivityNetwork {
 		Station stationB = new Station("B");
 		Station stationC = new Station("C");
 		
-		List<RollingStockUnit> units1 = new ArrayList<>();
+		Set<RollingStockUnit> units1 = new HashSet<>();
 		units1.add(new SLT4Unit());
 		Composition comp1 = new Composition(1, units1);
 		
-		List<RollingStockUnit> units2 = new ArrayList<>();
+		Set<RollingStockUnit> units2 = new HashSet<>();
 		units2.add(new SLT4Unit());
 		Composition comp2 = new Composition(2, units2);
 		
@@ -197,11 +197,11 @@ public class EventActivityNetwork {
 		Station stationB = new Station("B");
 		Station stationC = new Station("C");
 		
-		List<RollingStockUnit> units1 = new ArrayList<>();
+		Set<RollingStockUnit> units1 = new HashSet<>();
 		units1.add(new SLT4Unit());
 		Composition comp1 = new Composition(1, units1);
 		
-		List<RollingStockUnit> units2 = new ArrayList<>();
+		Set<RollingStockUnit> units2 = new HashSet<>();
 		units2.add(new SLT4Unit());
 		Composition comp2 = new Composition(2, units2);
 		
@@ -245,15 +245,15 @@ public class EventActivityNetwork {
 		Station stationC = new Station("C");
 		Station stationD = new Station("D");
 		
-		List<RollingStockUnit> units1 = new ArrayList<>();
+		Set<RollingStockUnit> units1 = new HashSet<>();
 		units1.add(new SLT4Unit());
 		Composition comp1 = new Composition(1, units1);
 		
-		List<RollingStockUnit> units2 = new ArrayList<>();
+		Set<RollingStockUnit> units2 = new HashSet<>();
 		units2.add(new SLT4Unit());
 		Composition comp2 = new Composition(2, units2);
 		
-		List<RollingStockUnit> units3 = new ArrayList<>();
+		Set<RollingStockUnit> units3 = new HashSet<>();
 		units3.add(new SLT4Unit());
 		Composition comp3 = new Composition(3, units3);
 		
@@ -297,15 +297,15 @@ public class EventActivityNetwork {
 		Station stationB = new Station("B");
 		Station stationC = new Station("C");
 		
-		List<RollingStockUnit> units1 = new ArrayList<>();
+		Set<RollingStockUnit> units1 = new HashSet<>();
 		units1.add(new SLT4Unit());
 		Composition comp1 = new Composition(1, units1);
 		
-		List<RollingStockUnit> units2 = new ArrayList<>();
+		Set<RollingStockUnit> units2 = new HashSet<>();
 		units2.add(new SLT4Unit());
 		Composition comp2 = new Composition(2, units2);
 		
-		List<RollingStockUnit> units3 = new ArrayList<>();
+		Set<RollingStockUnit> units3 = new HashSet<>();
 		units3.add(new SLT4Unit());
 		Composition comp3 = new Composition(3, units3);
 		
@@ -434,7 +434,8 @@ public class EventActivityNetwork {
 				TransferNode dummyTransfer = new TransferNode(
 						an.trip().arrivalTime().plusMinutes(transferTime), 
 						station);
-				TransferNode tNode = network.transfersByStation.get(station).ceiling(dummyTransfer);
+				TreeSet<TransferNode> sortedTransfers = network.transfersByStation.get(station);
+				TransferNode tNode = sortedTransfers.ceiling(dummyTransfer);
 				if (tNode != null && an.trip().arrivalTime().compareTo(tNode.getTime()) < 0) {
 					TransferEdge transEdge = new TransferEdge(
 							an, tNode, 
@@ -653,7 +654,7 @@ public class EventActivityNetwork {
 		Station station = new Station(name);
 		NavigableSet<DepartureNode> set = departuresByStation.get(station);
 		
-		List<RollingStockUnit> units1 = new ArrayList<>();
+		Set<RollingStockUnit> units1 = new HashSet<>();
 		units1.add(new VIRM4Unit());
 		ScheduledTrip dummyTrip = new ScheduledTrip(
 				new Composition(0, units1), 
@@ -686,7 +687,7 @@ public class EventActivityNetwork {
 			throw new IllegalArgumentException("Arguments cannot be null");
 		Station station = new Station(name);
 		NavigableSet<ArrivalNode> set = arrivalsByStation.get(station);
-		List<RollingStockUnit> units1 = new ArrayList<>();
+		Set<RollingStockUnit> units1 = new HashSet<>();
 		units1.add(new VIRM4Unit());
 		ScheduledTrip dummyTrip = new ScheduledTrip(
 				new Composition(0, units1), 

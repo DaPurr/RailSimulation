@@ -33,7 +33,7 @@ public class Report {
 	 */
 	public String summary() {
 		String s = "";
-		Set<ScheduledTrip> trips = state.getTimetable().getAllTrips(dayOfWeek);
+		Set<ScheduledTrip> trips = state.getRealizedTimetable().getAllTrips(dayOfWeek);
 		s += "ALL TRIPS" + System.lineSeparator();
 		s += "=========================" + System.lineSeparator();
 		s += "KPI_{old}=" + calculateKPIOld(trips) + System.lineSeparator();
@@ -141,7 +141,7 @@ public class Report {
 	
 	public String reportBestAndWorstTrains() {
 		Map<Integer, Collection<ScheduledTrip>> trainMap = new HashMap<>();
-		Collection<ScheduledTrip> trips = state.getTimetable().getAllTrips(dayOfWeek);
+		Collection<ScheduledTrip> trips = state.getRealizedTimetable().getAllTrips(dayOfWeek);
 		
 		// add trips to all train numbers
 		for (ScheduledTrip trip : trips) {

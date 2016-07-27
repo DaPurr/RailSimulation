@@ -3,9 +3,7 @@ package wagon.simulation;
 import java.util.*;
 import java.util.Map.Entry;
 
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.LinkedHashMultimap;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.*;
 
 import wagon.data.CiCoData;
 import wagon.infrastructure.Station;
@@ -28,7 +26,8 @@ public class SystemState {
 
 	// system state variables
 	private EventActivityNetwork network;
-	private Timetable timetable;
+	private Timetable plannedTimetable;
+	private Timetable realizedTimetable;
 	private Map<Integer, Double> trainOccupation;
 	private Map<Journey, ArrivalProcess> arrivalProcesses;
 	
@@ -44,14 +43,17 @@ public class SystemState {
 	 */
 	public SystemState(
 			EventActivityNetwork network, 
-			Timetable timetable, 
+			Timetable plannedTimetable, 
+			Timetable realizedTimetable, 
 			CiCoData cicoData) {
 		this.network = network;
-		this.timetable = timetable;
+		this.plannedTimetable = plannedTimetable;
+		this.realizedTimetable = realizedTimetable;
 		trainOccupation = new LinkedHashMap<>();
 		
 		tripToB = new LinkedHashMap<>();
 		tripToN = new LinkedHashMap<>();
+		
 		
 		arrivalProcesses = estimateArrivalProcesses(cicoData);
 	}
@@ -64,11 +66,18 @@ public class SystemState {
 	}
 	
 	/**
-	 * @return	returns the <code>Timetable</code> on which this
+	 * @return	returns the planned <code>Timetable</code> on which this
 	 * 			simulation is based
 	 */
-	public Timetable getTimetable() {
-		return timetable;
+	public Timetable getPlannedTimetable() {
+		return plannedTimetable;
+	}
+	
+	/**
+	 * @return	returns the realized <code>Timetable</code> for this simulation
+	 */
+	public Timetable getRealizedTimetable() {
+		return realizedTimetable;
 	}
 	
 	/**

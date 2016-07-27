@@ -1,7 +1,6 @@
 package wagon.rollingstock;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import wagon.timetable.ComfortNorm;
 
@@ -17,9 +16,9 @@ import wagon.timetable.ComfortNorm;
 public class Composition {
 	
 	private int id;
-	private List<RollingStockUnit> wagons;
+	private Set<RollingStockUnit> wagons;
 	
-	public Composition(int id, List<RollingStockUnit> wagons) {
+	public Composition(int id, Set<RollingStockUnit> wagons) {
 		this.id = id;
 		this.wagons = wagons;
 	}
@@ -28,8 +27,15 @@ public class Composition {
 		return id;
 	}
 	
-	public List<RollingStockUnit> getUnits() {
-		return new ArrayList<>(wagons);
+	public Set<RollingStockUnit> getUnits() {
+		return new HashSet<>(wagons);
+	}
+	
+	public Composition copy() {
+		Composition comp = new Composition(
+				id, 
+				new HashSet<>(wagons));
+		return comp;
 	}
 
 	public int getNrWagons() {
@@ -140,5 +146,10 @@ public class Composition {
 	@Override
 	public int hashCode() {
 		return 7*Integer.hashCode(id) + 13*wagons.hashCode();
+	}
+	
+	@Override
+	public String toString() {
+		return "[" + id + ": " + wagons.toString() + "]";
 	}
 }

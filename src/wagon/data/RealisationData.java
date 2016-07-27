@@ -167,10 +167,10 @@ public class RealisationData {
 		if (text == null)
 			throw new NullPointerException("Argument cannot be null");
 		else if (text.equals(""))
-			return new Composition(trainNr, new ArrayList<>());
+			return new Composition(trainNr, new HashSet<>());
 		text = text.replaceAll("[^ ,a-zA-Z0-9]", "");
 		String[] parts = text.split(",");
-		List<RollingStockUnit> units = new ArrayList<>();
+		Set<RollingStockUnit> units = new HashSet<>();
 		for (int i = 0; i < parts.length; i++) {
 			RollingStockUnit unit = toUnit(parts[i]);
 			units.add(unit);

@@ -2,7 +2,6 @@ package test.timetable;
 
 import static org.junit.Assert.*;
 
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 
@@ -23,7 +22,7 @@ public class TimetableTest {
 		Station stationFrom = new Station("from");
 		Station stationTo = new Station("to");
 		
-		List<RollingStockUnit> units1 = new ArrayList<>();
+		Set<RollingStockUnit> units1 = new HashSet<>();
 		units1.add(new VIRM6Unit());
 		Composition comp = new Composition(1, units1);
 		
@@ -64,7 +63,7 @@ public class TimetableTest {
 		Station stationFrom = new Station("from");
 		Station stationTo = new Station("to");
 
-		List<RollingStockUnit> units1 = new ArrayList<>();
+		Set<RollingStockUnit> units1 = new HashSet<>();
 		units1.add(new VIRM6Unit());
 		Composition comp = new Composition(1, units1);
 		
@@ -107,7 +106,7 @@ public class TimetableTest {
 		Station to2 = new Station("Rta");
 		Station to3 = new Station("Rtd");
 		
-		List<RollingStockUnit> units1 = new ArrayList<>();
+		Set<RollingStockUnit> units1 = new HashSet<>();
 		units1.add(new SLT4Unit());
 		Composition comp = new Composition(1, units1);
 		
@@ -147,11 +146,11 @@ public class TimetableTest {
 		Station to2 = new Station("Rta");
 		Station to3 = new Station("Rtd");
 		
-		List<RollingStockUnit> units1 = new ArrayList<>();
+		Set<RollingStockUnit> units1 = new HashSet<>();
 		units1.add(new SLT4Unit());
 		Composition comp1 = new Composition(1, units1);
 		
-		List<RollingStockUnit> units2 = new ArrayList<>();
+		Set<RollingStockUnit> units2 = new HashSet<>();
 		units2.add(new SGM3Unit());
 		Composition comp2 = new Composition(1, units2);
 		
@@ -190,8 +189,8 @@ public class TimetableTest {
 		assertEquals("Incorrect route length.", list1.size(), timetable.getRoute(comp1).size());
 		assertEquals("Incorrect route length.", list2.size(), timetable.getRoute(comp2).size());
 		
-		List<ScheduledTrip> route1 = timetable.getRoute(comp1);
-		List<ScheduledTrip> route2 = timetable.getRoute(comp2);
+		SortedSet<ScheduledTrip> route1 = timetable.getRoute(comp1);
+		SortedSet<ScheduledTrip> route2 = timetable.getRoute(comp2);
 		assertEquals("Incorrect route.", list1, route1);
 		assertEquals("Incorrect route.", list2, route2);
 	}

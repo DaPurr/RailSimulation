@@ -50,6 +50,10 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 		return composition;
 	}
 	
+	public void setComposition(Composition comp) {
+		this.composition = comp;
+	}
+	
 	/**
 	 * @return	returns the norm for this trip, which is a member of 
 	 * 			<code>ComfortNorm</code>.
@@ -96,6 +100,18 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 	
 	public int getDayOfWeek() {
 		return dayOfWeek;
+	}
+	
+	public ScheduledTrip copy() {
+		ScheduledTrip trip = new ScheduledTrip(
+				composition.copy(), 
+				depTime, 
+				arrTime, 
+				fromStation, 
+				toStation, 
+				norm, 
+				dayOfWeek);
+		return trip;
 	}
 	
 	@Override

@@ -32,13 +32,10 @@ import wagon.rollingstock.*;
  */
 public class Timetable {
 	
-	// reference date-time
-//	private static final LocalDateTime referenceDateTime = 
-//			LocalDateTime.of(2016, 4, 11, 0, 0);
-	
 	private Map<Station, List<ScheduledTrip>> departures;
-	private Map<Composition, SortedSet<ScheduledTrip>> routes;
+	private Map<Integer, SortedSet<ScheduledTrip>> routes;
 	private Set<Station> stations;
+	private Set<Composition> compositions;
 	
 	private Logger log = Logger.getLogger(this.getClass().getName());
 	
@@ -50,6 +47,38 @@ public class Timetable {
 		routes = new LinkedHashMap<>();
 		stations = new LinkedHashSet<>();
 		log.setLevel(Level.ALL);
+		compositions = new LinkedHashSet<>();
+	}
+	
+	public Timetable(Timetable timetable) {
+		Map<Station, List<ScheduledTrip>> newDepartures = 
+				new LinkedHashMap<>();
+		Map<Integer, SortedSet<ScheduledTrip>> newRoutes = 
+				new LinkedHashMap<>();
+		Set<Station> newStations = new LinkedHashSet<>();
+		Set<Composition> newCompositions = new LinkedHashSet<>();
+		for (Entry<Integer, SortedSet<ScheduledTrip>> entry : routes.entrySet()) {
+			SortedSet<ScheduledTrip> sortedTrips = entry.getValue();
+			SortedSet<ScheduledTrip> newSortedTrips = new TreeSet<>();
+			for (ScheduledTrip trip : sortedTrips) {
+				ScheduledTrip tripCopy = trip.copy();
+				
+				newSortedTrips.add(tripCopy);
+				
+				newStations.add(tripCopy.fromStation());
+				newStations.add(tripCopy.toStation());
+				
+				newCompositions.add(tripCopy.composition());
+				
+				List<ScheduledTrip> departuresList = newDepartures.get(tripCopy.fromStation());
+				if (departuresList == null) {
+					departuresList = new ArrayList<>();
+					newDepartures.put(tripCopy.fromStation(), departuresList);
+				}
+				departuresList.add(tripCopy);
+			}
+			newRoutes.put(entry.getKey(), newSortedTrips);
+		}
 	}
 	
 	/**
@@ -103,20 +132,22 @@ public class Timetable {
 	 * @return	<code>Set</code> of all compositions in the timetable
 	 */
 	public Set<Composition> compositions() {
-		return new LinkedHashSet<>(routes.keySet());
+		return new LinkedHashSet<>(compositions);
 	}
 	
-	public List<ScheduledTrip> getRoute(Composition comp) {
-		if (!routes.containsKey(comp))
+	public SortedSet<ScheduledTrip> getRoute(Composition comp) {
+		Set<ScheduledTrip> route = routes.get(comp.id());
+		if (route == null)
 			return null;
-		return new ArrayList<>(routes.get(comp));
+		return new TreeSet<>(route);
 	}
 	
-	public List<ScheduledTrip> getRoute(Composition comp, int dayOfWeek) {
-		if (!routes.containsKey(comp))
+	public SortedSet<ScheduledTrip> getRoute(Composition comp, int dayOfWeek) {
+		SortedSet<ScheduledTrip> route = routes.get(comp.id());
+		if (route == null)
 			return null;
-		List<ScheduledTrip> trips = new ArrayList<>();
-		for (ScheduledTrip trip : routes.get(comp)) {
+		SortedSet<ScheduledTrip> trips = new TreeSet<>();
+		for (ScheduledTrip trip : route) {
 			if (trip.getDayOfWeek() == dayOfWeek)
 				trips.add(trip);
 		}
@@ -179,14 +210,13 @@ public class Timetable {
 	
 	private void addTrip(ScheduledTrip trip) {
 		Composition comp = trip.composition();
-		if (!routes.containsKey(comp)) {
-			SortedSet<ScheduledTrip> set = new TreeSet<>();
-			set.add(trip);
-			routes.put(comp, set);
-		} else {
-			SortedSet<ScheduledTrip> set = routes.get(comp);
-			set.add(trip);
+		SortedSet<ScheduledTrip> set = routes.get(comp.id());
+		if (set == null) {
+			set = new TreeSet<>();
+			routes.put(comp.id(), set);
 		}
+		set.add(trip);
+		compositions.add(comp);
 	}
 	
 	/**
@@ -298,7 +328,7 @@ public class Timetable {
 	
 	private Composition parseComposition(int id, String combination) {
 		String[] parts = combination.split("-");
-		List<RollingStockUnit> units = new ArrayList<>();
+		Set<RollingStockUnit> units = new HashSet<>();
 		for (String part : parts) {
 			
 			if (part.equals("LK"))
@@ -380,7 +410,9 @@ public class Timetable {
 			Element composition = (Element) trip.getElementsByTagName("composition").item(0);
 			String id = composition.getAttribute("id");
 			
-			Composition comp = new Composition(Integer.parseInt(id), timetable.parseUnitsFromComposition(composition));
+			Composition comp = new Composition(
+					Integer.parseInt(id), 
+					timetable.parseUnitsFromComposition(composition));
 			
 			String departureDate = trip.getAttribute("departureTime");
 			String arrivalDate = trip.getAttribute("arrivalTime");
@@ -408,8 +440,8 @@ public class Timetable {
 		return timetable;
 	}
 	
-	private List<RollingStockUnit> parseUnitsFromComposition(Element e) {
-		List<RollingStockUnit> units = new ArrayList<>();
+	private Set<RollingStockUnit> parseUnitsFromComposition(Element e) {
+		Set<RollingStockUnit> units = new HashSet<>();
 		String[] parts = e.getAttribute("units").split("-");
 		
 		for (String part : parts) {
@@ -492,11 +524,14 @@ public class Timetable {
 	
 	private String compositionToString(Composition comp) {
 		String s = "";
-		List<RollingStockUnit> units = comp.getUnits();
-		for (int i = 0; i < units.size(); i++) {
-			if (i != 0)
+		Set<RollingStockUnit> units = comp.getUnits();
+		boolean first = true;
+		for (RollingStockUnit unit : units) {
+			if (first)
+				first = false;
+			else
 				s += "-";
-			s += units.get(i).toString();
+			s += unit.toString();
 		}
 		return s;
 	}
@@ -540,7 +575,7 @@ public class Timetable {
 	 */
 	public Set<ScheduledTrip> getAllTrips() {
 		Set<ScheduledTrip> trips = new LinkedHashSet<>();
-		for (Entry<Composition, SortedSet<ScheduledTrip>> entry : routes.entrySet()) {
+		for (Entry<Integer, SortedSet<ScheduledTrip>> entry : routes.entrySet()) {
 			Set<ScheduledTrip> set = entry.getValue();
 			trips.addAll(set);
 		}
@@ -549,7 +584,7 @@ public class Timetable {
 	
 	public Set<ScheduledTrip> getAllTrips(int dayOfWeek) {
 		Set<ScheduledTrip> trips = new LinkedHashSet<>();
-		for (Entry<Composition, SortedSet<ScheduledTrip>> entry : routes.entrySet()) {
+		for (Entry<Integer, SortedSet<ScheduledTrip>> entry : routes.entrySet()) {
 			Set<ScheduledTrip> set = entry.getValue();
 			for (ScheduledTrip trip : set) {
 				if (trip.getDayOfWeek() == dayOfWeek)

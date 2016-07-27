@@ -1,13 +1,14 @@
 package sandbox;
 
 import java.io.IOException;
+import java.util.*;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
-import wagon.data.RealisationData;
-import wagon.data.RollingStockComposerBasic;
+import wagon.data.*;
+import wagon.rollingstock.*;
 import wagon.timetable.Timetable;
 
 public class RealisationDataSandbox {
@@ -22,7 +23,12 @@ public class RealisationDataSandbox {
 			RollingStockComposerBasic rcbasic = new RollingStockComposerBasic(
 					timetable, 
 					rdata);
-			System.out.println(rcbasic.toString());
+//			System.out.println(rcbasic.toString());
+			Set<RollingStockUnit> units = new HashSet<>();
+			units.add(new VIRM4Unit());
+			Composition comp = new Composition(511, units);
+			Composition realizedComp = rcbasic.realizedComposition(comp, null);
+			System.out.println(realizedComp.toString());
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (SAXException e) {

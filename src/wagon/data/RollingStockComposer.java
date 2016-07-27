@@ -5,5 +5,5 @@ import wagon.timetable.ScheduledTrip;
 
 public interface RollingStockComposer {
 
-	public Composition realizedComposition(Composition comp, int trainNumber, ScheduledTrip trip);
+	public Composition realizedComposition(Composition comp, ScheduledTrip trip);
 }
