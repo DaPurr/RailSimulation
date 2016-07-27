@@ -1,7 +1,6 @@
 package wagon.simulation;
 
 import java.io.*;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.Map.Entry;
@@ -10,11 +9,15 @@ import java.util.logging.Logger;
 
 import wagon.algorithms.*;
 import wagon.data.CiCoData;
+import wagon.data.RealisationData;
+import wagon.data.RollingStockComposer;
+import wagon.data.RollingStockComposerBasic;
 import wagon.infrastructure.Station;
 import wagon.network.WeightedEdge;
 import wagon.network.expanded.*;
-import wagon.timetable.ScheduledTrip;
-import wagon.timetable.Timetable;
+import wagon.rollingstock.Composition;
+import wagon.rollingstock.RollingStockUnit;
+import wagon.timetable.*;
 
 public class SimModel {
 	
@@ -39,10 +42,10 @@ public class SimModel {
 		CiCoData cicoData = null;
 
 		try {
-			if (options.getPathToRawCiCoData() == null)
+			if (options.getPathToCiCoData() == null)
 				throw new NullPointerException("Path to CiCo data cannot be null");
 			cicoData = CiCoData.importRawData(
-					options.getPathToRawCiCoData(), 
+					options.getPathToCiCoData(), 
 					"data/cico/omzettabel_stations.csv",  // hardcoded
 					options);
 		} catch (IOException e) {
@@ -70,7 +73,22 @@ public class SimModel {
 		log.info("Passengers remaining: " + passengers.size());
 		cicoData.setPassengers(passengers);
 		
-		state = new SystemState(network, timetable, cicoData);
+		// estimate probabilities for rolling stock mismatches
+		RealisationData rdata = null;
+		try {
+			rdata = RealisationData.importFromFile(
+					"data/realisatie/DM_INZET_MATERIEEL_CAP.csv", 
+					"data/realisatie/train_numbers.csv");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		if (rdata == null)
+			throw new IllegalStateException("Failed to load realisation data");
+		RollingStockComposer rcomposer = new RollingStockComposerBasic(timetable, rdata);
+		Timetable realizedTimetable = new Timetable(timetable);
+		generateMismatches(realizedTimetable, rcomposer);
+		
+		state = new SystemState(network, timetable, realizedTimetable, cicoData);
 	}
 	
 	public Report start() {
@@ -168,6 +186,28 @@ public class SimModel {
 				return true;
 		}
 		return false;
+	}
+	
+	private void generateMismatches(Timetable timetable, RollingStockComposer composer) {
+		Set<Composition> compositions = timetable.compositions();
+		for (Composition comp : compositions) {
+			boolean generate = true;
+			Set<RollingStockUnit> currentPlannedUnits = new LinkedHashSet<>();
+			Composition realizedComposition = null;
+			SortedSet<ScheduledTrip> sortedTrips = timetable.getRoute(comp, options.getDayOfWeek());
+			if (sortedTrips != null) {
+				for (ScheduledTrip trip : sortedTrips) {
+					if (!currentPlannedUnits.equals(trip.composition().getUnits())) {
+						generate = true;
+					}
+					if (generate) {
+						realizedComposition = composer.realizedComposition(trip.composition(), trip);
+						generate = false;
+					}
+					trip.setComposition(realizedComposition);
+				}
+			}
+		}
 	}
 	
 }

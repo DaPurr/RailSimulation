@@ -3,6 +3,9 @@ package wagon.data;
 import java.util.*;
 import java.util.Map.Entry;
 
+import org.apache.commons.math3.random.MersenneTwister;
+import org.apache.commons.math3.random.RandomGenerator;
+
 import wagon.rollingstock.*;
 import wagon.timetable.*;
 
@@ -13,36 +16,57 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 	
 	private Map<Set<RollingStockUnit>, Map<Set<RollingStockUnit>, Double>> probabilities;
 	
+	private RandomGenerator random;
+	
 	public RollingStockComposerBasic(
 			Timetable timetable,
 			RealisationData rdata) {
 		this.timetable = timetable;
 		this.rdata = rdata;
-		
+		int seed = 0; // remove when done with debugging
+		random = new MersenneTwister(seed);
 		probabilities = new HashMap<>();
 		
 		estimateProbabilities();
 	}
 	
 	@Override
-	public Composition realizedComposition(Composition comp, int trainNumber, ScheduledTrip trip) {
-		// TODO Auto-generated method stub
-		return null;
+	public Composition realizedComposition(Composition comp, ScheduledTrip trip) {
+		double r = random.nextDouble();
+		Map<Set<RollingStockUnit>, Double> map = probabilities.get(comp.getUnits());
+		if (map == null)
+			throw new IllegalStateException("No probabilities estimated for composition: " + comp);
+		double sum = 0.0;
+		SortedSet<Entry<Set<RollingStockUnit>, Double>> sortedEntries = 
+				new TreeSet<>(new EntryComparator());
+		sortedEntries.addAll(map.entrySet());
+		for (Entry<Set<RollingStockUnit>, Double> entry : sortedEntries) {
+			sum += entry.getValue();
+			if (r < sum) {
+				Composition realizedComp = new Composition(comp.id(), entry.getKey());
+				return realizedComp;
+			}
+		}
+		throw new IllegalStateException("Could not realize a composition");
 	}
 	
 	private void estimateProbabilities() {
 		MismatchCounter counts = new MismatchCounter();
 		for (Composition comp : timetable.compositions()) {
-			List<ScheduledTrip> plannedTrips = timetable.getRoute(comp);
+			SortedSet<ScheduledTrip> plannedTrips = timetable.getRoute(comp);
 			int currentDayOfWeek = Integer.MAX_VALUE;
 			Set<RollingStockUnit> currentUnits = new HashSet<>();
 			boolean processTrip = true;
 			for (ScheduledTrip trip : plannedTrips) {
-				Set<RollingStockUnit> units = new HashSet<>(trip.composition().getUnits());
-				if (!currentUnits.equals(units))
+				Set<RollingStockUnit> units = trip.composition().getUnits();
+				if (!currentUnits.equals(units)) {
 					processTrip = true;
-				if (trip.getDayOfWeek() != currentDayOfWeek)
+					currentUnits = units;
+				}
+				if (trip.getDayOfWeek() != currentDayOfWeek) {
 					processTrip = true;
+					currentDayOfWeek = trip.getDayOfWeek();
+				}
 				
 				if (processTrip) {
 					// increment counters: go through all trips in realisation data with same 
@@ -52,10 +76,11 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 						for (RealisationDataEntry entry : entries) {
 							if (tripEqualsEntry(trip, entry))
 								counts.incrementCount(
-										new HashSet<>(trip.composition().getUnits()), 
-										new HashSet<>(entry.getRealizedComposition().getUnits()));
+										trip.composition().getUnits(), 
+										entry.getRealizedComposition().getUnits());
 						}
 					}
+					processTrip = false;
 				}
 			}
 		}
@@ -188,6 +213,15 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 			}
 			return s;
 		}
+	}
+	
+	private static class EntryComparator implements Comparator<Entry<Set<RollingStockUnit>, Double>> {
+
+		@Override
+		public int compare(Entry<Set<RollingStockUnit>, Double> o1, Entry<Set<RollingStockUnit>, Double> o2) {
+			return -Double.compare(o1.getValue(), o2.getValue());
+		}
+		
 	}
 
 }
