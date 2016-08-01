@@ -219,7 +219,10 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 
 		@Override
 		public int compare(Entry<Set<RollingStockUnit>, Double> o1, Entry<Set<RollingStockUnit>, Double> o2) {
-			return -Double.compare(o1.getValue(), o2.getValue());
+			int res1 = -Double.compare(o1.getValue(), o2.getValue());
+			if (res1 != 0)
+				return res1;
+			return o1.getKey().toString().compareTo(o2.getKey().toString());
 		}
 		
 	}
