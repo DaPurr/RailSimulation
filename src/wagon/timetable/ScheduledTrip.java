@@ -115,6 +115,16 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 	}
 	
 	@Override
+	public int hashCode() {
+		int hc1 = arrTime.hashCode();
+		int hc2 = depTime.hashCode();
+		int hc3 = toStation.hashCode();
+		int hc4 = fromStation.hashCode();
+		int hc5 = Integer.hashCode(dayOfWeek);
+		return 3*hc1 + 5*hc2 + 7*hc3 + 11*hc4 + 13*hc5;
+	}
+	
+	@Override
 	public boolean equals(Object other) {
 		if (!(other instanceof ScheduledTrip))
 			return false;

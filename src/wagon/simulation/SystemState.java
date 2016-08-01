@@ -1,12 +1,8 @@
 package wagon.simulation;
 
 import java.util.*;
-import java.util.Map.Entry;
-
-import com.google.common.collect.*;
 
 import wagon.data.CiCoData;
-import wagon.infrastructure.Station;
 import wagon.network.expanded.EventActivityNetwork;
 import wagon.timetable.*;
 
@@ -22,14 +18,14 @@ import wagon.timetable.*;
  */
 public class SystemState {
 	
-	private final int horizon = 24*60*60;
+//	private final int horizon = 24*60*60;
 
 	// system state variables
 	private EventActivityNetwork network;
 	private Timetable plannedTimetable;
-	private Timetable realizedTimetable;
+//	private Timetable realizedTimetable;
 	private Map<Integer, Double> trainOccupation;
-	private Map<Journey, ArrivalProcess> arrivalProcesses;
+//	private Map<Journey, ArrivalProcess> arrivalProcesses;
 	
 	// counters
 	private Map<ScheduledTrip, Counter> tripToB; // b_t
@@ -44,18 +40,18 @@ public class SystemState {
 	public SystemState(
 			EventActivityNetwork network, 
 			Timetable plannedTimetable, 
-			Timetable realizedTimetable, 
+//			Timetable realizedTimetable, 
 			CiCoData cicoData) {
 		this.network = network;
 		this.plannedTimetable = plannedTimetable;
-		this.realizedTimetable = realizedTimetable;
+//		this.realizedTimetable = realizedTimetable;
 		trainOccupation = new LinkedHashMap<>();
 		
 		tripToB = new LinkedHashMap<>();
 		tripToN = new LinkedHashMap<>();
 		
 		
-		arrivalProcesses = estimateArrivalProcesses(cicoData);
+//		arrivalProcesses = estimateArrivalProcesses(cicoData);
 	}
 	
 	/**
@@ -69,16 +65,16 @@ public class SystemState {
 	 * @return	returns the planned <code>Timetable</code> on which this
 	 * 			simulation is based
 	 */
-	public Timetable getPlannedTimetable() {
+	public Timetable getTimetable() {
 		return plannedTimetable;
 	}
 	
-	/**
-	 * @return	returns the realized <code>Timetable</code> for this simulation
-	 */
-	public Timetable getRealizedTimetable() {
-		return realizedTimetable;
-	}
+//	/**
+//	 * @return	returns the realized <code>Timetable</code> for this simulation
+//	 */
+//	public Timetable getRealizedTimetable() {
+//		return realizedTimetable;
+//	}
 	
 	/**
 	 * Returns the occupation of the the train identified by <code>trainNumber</code>. 
@@ -209,36 +205,5 @@ public class SystemState {
 	 */
 	public Set<ScheduledTrip> getRegisteredTrips() {
 		return new LinkedHashSet<>(tripToN.keySet());
-	}
-	
-	public Set<Entry<Journey, ArrivalProcess>> arrivalProcessEntries() {
-		return arrivalProcesses.entrySet();
-	}
-	
-	private Map<Journey, ArrivalProcess> estimateArrivalProcesses(CiCoData cicoData) {
-		// group passengers based on their journeys
-		Multimap<Journey, Passenger> map = LinkedHashMultimap.create();
-		for (Passenger passenger : cicoData.getPassengers()) {
-			Station from = passenger.getFromStation();
-			Station to = passenger.getToStation();
-			Journey journey = new Journey(from, to);
-			map.put(journey, passenger);
-		}
-		
-		// for each journey, estimate arrival process
-		Map<Journey, ArrivalProcess> resultMap = new HashMap<>();
-		int seed = 1;
-		double maxLambda = Double.NEGATIVE_INFINITY;
-		for (Journey journey : map.keySet()) {
-			Collection<Passenger> passengers = map.get(journey);
-			HybridArrivalProcess arrivalProcess = new HybridArrivalProcess(passengers, 0, horizon, 5*60, seed);
-//			ArrivalProcess arrivalProcess = new PiecewiseConstantProcess(passengers, 5*60, seed);
-			resultMap.put(journey, arrivalProcess);
-			double lambda = arrivalProcess.getLambdaUpperBound();
-			if (lambda > maxLambda)
-				maxLambda = lambda;
-			seed++;
-		}
-		return resultMap;
 	}
 }

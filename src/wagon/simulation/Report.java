@@ -13,9 +13,6 @@ public class Report {
 	private int dayOfWeek;
 	
 	/**
-	 * TODO: create new class representing n simulation iterations, 
-	 * instead of using SystemState
-	 * 
 	 * Constructs a <code>Report</code> object.
 	 * 
 	 * @param state	the system state after simulation
@@ -33,7 +30,7 @@ public class Report {
 	 */
 	public String summary() {
 		String s = "";
-		Set<ScheduledTrip> trips = state.getPlannedTimetable().getAllTrips(dayOfWeek);
+		Set<ScheduledTrip> trips = state.getTimetable().getAllTrips(dayOfWeek);
 		s += "ALL TRIPS" + System.lineSeparator();
 		s += "=========================" + System.lineSeparator();
 		s += "KPI_{old}=" + calculateKPIOld(trips) + System.lineSeparator();
@@ -72,7 +69,7 @@ public class Report {
 	 * @param trips	the collection of trips
 	 * @return	the old KPI for transport capacity
 	 */
-	public double calculateKPIOld(Collection<ScheduledTrip> trips) {
+	private double calculateKPIOld(Collection<ScheduledTrip> trips) {
 		double numerator = 0.0;
 		double denominator = 0.0;
 		for (ScheduledTrip trip : trips) {
@@ -93,7 +90,7 @@ public class Report {
 	 * @param trips	the collection of trips
 	 * @return	the new KPI for transport capacity
 	 */
-	public double calculateKPINew(Collection<ScheduledTrip> trips) {
+	private double calculateKPINew(Collection<ScheduledTrip> trips) {
 		double sumF = 0.0;
 		double sumB = 0.0;
 		for (ScheduledTrip trip : trips) {
@@ -141,7 +138,7 @@ public class Report {
 	
 	public String reportBestAndWorstTrains() {
 		Map<Integer, Collection<ScheduledTrip>> trainMap = new HashMap<>();
-		Collection<ScheduledTrip> trips = state.getPlannedTimetable().getAllTrips(dayOfWeek);
+		Collection<ScheduledTrip> trips = state.getTimetable().getAllTrips(dayOfWeek);
 		
 		// add trips to all train numbers
 		for (ScheduledTrip trip : trips) {

@@ -5,21 +5,16 @@ import java.time.LocalTime;
 /**
  * This class is used to pass options to a <code>SimModel</code> object.
  * 
- * <p>
- * As of now, <code>Option</code> contains only required options. It 
- * is necessary to pass either a path to raw CiCo data, or to a file 
- * containing passenger group data processed from raw CiCo data. Note 
- * that the latter allows for much shorter computation times. Raw CiCo 
- * data can be obtained through the <code>ExportPassengerGroups()</code> 
- * method of the <code>SimModel</code> class. 
- * 
  * @author Nemanja Milovanovic
  *
  */
 public class Options {
 
 	private String pathToCiCoData;
+	private String pathToStations;
+	
 	private int dayOfWeek;
+	private int transferTime;
 	private int checkInTimeCorrection;
 	private int checkOutTimeCorrection;
 	private LocalTime timeLowerBound;
@@ -28,29 +23,39 @@ public class Options {
 	/**
 	 * Constructs an object of class <code>Option</code>.
 	 * 
-	 * <p>
-	 * Note that that there is need of only one input file, so either 
-	 * <code>pathToRawCiCoData</code> or <code>pathToProcessedGroupsData</code> 
-	 * is expected to be <code>null</code>. If none of the arguments are, then 
-	 * the data regarding processed group data is used.
-	 * 
 	 * @param pathToRawCiCoData			the path to raw CiCo data
 	 * @param pathToProcessedGroupsData	the path to processed passenger group data
 	 * @param dayOfWeek					the day of the week
 	 */
-	public Options(
-			String pathToCiCoData,
-			int dayOfWeek) {
-		this.pathToCiCoData = pathToCiCoData;
-		this.dayOfWeek = dayOfWeek;
+	public Options() {
+		pathToCiCoData = null;
+		pathToStations = null;
+		
+		transferTime = 0;
 		checkInTimeCorrection = 0;
 		checkOutTimeCorrection = 0;
 		timeLowerBound = LocalTime.parse("00:00:00");
 		timeUpperBound = LocalTime.parse("23:59:59");
 	}
 	
+	public void setPathToCiCoData(String fileName) {
+		pathToCiCoData = new String(fileName);
+	}
+	
 	public String getPathToCiCoData() {
 		return pathToCiCoData;
+	}
+	
+	public void setPathToStations(String fileName) {
+		pathToStations = new String(fileName);
+	}
+	
+	public String getPathToStations() {
+		return pathToStations;
+	}
+	
+	public void setDayOfWeek(int dayOfWeek) {
+		this.dayOfWeek = dayOfWeek;
 	}
 	
 	public int getDayOfWeek() {
@@ -87,5 +92,13 @@ public class Options {
 	
 	public LocalTime getCheckOutUpperBound() {
 		return timeUpperBound;
+	}
+	
+	public int getTransferTime() {
+		return transferTime;
+	}
+	
+	public void setTransferTime(int transferTime) {
+		this.transferTime = transferTime;
 	}
 }

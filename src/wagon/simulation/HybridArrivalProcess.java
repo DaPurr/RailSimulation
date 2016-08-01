@@ -22,10 +22,9 @@ public class HybridArrivalProcess implements ArrivalProcess {
 			int leftBound, 
 			int rightBound, 
 			int segmentWidth, 
-			int seed) {
+			long seed) {
 		this.segmentWidth = segmentWidth;
 		this.segments = (rightBound-leftBound)/segmentWidth;
-//		this.arrivals = new ArrayList<>();
 		this.random = new MersenneTwister(seed);
 		this.passengers = new ArrayList<>(passengers);
 		

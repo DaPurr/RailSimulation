@@ -25,17 +25,11 @@ public class CiCoData {
 	private final static int horizon = 24*60*60;
 
 	private Set<Passenger> passengers;
-	private Options options;
 	
 	private Logger log = Logger.getLogger(this.getClass().getName());
 	
 	private CiCoData() {
-		this(null);
-	}
-	
-	private CiCoData(Options options) {
 		passengers = new LinkedHashSet<>();
-		this.options = options;
 	}
 	
 	/**
@@ -55,9 +49,9 @@ public class CiCoData {
 	}
 	
 	public static CiCoData importRawData(
-			String cicoFileName,
-			String stationTableFileName, 
 			Options options) throws IOException {
+		String cicoFileName = options.getPathToCiCoData();
+		String stationTableFileName = options.getPathToStations();
 		if (!cicoFileName.matches(".*\\.csv") ||
 				!stationTableFileName.matches(".*\\.csv"))
 			throw new IllegalArgumentException("File needs to be CSV format.");
@@ -115,15 +109,6 @@ public class CiCoData {
 			
 			if (checkInTime.compareTo(checkOutTime) > 0)
 				checkOutTime = checkOutTime.plusDays(1);
-			
-			// only accept passengers inside the time frame 06:00 - 20:00
-//			if (!(	checkInTime.toLocalTime().compareTo(options.getCheckInLowerBound())		> 0 &&
-//					checkOutTime.toLocalTime().compareTo(options.getCheckInLowerBound())	> 0 &&
-//					checkOutTime.toLocalTime().compareTo(options.getCheckOutUpperBound())	< 0 &&
-//					checkInTime.toLocalTime().compareTo(options.getCheckOutUpperBound())	< 0)) {
-//				line = br.readLine();
-//				continue;
-//			}
 			
 			if (!(checkInTime.toLocalTime().compareTo(options.getCheckInLowerBound()) >= 0 &&
 					checkOutTime.toLocalTime().compareTo(options.getCheckOutUpperBound()) <= 0)) {
