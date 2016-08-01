@@ -69,7 +69,7 @@ public class Report {
 	 * @param trips	the collection of trips
 	 * @return	the old KPI for transport capacity
 	 */
-	private double calculateKPIOld(Collection<ScheduledTrip> trips) {
+	public double calculateKPIOld(Collection<ScheduledTrip> trips) {
 		double numerator = 0.0;
 		double denominator = 0.0;
 		for (ScheduledTrip trip : trips) {
@@ -90,7 +90,7 @@ public class Report {
 	 * @param trips	the collection of trips
 	 * @return	the new KPI for transport capacity
 	 */
-	private double calculateKPINew(Collection<ScheduledTrip> trips) {
+	public double calculateKPINew(Collection<ScheduledTrip> trips) {
 		double sumF = 0.0;
 		double sumB = 0.0;
 		for (ScheduledTrip trip : trips) {
@@ -172,15 +172,6 @@ public class Report {
 			TrainWithKPI trainKPI = trainList.get(i);
 			s += trainKPI.trainNr + ": KPI_{new}=" + trainKPI.kpiNew + "\tKPI_{old}=" + trainKPI.kpiOld + System.lineSeparator();
 		}
-//		s += System.lineSeparator();
-//		s += "BEST 10 TRAINS" + System.lineSeparator();
-//		s += "===============" + System.lineSeparator();
-//		for (int i = trainList.size()-10; i < trainList.size(); i++) {
-//			if (i < 0)
-//				continue;
-//			TrainWithKPI trainKPI = trainList.get(i);
-//			s += trainKPI.trainNr + ": KPI_{new}=" + trainKPI.kpiNew + "\tKPI_{old}=" + trainKPI.kpiOld + System.lineSeparator();
-//		}
 		return s;
 	}
 	

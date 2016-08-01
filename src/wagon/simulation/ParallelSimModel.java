@@ -9,8 +9,6 @@ import com.google.common.collect.*;
 
 import wagon.data.*;
 import wagon.infrastructure.Station;
-import wagon.rollingstock.Composition;
-import wagon.rollingstock.RollingStockUnit;
 import wagon.timetable.*;
 
 public class ParallelSimModel {
@@ -85,19 +83,28 @@ public class ParallelSimModel {
 //		log.info("...Finish altering timetable");
 	}
 	
-	public ParallelReport start() {
+	public ParallelReport start(int iterations) {
+		if (iterations < 1)
+			throw new IllegalArgumentException("Number of iterations must be > 0");
 		// start parallel computing
 		log.info("Start parallel computing...");
-//		int threads = Runtime.getRuntime().availableProcessors();
-		int threads = 4;
+		int threads = Runtime.getRuntime().availableProcessors();
+		threads /= 2;
+//		int threads = 4;
 		ExecutorService service = Executors.newFixedThreadPool(threads);
 		Set<Future<Report>> futures = new HashSet<>();
 		Set<Report> reports = Collections.newSetFromMap(new ConcurrentHashMap<>());
-		for (int i = 0; i < threads; i++) {
+		for (int i = 0; i < iterations; i++) {
 			Callable<Report> callable = new SimCallable();
 			futures.add(service.submit(callable));
 		}
 		service.shutdown();
+		try {
+			// wait (almost) indefinitely
+			service.awaitTermination(Integer.MAX_VALUE, TimeUnit.DAYS);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
 		log.info("...Finish parallel computing");
 
 		// collect results
@@ -108,7 +115,8 @@ public class ParallelSimModel {
 		} catch (InterruptedException | ExecutionException e) {
 			e.printStackTrace();
 		}
-		return null;
+		
+		return new ParallelReport(reports, timetable.getAllTrips());
 	}
 	
 	private Map<Journey, ArrivalProcess> estimateArrivalProcesses(CiCoData cicoData) {
@@ -137,28 +145,28 @@ public class ParallelSimModel {
 		return resultMap;
 	}
 	
-	private void generateMismatches(Timetable timetable, RollingStockComposer composer) {
-		Set<Composition> compositions = timetable.compositions();
-		for (Composition comp : compositions) {
-			boolean generate = true;
-			Set<RollingStockUnit> currentPlannedUnits = new LinkedHashSet<>();
-			Composition realizedComposition = null;
-			SortedSet<ScheduledTrip> sortedTrips = timetable.getRoute(comp, options.getDayOfWeek());
-			if (sortedTrips != null) {
-				for (ScheduledTrip trip : sortedTrips) {
-					if (!currentPlannedUnits.equals(trip.composition().getUnits())) {
-						generate = true;
-					}
-					if (generate) {
-						realizedComposition = composer.realizedComposition(trip.composition(), trip);
-						generate = false;
-						currentPlannedUnits = trip.composition().getUnits();
-					}
-					trip.setComposition(realizedComposition);
-				}
-			}
-		}
-	}
+//	private void generateMismatches(Timetable timetable, RollingStockComposer composer) {
+//		Set<Composition> compositions = timetable.compositions();
+//		for (Composition comp : compositions) {
+//			boolean generate = true;
+//			Set<RollingStockUnit> currentPlannedUnits = new LinkedHashSet<>();
+//			Composition realizedComposition = null;
+//			SortedSet<ScheduledTrip> sortedTrips = timetable.getRoute(comp, options.getDayOfWeek());
+//			if (sortedTrips != null) {
+//				for (ScheduledTrip trip : sortedTrips) {
+//					if (!currentPlannedUnits.equals(trip.composition().getUnits())) {
+//						generate = true;
+//					}
+//					if (generate) {
+//						realizedComposition = composer.realizedComposition(trip.composition(), trip);
+//						generate = false;
+//						currentPlannedUnits = trip.composition().getUnits();
+//					}
+//					trip.setComposition(realizedComposition);
+//				}
+//			}
+//		}
+//	}
 	
 	private class SimCallable implements Callable<Report> {
 
