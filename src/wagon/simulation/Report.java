@@ -9,8 +9,11 @@ import wagon.timetable.ScheduledTrip;
 
 public class Report {
 
-	private SystemState state;
-	private int dayOfWeek;
+//	private SystemState state;
+	private Set<ScheduledTrip> trips;
+	
+	private Map<ScheduledTrip, Counter> tripToB;
+	private Map<ScheduledTrip, Counter> tripToN;
 	
 	/**
 	 * Constructs a <code>Report</code> object.
@@ -18,8 +21,9 @@ public class Report {
 	 * @param state	the system state after simulation
 	 */
 	public Report(SystemState state, int dayOfWeek) {
-		this.state = state;
-		this.dayOfWeek = dayOfWeek;
+		tripToB = new LinkedHashMap<>(state.tripToB);
+		tripToN = new LinkedHashMap<>(state.tripToN);
+		trips = state.getTimetable().getAllTrips(dayOfWeek);
 	}
 	
 	/**
@@ -30,7 +34,6 @@ public class Report {
 	 */
 	public String summary() {
 		String s = "";
-		Set<ScheduledTrip> trips = state.getTimetable().getAllTrips(dayOfWeek);
 		s += "ALL TRIPS" + System.lineSeparator();
 		s += "=========================" + System.lineSeparator();
 		s += "KPI_{old}=" + calculateKPIOld(trips) + System.lineSeparator();
@@ -60,7 +63,7 @@ public class Report {
 	}
 	
 	public void exportToFile(String file_name) throws IOException {
-		
+		// TODO: Ability to export results to file
 	}
 	
 	/**
@@ -73,7 +76,7 @@ public class Report {
 		double numerator = 0.0;
 		double denominator = 0.0;
 		for (ScheduledTrip trip : trips) {
-			Counter counterN = state.getTripCounterN(trip);
+			Counter counterN = getTripCounterN(trip);
 			if (counterN == null)
 				throw new IllegalArgumentException("Counters for trip cannot be found.");
 			double countN = counterN.getValue();
@@ -94,8 +97,8 @@ public class Report {
 		double sumF = 0.0;
 		double sumB = 0.0;
 		for (ScheduledTrip trip : trips) {
-			Counter counterN = state.getTripCounterN(trip);
-			Counter counterB = state.getTripCounterB(trip);
+			Counter counterN = getTripCounterN(trip);
+			Counter counterB = getTripCounterB(trip);
 			if (counterN == null || counterB == null)
 				throw new IllegalArgumentException("Counters for trip cannot be found.");
 			double countB = counterB.getValue();
@@ -138,7 +141,7 @@ public class Report {
 	
 	public String reportBestAndWorstTrains() {
 		Map<Integer, Collection<ScheduledTrip>> trainMap = new HashMap<>();
-		Collection<ScheduledTrip> trips = state.getTimetable().getAllTrips(dayOfWeek);
+//		Collection<ScheduledTrip> trips = state.getTimetable().getAllTrips(dayOfWeek);
 		
 		// add trips to all train numbers
 		for (ScheduledTrip trip : trips) {
@@ -195,6 +198,32 @@ public class Report {
 			}
 		}
 		return setTrips;
+	}
+	
+	/**
+	 * @param trip	the trip
+	 * @return	returns the counter for n_t corresponding to <code>trip</code>
+	 */
+	public Counter getTripCounterN(ScheduledTrip trip) {
+		Counter counter = tripToN.get(trip);
+		if (counter == null) {
+			counter = new Counter("n_t#" + trip.toString());
+			tripToN.put(trip, counter);
+		}
+		return counter;
+	}
+	
+	/**
+	 * @param trip	the trip
+	 * @return	returns the counter for b_t corresponding to <code>trip</code>
+	 */
+	public Counter getTripCounterB(ScheduledTrip trip) {
+		Counter counter = tripToB.get(trip);
+		if (counter == null) {
+			counter = new Counter("b_t#" + trip.toString());
+			tripToB.put(trip, counter);
+		}
+		return counter;
 	}
 	
 	private static class TrainWithKPI implements Comparable<TrainWithKPI> {

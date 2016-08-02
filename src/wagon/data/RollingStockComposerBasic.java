@@ -20,14 +20,27 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 	
 	public RollingStockComposerBasic(
 			Timetable timetable,
-			RealisationData rdata) {
+			RealisationData rdata, 
+			long seed) {
 		this.timetable = timetable;
 		this.rdata = rdata;
-		int seed = 0; // remove when done with debugging
 		random = new MersenneTwister(seed);
-		probabilities = new HashMap<>();
+		probabilities = new LinkedHashMap<>();
 		
 		estimateProbabilities();
+	}
+	
+	/**
+	 * Creates a shallow copy with random number stream according to <code>seed</code>.
+	 * 
+	 * @param rcomposer	the rolling stock composer
+	 * @param seed		the seed
+	 */
+	public RollingStockComposerBasic(RollingStockComposerBasic rcomposer, long seed) {
+		this.timetable = rcomposer.timetable;
+		this.rdata = rcomposer.rdata;
+		this.probabilities = rcomposer.probabilities;
+		random = new MersenneTwister(seed);
 	}
 	
 	@Override
@@ -178,10 +191,6 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 			if (map == null)
 				return null;
 			return new HashMap<>(map);
-		}
-		
-		public Set<Entry<Set<RollingStockUnit>, Map<Set<RollingStockUnit>, Integer>>> entrySet() {
-			return kingMap.entrySet();
 		}
 		
 		public Set<Set<RollingStockUnit>> keySet() {

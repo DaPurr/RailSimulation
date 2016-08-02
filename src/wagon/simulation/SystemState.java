@@ -23,13 +23,11 @@ public class SystemState {
 	// system state variables
 	private EventActivityNetwork network;
 	private Timetable plannedTimetable;
-//	private Timetable realizedTimetable;
 	private Map<Integer, Double> trainOccupation;
-//	private Map<Journey, ArrivalProcess> arrivalProcesses;
 	
 	// counters
-	private Map<ScheduledTrip, Counter> tripToB; // b_t
-	private Map<ScheduledTrip, Counter> tripToN; // n_t
+	Map<ScheduledTrip, Counter> tripToB; // b_t
+	Map<ScheduledTrip, Counter> tripToN; // n_t
 	
 	/**
 	 * Constructs the system state of a DES.

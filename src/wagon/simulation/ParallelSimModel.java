@@ -20,7 +20,7 @@ public class ParallelSimModel {
 	private CiCoData cicoData;
 	private Timetable timetable;
 	private Map<Journey, ArrivalProcess> arrivalProcesses;
-	private RollingStockComposer rcomposer;
+	private RollingStockComposerBasic rcomposer;
 	
 	private Logger log = Logger.getLogger(this.getClass().getName());
 	
@@ -28,7 +28,7 @@ public class ParallelSimModel {
 			Timetable timetable, 
 			RealisationData rdata, 
 			Options options) {
-		seed = 0;
+		seed = options.getSeed();
 		this.options = options;
 		this.timetable = timetable;
 		
@@ -74,13 +74,8 @@ public class ParallelSimModel {
 		
 		// estimate mismatch probabilities
 		log.info("Begin estimating mismatch probabilities...");
-		rcomposer = new RollingStockComposerBasic(timetable, rdata);
+		rcomposer = new RollingStockComposerBasic(timetable, rdata, seed);
 		log.info("...Finish estimating mismatch probabilities");
-		
-		// generate mismatches
-//		log.info("Begin altering timetable...");
-//		generateMismatches(timetable, rcomposer);
-//		log.info("...Finish altering timetable");
 	}
 	
 	public ParallelReport start(int iterations) {
@@ -90,13 +85,13 @@ public class ParallelSimModel {
 		log.info("Start parallel computing...");
 		int threads = Runtime.getRuntime().availableProcessors();
 		threads /= 2;
-//		int threads = 4;
 		ExecutorService service = Executors.newFixedThreadPool(threads);
 		Set<Future<Report>> futures = new HashSet<>();
 		Set<Report> reports = Collections.newSetFromMap(new ConcurrentHashMap<>());
 		for (int i = 0; i < iterations; i++) {
-			Callable<Report> callable = new SimCallable();
+			Callable<Report> callable = new SimCallable(new RollingStockComposerBasic(rcomposer, seed));
 			futures.add(service.submit(callable));
+			seed++;
 		}
 		service.shutdown();
 		try {
@@ -116,7 +111,7 @@ public class ParallelSimModel {
 			e.printStackTrace();
 		}
 		
-		return new ParallelReport(reports, timetable.getAllTrips());
+		return new ParallelReport(reports, timetable.getAllTrips(options.getDayOfWeek()));
 	}
 	
 	private Map<Journey, ArrivalProcess> estimateArrivalProcesses(CiCoData cicoData) {
@@ -145,30 +140,13 @@ public class ParallelSimModel {
 		return resultMap;
 	}
 	
-//	private void generateMismatches(Timetable timetable, RollingStockComposer composer) {
-//		Set<Composition> compositions = timetable.compositions();
-//		for (Composition comp : compositions) {
-//			boolean generate = true;
-//			Set<RollingStockUnit> currentPlannedUnits = new LinkedHashSet<>();
-//			Composition realizedComposition = null;
-//			SortedSet<ScheduledTrip> sortedTrips = timetable.getRoute(comp, options.getDayOfWeek());
-//			if (sortedTrips != null) {
-//				for (ScheduledTrip trip : sortedTrips) {
-//					if (!currentPlannedUnits.equals(trip.composition().getUnits())) {
-//						generate = true;
-//					}
-//					if (generate) {
-//						realizedComposition = composer.realizedComposition(trip.composition(), trip);
-//						generate = false;
-//						currentPlannedUnits = trip.composition().getUnits();
-//					}
-//					trip.setComposition(realizedComposition);
-//				}
-//			}
-//		}
-//	}
-	
 	private class SimCallable implements Callable<Report> {
+		
+		private RollingStockComposer rcomposer;
+		
+		public SimCallable(RollingStockComposer rcomposer) {
+			this.rcomposer = rcomposer;
+		}
 
 		@Override
 		public Report call() throws Exception {

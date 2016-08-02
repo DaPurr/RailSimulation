@@ -1,6 +1,5 @@
 package wagon.simulation;
 
-import java.io.*;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.Map.Entry;
@@ -9,7 +8,6 @@ import java.util.logging.Logger;
 
 import wagon.algorithms.*;
 import wagon.data.*;
-import wagon.infrastructure.Station;
 import wagon.network.WeightedEdge;
 import wagon.network.expanded.*;
 import wagon.rollingstock.Composition;
@@ -60,8 +58,9 @@ public class SimModel {
 			Event event = eventQueue.poll();
 			event.process(state);
 		}
-		
-		return new Report(state, options.getDayOfWeek());
+		Report report = new Report(state, options.getDayOfWeek());
+		state = null; // help garbage collection
+		return report;
 	}
 	
 	private void initialize() {
