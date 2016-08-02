@@ -45,6 +45,7 @@ public class Main {
 			options.setPathToCiCoData("data/cico/ritten_20160209.csv");
 			options.setPathToStations("data/cico/omzettabel_stations.csv");
 			options.setDayOfWeek(2);
+			options.setSeed(0);
 //			
 			CiCoData cicoData = CiCoData
 					.importRawData(options);
@@ -70,7 +71,7 @@ public class Main {
 			RealisationData rdata = RealisationData.importFromFile(
 					"data/realisatie/DM_INZET_MATERIEEL_CAP.csv", 
 					"data/realisatie/train_numbers.csv");
-//			RollingStockComposer rcomposer = new RollingStockComposerBasic(sample, rdata);
+//			RollingStockComposer rcomposer = new RollingStockComposerBasic(sample, rdata, 0);
 //			
 //			long startTime = System.nanoTime();
 //			SimModel sim = new SimModel(
@@ -91,7 +92,7 @@ public class Main {
 					sample, 
 					rdata, 
 					options);
-			ParallelReport parReport = parSim.start(2);
+			ParallelReport parReport = parSim.start(4);
 			System.out.println(parReport.summary());
 			System.out.println(parReport.reportBestAndWorstTrains());
 			long endTime = System.nanoTime();

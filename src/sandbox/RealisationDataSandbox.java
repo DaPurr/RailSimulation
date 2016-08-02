@@ -22,7 +22,8 @@ public class RealisationDataSandbox {
 			
 			RollingStockComposerBasic rcbasic = new RollingStockComposerBasic(
 					timetable, 
-					rdata);
+					rdata, 
+					0);
 //			System.out.println(rcbasic.toString());
 			Set<RollingStockUnit> units = new HashSet<>();
 			units.add(new VIRM4Unit());

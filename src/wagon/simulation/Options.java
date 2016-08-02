@@ -20,6 +20,8 @@ public class Options {
 	private LocalTime timeLowerBound;
 	private LocalTime timeUpperBound;
 	
+	private long seed = 0;
+	
 	/**
 	 * Constructs an object of class <code>Option</code>.
 	 * 
@@ -36,6 +38,14 @@ public class Options {
 		checkOutTimeCorrection = 0;
 		timeLowerBound = LocalTime.parse("00:00:00");
 		timeUpperBound = LocalTime.parse("23:59:59");
+	}
+	
+	public void setSeed(long seed) {
+		this.seed = seed;
+	}
+	
+	public long getSeed() {
+		return seed;
 	}
 	
 	public void setPathToCiCoData(String fileName) {
