@@ -85,10 +85,10 @@ public class CiCoData {
 			String[] parts = line.split(",");
 			
 			// skip if 1st class
-			if (!parts[4].equals("2")) {
-				line = br.readLine();
-				continue;
-			}
+//			if (!parts[4].equals("2")) {
+//				line = br.readLine();
+//				continue;
+//			}
 			
 			counter++;
 			

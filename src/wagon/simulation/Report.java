@@ -81,6 +81,7 @@ public class Report {
 				throw new IllegalArgumentException("Counters for trip cannot be found.");
 			double countN = counterN.getValue();
 			int normCapacity = trip.getTrainService().normCapacity2(trip.getNorm());
+			normCapacity += trip.getTrainService().normCapacity1(trip.getNorm());
 			numerator += countN*Math.min(normCapacity/countN, 1);
 			denominator += countN;
 		}
@@ -103,8 +104,7 @@ public class Report {
 				throw new IllegalArgumentException("Counters for trip cannot be found.");
 			double countB = counterB.getValue();
 			double countN = counterN.getValue();
-			int seats = trip.getTrainService().getSeats2() + trip.getTrainService().getFoldableSeats();
-//			seats += trip.getTrainService().getSeats1();
+			int seats = trip.getTrainService().getAllSeats() + trip.getTrainService().getFoldableSeats();
 			double seatsAvailable = Math.max(seats - (countN - countB), 0.0);
 			double countF = Math.min(seatsAvailable, countB);
 			sumF += countF;
