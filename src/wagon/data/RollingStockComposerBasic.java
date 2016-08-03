@@ -133,26 +133,21 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 		String s = "";
 		for (Entry<Composition, Map<Composition, Double>> kingEntry : probabilities.entrySet()) {
 			String x = kingEntry.getKey().toString();
-			s += x + " | ";
-			s += kingEntry.getValue().toString();
+			s += x + "\t|\t";
+			Map<Composition, Double> map = kingEntry.getValue();
+			boolean first = true;
+			for (Entry<Composition, Double> entry : map.entrySet()) {
+				if (first)
+					first = false;
+				else
+					s += ",\t";;
+				s += entry.toString();
+			}
+//			s += kingEntry.getValue().toString();
 			s += System.lineSeparator();
 		}
 		return s;
 	}
-	
-//	private String parseUnits(Collection<RollingStockUnit> units) {
-//		String s = "";
-//		boolean first = true;
-//		for (RollingStockUnit unit : units) {
-//			if (first) {
-//				first = false;
-//			} else {
-//				s += "-";
-//			}
-//			s += unit.toString();
-//		}
-//		return s;
-//	}
 	
 	private static class MismatchCounter {
 		private Map<Composition, Map<Composition, Integer>> kingMap;
