@@ -158,6 +158,7 @@ public class ParallelSimModel {
 					rcomposer, 
 					options);
 			Report report = sim.start();
+			sim = null; // try to help garbage collection
 			return report;
 		}
 		
