@@ -10,7 +10,7 @@ import wagon.algorithms.*;
 import wagon.data.*;
 import wagon.network.WeightedEdge;
 import wagon.network.expanded.*;
-import wagon.rollingstock.Composition;
+import wagon.rollingstock.TrainService;
 import wagon.rollingstock.RollingStockUnit;
 import wagon.timetable.*;
 
@@ -150,11 +150,11 @@ public class SimModel {
 	}
 	
 	private void generateMismatches(Timetable timetable, RollingStockComposer composer) {
-		Set<Composition> compositions = timetable.compositions();
-		for (Composition comp : compositions) {
+		Set<TrainService> compositions = timetable.compositions();
+		for (TrainService comp : compositions) {
 			boolean generate = true;
 			Set<RollingStockUnit> currentPlannedUnits = new LinkedHashSet<>();
-			Composition realizedComposition = null;
+			TrainService realizedComposition = null;
 			SortedSet<ScheduledTrip> sortedTrips = timetable.getRoute(comp, options.getDayOfWeek());
 			if (sortedTrips != null) {
 				for (ScheduledTrip trip : sortedTrips) {

@@ -35,7 +35,7 @@ public class Timetable {
 	private Map<Station, List<ScheduledTrip>> departures;
 	private Map<Integer, SortedSet<ScheduledTrip>> routes;
 	private Set<Station> stations;
-	private Set<Composition> compositions;
+	private Set<TrainService> compositions;
 	
 	private Logger log = Logger.getLogger(this.getClass().getName());
 	
@@ -56,7 +56,7 @@ public class Timetable {
 		Map<Integer, SortedSet<ScheduledTrip>> newRoutes = 
 				new LinkedHashMap<>();
 		Set<Station> newStations = new LinkedHashSet<>();
-		Set<Composition> newCompositions = new LinkedHashSet<>();
+		Set<TrainService> newCompositions = new LinkedHashSet<>();
 		for (Entry<Integer, SortedSet<ScheduledTrip>> entry : timetable.routes.entrySet()) {
 			SortedSet<ScheduledTrip> sortedTrips = entry.getValue();
 			SortedSet<ScheduledTrip> newSortedTrips = new TreeSet<>();
@@ -138,18 +138,18 @@ public class Timetable {
 	/**
 	 * @return	<code>Set</code> of all compositions in the timetable
 	 */
-	public Set<Composition> compositions() {
+	public Set<TrainService> compositions() {
 		return new LinkedHashSet<>(compositions);
 	}
 	
-	public SortedSet<ScheduledTrip> getRoute(Composition comp) {
+	public SortedSet<ScheduledTrip> getRoute(TrainService comp) {
 		Set<ScheduledTrip> route = routes.get(comp.id());
 		if (route == null)
 			return null;
 		return new TreeSet<>(route);
 	}
 	
-	public SortedSet<ScheduledTrip> getRoute(Composition comp, int dayOfWeek) {
+	public SortedSet<ScheduledTrip> getRoute(TrainService comp, int dayOfWeek) {
 		SortedSet<ScheduledTrip> route = routes.get(comp.id());
 		if (route == null)
 			return null;
@@ -216,7 +216,7 @@ public class Timetable {
 	}
 	
 	private void addTrip(ScheduledTrip trip) {
-		Composition comp = trip.composition();
+		TrainService comp = trip.composition();
 		SortedSet<ScheduledTrip> set = routes.get(comp.id());
 		if (set == null) {
 			set = new TreeSet<>();
@@ -258,7 +258,7 @@ public class Timetable {
 		timetable.log.info("...Finished parsing Excel");
 		timetable.log.info("Begin Excel import...");
 		
-		Map<Composition, List<ScheduledTrip>> trainRoutes = 
+		Map<TrainService, List<ScheduledTrip>> trainRoutes = 
 				new LinkedHashMap<>();
 		
 		int rowCount = 1;
@@ -291,11 +291,7 @@ public class Timetable {
 			cellRef = new CellReference("AV");
 			String combination = row.getCell(cellRef.getCol()).getStringCellValue();
 			
-			Composition comp = timetable.parseComposition(trainNr, combination);
-			
-			// only import trips with departure and arrival times before 00:00:00
-//			if (departureTime.compareTo(arrivalTime) > 0)
-//				continue;
+			TrainService comp = timetable.parseComposition(trainNr, combination);
 			
 			ScheduledTrip trip = new ScheduledTrip(comp, departureTime, arrivalTime, 
 					fromStation, toStation, norm, dayOfWeek);
@@ -314,7 +310,7 @@ public class Timetable {
 		
 		// fixing departure/arrival times
 		trainRoutes = fixTripTimes(trainRoutes);
-		for (Entry<Composition, List<ScheduledTrip>> entry : trainRoutes.entrySet()) {
+		for (Entry<TrainService, List<ScheduledTrip>> entry : trainRoutes.entrySet()) {
 			for (ScheduledTrip trip : entry.getValue()) {
 				Station fromStation = trip.fromStation();
 				Station toStation = trip.toStation();
@@ -333,9 +329,9 @@ public class Timetable {
 		return timetable;
 	}
 	
-	private Composition parseComposition(int id, String combination) {
+	private TrainService parseComposition(int id, String combination) {
 		String[] parts = combination.split("-");
-		Set<RollingStockUnit> units = new HashSet<>();
+		List<RollingStockUnit> units = new ArrayList<>();
 		for (String part : parts) {
 			
 			if (part.equals("LK"))
@@ -370,15 +366,15 @@ public class Timetable {
 				units.add(new VIRM6Unit());
 		}
 		
-		Composition composition = new Composition(id, units);
+		TrainService composition = new TrainService(id, units);
 		
 		return composition;
 	}
 	
-	private static Map<Composition, List<ScheduledTrip>> fixTripTimes(
-			Map<Composition, List<ScheduledTrip>> trainRoutes) {
-		Map<Composition, List<ScheduledTrip>> newRoutes = new HashMap<>();
-		for (Entry<Composition, List<ScheduledTrip>> entry : trainRoutes.entrySet()) {
+	private static Map<TrainService, List<ScheduledTrip>> fixTripTimes(
+			Map<TrainService, List<ScheduledTrip>> trainRoutes) {
+		Map<TrainService, List<ScheduledTrip>> newRoutes = new HashMap<>();
+		for (Entry<TrainService, List<ScheduledTrip>> entry : trainRoutes.entrySet()) {
 			List<ScheduledTrip> trips = entry.getValue();
 			List<ScheduledTrip> newTrips = new ArrayList<>();
 			
@@ -417,7 +413,7 @@ public class Timetable {
 			Element composition = (Element) trip.getElementsByTagName("composition").item(0);
 			String id = composition.getAttribute("id");
 			
-			Composition comp = new Composition(
+			TrainService comp = new TrainService(
 					Integer.parseInt(id), 
 					timetable.parseUnitsFromComposition(composition));
 			
@@ -512,7 +508,7 @@ public class Timetable {
 		s += "norm=\"" + trip.getNorm().toString() + "\">";
 		s += System.lineSeparator();
 		
-		Composition comp = trip.composition();
+		TrainService comp = trip.composition();
 		s += compositionToXML(comp, indentLevel + 1);
 		s += System.lineSeparator();
 		
@@ -520,7 +516,7 @@ public class Timetable {
 		return s;
 	}
 	
-	private String compositionToXML(Composition comp, int indentLevel) {
+	private String compositionToXML(TrainService comp, int indentLevel) {
 		String s = indent(indentLevel) + "<composition ";
 		s += "id=\"" + comp.id() + "\" ";
 		s += "units=\"" + compositionToString(comp) + "\" ";
@@ -529,7 +525,7 @@ public class Timetable {
 		return s;
 	}
 	
-	private String compositionToString(Composition comp) {
+	private String compositionToString(TrainService comp) {
 		String s = "";
 		Set<RollingStockUnit> units = comp.getUnits();
 		boolean first = true;

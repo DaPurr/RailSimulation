@@ -3,7 +3,7 @@ package wagon.timetable;
 import java.time.LocalTime;
 
 import wagon.infrastructure.Station;
-import wagon.rollingstock.Composition;
+import wagon.rollingstock.TrainService;
 
 /**
  * This class represents a scheduled departure in a timetable, not taking into 
@@ -16,7 +16,7 @@ import wagon.rollingstock.Composition;
 
 public class ScheduledTrip implements Comparable<ScheduledTrip> {
 
-	private Composition composition;
+	private TrainService composition;
 	private LocalTime arrTime;
 	private LocalTime depTime;
 	private Station toStation;
@@ -30,7 +30,7 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 	 * @param composition	train composition
 	 * @param time			scheduled departure time
 	 */
-	public ScheduledTrip(Composition composition, LocalTime depTime, 
+	public ScheduledTrip(TrainService composition, LocalTime depTime, 
 			LocalTime arrTime, Station fromStation, Station toStation, 
 			ComfortNorm norm, int dayOfWeek) {
 		this.composition = composition;
@@ -45,11 +45,11 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 	/**
 	 * @return	(simplified) train composition
 	 */
-	public Composition composition() {
+	public TrainService composition() {
 		return composition;
 	}
 	
-	public void setComposition(Composition comp) {
+	public void setComposition(TrainService comp) {
 		this.composition = comp;
 	}
 	

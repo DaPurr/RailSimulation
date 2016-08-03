@@ -3,7 +3,7 @@ package wagon.data;
 import java.time.LocalDateTime;
 
 import wagon.infrastructure.Station;
-import wagon.rollingstock.Composition;
+import wagon.rollingstock.TrainService;
 
 public class RealisationDataEntry implements Comparable<RealisationDataEntry> {
 
@@ -17,8 +17,8 @@ public class RealisationDataEntry implements Comparable<RealisationDataEntry> {
 	private LocalDateTime plannedArrivalTime;
 	private Station arrivalStation;
 	
-	private Composition plannedComposition;
-	private Composition realizedComposition;
+	private TrainService plannedComposition;
+	private TrainService realizedComposition;
 	
 	public RealisationDataEntry(
 			int trainNr, 
@@ -28,8 +28,8 @@ public class RealisationDataEntry implements Comparable<RealisationDataEntry> {
 			LocalDateTime realizedArrivalTime, 
 			LocalDateTime plannedArrivalTime, 
 			Station arrivalStation, 
-			Composition plannedComposition, 
-			Composition realizedComposition) {
+			TrainService plannedComposition, 
+			TrainService realizedComposition) {
 		this.trainNr = trainNr;
 		
 		this.realizedDepartureTime = realizedDepartureTime;
@@ -72,11 +72,11 @@ public class RealisationDataEntry implements Comparable<RealisationDataEntry> {
 		return arrivalStation;
 	}
 
-	public Composition getPlannedComposition() {
+	public TrainService getPlannedComposition() {
 		return plannedComposition;
 	}
 
-	public Composition getRealizedComposition() {
+	public TrainService getRealizedComposition() {
 		return realizedComposition;
 	}
 	

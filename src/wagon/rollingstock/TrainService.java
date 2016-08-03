@@ -13,12 +13,12 @@ import wagon.timetable.ComfortNorm;
  *
  */
 
-public class Composition {
+public class TrainService {
 	
 	private int id;
 	private Set<RollingStockUnit> wagons;
 	
-	public Composition(int id, Set<RollingStockUnit> wagons) {
+	public TrainService(int id, List<RollingStockUnit> wagons) {
 		this.id = id;
 		this.wagons = wagons;
 	}
@@ -31,10 +31,10 @@ public class Composition {
 		return new HashSet<>(wagons);
 	}
 	
-	public Composition copy() {
-		Composition comp = new Composition(
+	public TrainService copy() {
+		TrainService comp = new TrainService(
 				id, 
-				new HashSet<>(wagons));
+				new ArrayList<>(wagons));
 		return comp;
 	}
 
@@ -136,9 +136,9 @@ public class Composition {
 	
 	@Override
 	public boolean equals(Object other) {
-		if (!(other instanceof Composition)) 
+		if (!(other instanceof TrainService)) 
 			return false;
-		Composition o = (Composition) other;
+		TrainService o = (TrainService) other;
 		return this.id == o.id;// && 
 				//this.wagons.equals(o.wagons);
 	}

@@ -44,7 +44,7 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 	}
 	
 	@Override
-	public Composition realizedComposition(Composition comp, ScheduledTrip trip) {
+	public TrainService realizedComposition(TrainService comp, ScheduledTrip trip) {
 		double r = random.nextDouble();
 		Map<Set<RollingStockUnit>, Double> map = probabilities.get(comp.getUnits());
 		if (map == null)
@@ -56,7 +56,7 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 		for (Entry<Set<RollingStockUnit>, Double> entry : sortedEntries) {
 			sum += entry.getValue();
 			if (r < sum) {
-				Composition realizedComp = new Composition(comp.id(), entry.getKey());
+				TrainService realizedComp = new TrainService(comp.id(), entry.getKey());
 				return realizedComp;
 			}
 		}
@@ -65,7 +65,7 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 	
 	private void estimateProbabilities() {
 		MismatchCounter counts = new MismatchCounter();
-		for (Composition comp : timetable.compositions()) {
+		for (TrainService comp : timetable.compositions()) {
 			SortedSet<ScheduledTrip> plannedTrips = timetable.getRoute(comp);
 			int currentDayOfWeek = Integer.MAX_VALUE;
 			Set<RollingStockUnit> currentUnits = new HashSet<>();

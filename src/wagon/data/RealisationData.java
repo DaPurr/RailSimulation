@@ -55,8 +55,8 @@ public class RealisationData {
 				if (!parts[7].equals(""))
 					plannedArrivalTime = rdata.toLocalDateTimeObjectPlanned(parts[7]);
 				Station arrivalStation = new Station(parts[8]);
-				Composition plannedComposition = rdata.toComposition(trainNr, parts[9]);
-				Composition realizedComposition = rdata.toComposition(trainNr, parts[12]);
+				TrainService plannedComposition = rdata.toComposition(trainNr, parts[9]);
+				TrainService realizedComposition = rdata.toComposition(trainNr, parts[12]);
 
 				RealisationDataEntry entry = rdata.addEntry(
 						trainNr, 
@@ -128,8 +128,8 @@ public class RealisationData {
 			LocalDateTime realizedArrivalTime, 
 			LocalDateTime plannedArrivalTime, 
 			Station arrivalStation, 
-			Composition plannedComposition, 
-			Composition realizedComposition) {
+			TrainService plannedComposition, 
+			TrainService realizedComposition) {
 		SortedSet<RealisationDataEntry> set = entriesPerTrain.get(trainNr);
 		if (set == null) {
 			set = new TreeSet<>();
@@ -163,11 +163,11 @@ public class RealisationData {
 		return date;
 	}
 	
-	private Composition toComposition(int trainNr, String text) {
+	private TrainService toComposition(int trainNr, String text) {
 		if (text == null)
 			throw new NullPointerException("Argument cannot be null");
 		else if (text.equals(""))
-			return new Composition(trainNr, new HashSet<>());
+			return new TrainService(trainNr, new HashSet<>());
 		text = text.replaceAll("[^ ,a-zA-Z0-9]", "");
 		String[] parts = text.split(",");
 		Set<RollingStockUnit> units = new HashSet<>();
@@ -175,7 +175,7 @@ public class RealisationData {
 			RollingStockUnit unit = toUnit(parts[i]);
 			units.add(unit);
 		}
-		return new Composition(trainNr, units);
+		return new TrainService(trainNr, units);
 	}
 	
 	private RollingStockUnit toUnit(String text) {

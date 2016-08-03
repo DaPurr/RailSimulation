@@ -27,8 +27,8 @@ public class RealisationDataSandbox {
 //			System.out.println(rcbasic.toString());
 			Set<RollingStockUnit> units = new HashSet<>();
 			units.add(new VIRM4Unit());
-			Composition comp = new Composition(511, units);
-			Composition realizedComp = rcbasic.realizedComposition(comp, null);
+			TrainService comp = new TrainService(511, units);
+			TrainService realizedComp = rcbasic.realizedComposition(comp, null);
 			System.out.println(realizedComp.toString());
 		} catch (IOException e) {
 			e.printStackTrace();
