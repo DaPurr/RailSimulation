@@ -104,6 +104,7 @@ public class Report {
 			double countB = counterB.getValue();
 			double countN = counterN.getValue();
 			int seats = trip.composition().getSeats2() + trip.composition().getFoldableSeats();
+			seats += trip.composition().getSeats1();
 			double seatsAvailable = Math.max(seats - (countN - countB), 0.0);
 			double countF = Math.min(seatsAvailable, countB);
 			sumF += countF;
