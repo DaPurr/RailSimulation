@@ -80,7 +80,7 @@ public class Report {
 			if (counterN == null)
 				throw new IllegalArgumentException("Counters for trip cannot be found.");
 			double countN = counterN.getValue();
-			int normCapacity = trip.composition().normCapacity2(trip.getNorm());
+			int normCapacity = trip.getTrainService().normCapacity2(trip.getNorm());
 			numerator += countN*Math.min(normCapacity/countN, 1);
 			denominator += countN;
 		}
@@ -103,8 +103,8 @@ public class Report {
 				throw new IllegalArgumentException("Counters for trip cannot be found.");
 			double countB = counterB.getValue();
 			double countN = counterN.getValue();
-			int seats = trip.composition().getSeats2() + trip.composition().getFoldableSeats();
-			seats += trip.composition().getSeats1();
+			int seats = trip.getTrainService().getSeats2() + trip.getTrainService().getFoldableSeats();
+//			seats += trip.getTrainService().getSeats1();
 			double seatsAvailable = Math.max(seats - (countN - countB), 0.0);
 			double countF = Math.min(seatsAvailable, countB);
 			sumF += countF;
@@ -134,7 +134,7 @@ public class Report {
 	public Set<ScheduledTrip> getTripsFromTrain(int trainNumber, Collection<ScheduledTrip> trips) {
 		Set<ScheduledTrip> set = new HashSet<>();
 		for (ScheduledTrip trip : trips) {
-			if (trip.composition().id() == trainNumber)
+			if (trip.getTrainService().id() == trainNumber)
 				set.add(trip);
 		}
 		return set;
@@ -146,7 +146,7 @@ public class Report {
 		
 		// add trips to all train numbers
 		for (ScheduledTrip trip : trips) {
-			int trainNr = trip.composition().id();
+			int trainNr = trip.getTrainService().id();
 			Collection<ScheduledTrip> collection = trainMap.get(trainNr);
 			if (collection == null) {
 				collection = new ArrayList<>();

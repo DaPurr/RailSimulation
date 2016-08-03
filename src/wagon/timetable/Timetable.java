@@ -18,6 +18,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
+import com.google.common.collect.*;
 import com.monitorjbl.xlsx.StreamingReader;
 
 import wagon.infrastructure.Station;
@@ -35,7 +36,7 @@ public class Timetable {
 	private Map<Station, List<ScheduledTrip>> departures;
 	private Map<Integer, SortedSet<ScheduledTrip>> routes;
 	private Set<Station> stations;
-	private Set<TrainService> compositions;
+	private Set<TrainService> trainServices;
 	
 	private Logger log = Logger.getLogger(this.getClass().getName());
 	
@@ -47,7 +48,7 @@ public class Timetable {
 		routes = new LinkedHashMap<>();
 		stations = new LinkedHashSet<>();
 		log.setLevel(Level.ALL);
-		compositions = new LinkedHashSet<>();
+		trainServices = new LinkedHashSet<>();
 	}
 	
 	public Timetable(Timetable timetable) {
@@ -56,7 +57,7 @@ public class Timetable {
 		Map<Integer, SortedSet<ScheduledTrip>> newRoutes = 
 				new LinkedHashMap<>();
 		Set<Station> newStations = new LinkedHashSet<>();
-		Set<TrainService> newCompositions = new LinkedHashSet<>();
+		Set<TrainService> newTrainServices = new LinkedHashSet<>();
 		for (Entry<Integer, SortedSet<ScheduledTrip>> entry : timetable.routes.entrySet()) {
 			SortedSet<ScheduledTrip> sortedTrips = entry.getValue();
 			SortedSet<ScheduledTrip> newSortedTrips = new TreeSet<>();
@@ -68,7 +69,7 @@ public class Timetable {
 				newStations.add(tripCopy.fromStation());
 				newStations.add(tripCopy.toStation());
 				
-				newCompositions.add(tripCopy.composition());
+				newTrainServices.add(tripCopy.getTrainService());
 				
 				List<ScheduledTrip> departuresList = newDepartures.get(tripCopy.fromStation());
 				if (departuresList == null) {
@@ -83,7 +84,7 @@ public class Timetable {
 		departures = newDepartures;
 		routes = newRoutes;
 		stations = newStations;
-		compositions = newCompositions;
+		trainServices = newTrainServices;
 		
 		log.setLevel(Level.ALL);
 	}
@@ -138,8 +139,8 @@ public class Timetable {
 	/**
 	 * @return	<code>Set</code> of all compositions in the timetable
 	 */
-	public Set<TrainService> compositions() {
-		return new LinkedHashSet<>(compositions);
+	public Set<TrainService> getTrainServices() {
+		return new LinkedHashSet<>(trainServices);
 	}
 	
 	public SortedSet<ScheduledTrip> getRoute(TrainService comp) {
@@ -207,8 +208,8 @@ public class Timetable {
 				ScheduledTrip dep = deps.get(i);
 				s += dep.toStation().name() + " ";
 				s += dep.departureTime() + " ";
-				s += dep.composition().type().toString() + "_"
-						+ dep.composition().getNrWagons() + "\n";
+				s += dep.getTrainService().type().toString() + "_"
+						+ dep.getTrainService().getNrWagons() + System.lineSeparator();
 			}
 		}
 		s += "]";
@@ -216,14 +217,14 @@ public class Timetable {
 	}
 	
 	private void addTrip(ScheduledTrip trip) {
-		TrainService comp = trip.composition();
+		TrainService comp = trip.getTrainService();
 		SortedSet<ScheduledTrip> set = routes.get(comp.id());
 		if (set == null) {
 			set = new TreeSet<>();
 			routes.put(comp.id(), set);
 		}
 		set.add(trip);
-		compositions.add(comp);
+		trainServices.add(comp);
 	}
 	
 	/**
@@ -331,7 +332,7 @@ public class Timetable {
 	
 	private TrainService parseComposition(int id, String combination) {
 		String[] parts = combination.split("-");
-		List<RollingStockUnit> units = new ArrayList<>();
+		Multiset<RollingStockUnit> units = LinkedHashMultiset.create();
 		for (String part : parts) {
 			
 			if (part.equals("LK"))
@@ -366,7 +367,8 @@ public class Timetable {
 				units.add(new VIRM6Unit());
 		}
 		
-		TrainService composition = new TrainService(id, units);
+		Composition comp = new Composition(units);
+		TrainService composition = new TrainService(id, comp);
 		
 		return composition;
 	}
@@ -415,7 +417,7 @@ public class Timetable {
 			
 			TrainService comp = new TrainService(
 					Integer.parseInt(id), 
-					timetable.parseUnitsFromComposition(composition));
+					timetable.parseUnitsToComposition(composition));
 			
 			String departureDate = trip.getAttribute("departureTime");
 			String arrivalDate = trip.getAttribute("arrivalTime");
@@ -443,8 +445,8 @@ public class Timetable {
 		return timetable;
 	}
 	
-	private Set<RollingStockUnit> parseUnitsFromComposition(Element e) {
-		Set<RollingStockUnit> units = new HashSet<>();
+	private Composition parseUnitsToComposition(Element e) {
+		Multiset<RollingStockUnit> units = LinkedHashMultiset.create();
 		String[] parts = e.getAttribute("units").split("-");
 		
 		for (String part : parts) {
@@ -479,7 +481,7 @@ public class Timetable {
 			else if (part.equals("VIRM6"))
 				units.add(new VIRM6Unit());
 		}
-		return units;
+		return new Composition(units);
 	}
 	
 	public void export(String file_name) throws IOException {
@@ -508,7 +510,7 @@ public class Timetable {
 		s += "norm=\"" + trip.getNorm().toString() + "\">";
 		s += System.lineSeparator();
 		
-		TrainService comp = trip.composition();
+		TrainService comp = trip.getTrainService();
 		s += compositionToXML(comp, indentLevel + 1);
 		s += System.lineSeparator();
 		
@@ -525,11 +527,10 @@ public class Timetable {
 		return s;
 	}
 	
-	private String compositionToString(TrainService comp) {
+	private String compositionToString(TrainService service) {
 		String s = "";
-		Set<RollingStockUnit> units = comp.getUnits();
 		boolean first = true;
-		for (RollingStockUnit unit : units) {
+		for (RollingStockUnit unit : service.getComposition()) {
 			if (first)
 				first = false;
 			else

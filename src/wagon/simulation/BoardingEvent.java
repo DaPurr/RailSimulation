@@ -1,6 +1,5 @@
 package wagon.simulation;
 
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import wagon.rollingstock.TrainService;
@@ -38,7 +37,7 @@ public class BoardingEvent extends Event {
 
 	@Override
 	public void process(SystemState state) {
-		TrainService composition = trip.composition();
+		TrainService composition = trip.getTrainService();
 		int trainID = composition.id();
 		
 		// get current occupation

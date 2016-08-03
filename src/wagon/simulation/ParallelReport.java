@@ -53,7 +53,7 @@ public class ParallelReport {
 		
 		// add trips to all train numbers
 		for (ScheduledTrip trip : trips) {
-			int trainNr = trip.composition().id();
+			int trainNr = trip.getTrainService().id();
 			Collection<ScheduledTrip> collection = trainMap.get(trainNr);
 			if (collection == null) {
 				collection = new ArrayList<>();
@@ -125,7 +125,7 @@ public class ParallelReport {
 	public Set<ScheduledTrip> getTripsFromTrain(int trainNumber, Collection<ScheduledTrip> trips) {
 		Set<ScheduledTrip> set = new HashSet<>();
 		for (ScheduledTrip trip : trips) {
-			if (trip.composition().id() == trainNumber)
+			if (trip.getTrainService().id() == trainNumber)
 				set.add(trip);
 		}
 		return set;

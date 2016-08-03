@@ -14,7 +14,7 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 	private Timetable timetable;
 	private RealisationData rdata;
 	
-	private Map<Set<RollingStockUnit>, Map<Set<RollingStockUnit>, Double>> probabilities;
+	private Map<Composition, Map<Composition, Double>> probabilities;
 	
 	private RandomGenerator random;
 	
@@ -44,19 +44,21 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 	}
 	
 	@Override
-	public TrainService realizedComposition(TrainService comp, ScheduledTrip trip) {
+	public TrainService realizedComposition(TrainService service, ScheduledTrip trip) {
 		double r = random.nextDouble();
-		Map<Set<RollingStockUnit>, Double> map = probabilities.get(comp.getUnits());
-		if (map == null)
-			throw new IllegalStateException("No probabilities estimated for composition: " + comp);
+		Map<Composition, Double> map = probabilities.get(service.getComposition());
+		if (map == null) {
+			throw new IllegalStateException("No probabilities estimated for composition: "
+					+ service.getComposition());
+		}
 		double sum = 0.0;
-		SortedSet<Entry<Set<RollingStockUnit>, Double>> sortedEntries = 
+		SortedSet<Entry<Composition, Double>> sortedEntries = 
 				new TreeSet<>(new EntryComparator());
 		sortedEntries.addAll(map.entrySet());
-		for (Entry<Set<RollingStockUnit>, Double> entry : sortedEntries) {
+		for (Entry<Composition, Double> entry : sortedEntries) {
 			sum += entry.getValue();
 			if (r < sum) {
-				TrainService realizedComp = new TrainService(comp.id(), entry.getKey());
+				TrainService realizedComp = new TrainService(service.id(), entry.getKey());
 				return realizedComp;
 			}
 		}
@@ -65,16 +67,16 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 	
 	private void estimateProbabilities() {
 		MismatchCounter counts = new MismatchCounter();
-		for (TrainService comp : timetable.compositions()) {
-			SortedSet<ScheduledTrip> plannedTrips = timetable.getRoute(comp);
+		for (TrainService service : timetable.getTrainServices()) {
+			SortedSet<ScheduledTrip> plannedTrips = timetable.getRoute(service);
 			int currentDayOfWeek = Integer.MAX_VALUE;
-			Set<RollingStockUnit> currentUnits = new HashSet<>();
+			Composition currentComp = new Composition();
 			boolean processTrip = true;
 			for (ScheduledTrip trip : plannedTrips) {
-				Set<RollingStockUnit> units = trip.composition().getUnits();
-				if (!currentUnits.equals(units)) {
+				Composition comp = trip.getTrainService().getComposition();
+				if (!currentComp.equals(comp)) {
 					processTrip = true;
-					currentUnits = units;
+					currentComp = comp;
 				}
 				if (trip.getDayOfWeek() != currentDayOfWeek) {
 					processTrip = true;
@@ -84,13 +86,13 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 				if (processTrip) {
 					// increment counters: go through all trips in realisation data with same 
 					// train number and day
-					SortedSet<RealisationDataEntry> entries = rdata.getEntriesByTrain(comp.id());
+					SortedSet<RealisationDataEntry> entries = rdata.getEntriesByTrain(service.id());
 					if (entries != null) {
 						for (RealisationDataEntry entry : entries) {
 							if (tripEqualsEntry(trip, entry))
 								counts.incrementCount(
-										trip.composition().getUnits(), 
-										entry.getRealizedComposition().getUnits());
+										trip.getTrainService().getComposition(), 
+										entry.getRealizedComposition().getComposition());
 						}
 					}
 					processTrip = false;
@@ -99,18 +101,18 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 		}
 		
 		// now that we have the counts, convert them to probabilities
-		for (Set<RollingStockUnit> comp : counts.keySet()) {
+		for (Composition comp : counts.keySet()) {
 			int count = 0;
-			Set<Set<RollingStockUnit>> y = counts.mapOfComposition(comp).keySet();
-			for (Set<RollingStockUnit> y_i : y) {
+			Set<Composition> y = counts.mapOfComposition(comp).keySet();
+			for (Composition y_i : y) {
 				int toAdd = counts.mapOfComposition(comp).get(y_i);
 				count += toAdd;
 			}
-			Map<Set<RollingStockUnit>, Double> map = probabilities.get(comp);
+			Map<Composition, Double> map = probabilities.get(comp);
 			if (map == null) {
 				map = new HashMap<>();
 			}
-			for (Set<RollingStockUnit> y_i : y) {
+			for (Composition y_i : y) {
 				double prob = (double) counts.getCount(comp, y_i)/count;
 				map.put(y_i, prob);
 			}
@@ -119,7 +121,7 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 	}
 	
 	private boolean tripEqualsEntry(ScheduledTrip trip, RealisationDataEntry entry) {
-		boolean b1 = trip.composition().id() == entry.getTrainNr();
+		boolean b1 = trip.getTrainService().id() == entry.getTrainNr();
 		boolean b2 = trip.fromStation().equals(entry.getDepartureStation());
 		boolean b3 = trip.toStation().equals(entry.getArrivalStation());
 		boolean b4 = trip.getDayOfWeek() == entry.getPlannedDepartureTime().getDayOfWeek().getValue();
@@ -129,8 +131,8 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 	@Override
 	public String toString() {
 		String s = "";
-		for (Entry<Set<RollingStockUnit>, Map<Set<RollingStockUnit>, Double>> kingEntry : probabilities.entrySet()) {
-			String x = parseUnits(kingEntry.getKey());
+		for (Entry<Composition, Map<Composition, Double>> kingEntry : probabilities.entrySet()) {
+			String x = kingEntry.getKey().toString();
 			s += x + " | ";
 			s += kingEntry.getValue().toString();
 			s += System.lineSeparator();
@@ -138,29 +140,29 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 		return s;
 	}
 	
-	private String parseUnits(Collection<RollingStockUnit> units) {
-		String s = "";
-		boolean first = true;
-		for (RollingStockUnit unit : units) {
-			if (first) {
-				first = false;
-			} else {
-				s += "-";
-			}
-			s += unit.toString();
-		}
-		return s;
-	}
+//	private String parseUnits(Collection<RollingStockUnit> units) {
+//		String s = "";
+//		boolean first = true;
+//		for (RollingStockUnit unit : units) {
+//			if (first) {
+//				first = false;
+//			} else {
+//				s += "-";
+//			}
+//			s += unit.toString();
+//		}
+//		return s;
+//	}
 	
 	private static class MismatchCounter {
-		private Map<Set<RollingStockUnit>, Map<Set<RollingStockUnit>, Integer>> kingMap;
+		private Map<Composition, Map<Composition, Integer>> kingMap;
 		
 		public MismatchCounter() {
 			kingMap = new HashMap<>();
 		}
 		
-		public int getCount(Set<RollingStockUnit> x, Set<RollingStockUnit> y) {
-			Map<Set<RollingStockUnit>, Integer> map = kingMap.get(x);
+		public int getCount(Composition x, Composition y) {
+			Map<Composition, Integer> map = kingMap.get(x);
 			if (map == null)
 				return 0;
 			Integer count = map.get(y);
@@ -169,8 +171,8 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 			return count;
 		}
 		
-		public int incrementCount(Set<RollingStockUnit> x, Set<RollingStockUnit> y) {
-			Map<Set<RollingStockUnit>, Integer> map = kingMap.get(x);
+		public int incrementCount(Composition x, Composition y) {
+			Map<Composition, Integer> map = kingMap.get(x);
 			if (map == null) {
 				map = new HashMap<>();
 				kingMap.put(x, map);
@@ -186,48 +188,34 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 			return prevCount + 1;
 		}
 		
-		public Map<Set<RollingStockUnit>, Integer> mapOfComposition(Set<RollingStockUnit> comp) {
-			Map<Set<RollingStockUnit>, Integer> map = kingMap.get(comp);
+		public Map<Composition, Integer> mapOfComposition(Composition comp) {
+			Map<Composition, Integer> map = kingMap.get(comp);
 			if (map == null)
 				return null;
 			return new HashMap<>(map);
 		}
 		
-		public Set<Set<RollingStockUnit>> keySet() {
+		public Set<Composition> keySet() {
 			return kingMap.keySet();
 		}
 		
 		@Override
 		public String toString() {
 			String s = "";
-			for (Entry<Set<RollingStockUnit>, Map<Set<RollingStockUnit>, Integer>> kingEntry : kingMap.entrySet()) {
-				String x = parseUnits(kingEntry.getKey());
+			for (Entry<Composition, Map<Composition, Integer>> kingEntry : kingMap.entrySet()) {
+				String x = kingEntry.getKey().toString();
 				s += x + " | ";
 				s += kingEntry.getValue().toString();
 				s += System.lineSeparator();
 			}
 			return s;
 		}
-		
-		private String parseUnits(Collection<RollingStockUnit> units) {
-			String s = "";
-			boolean first = true;
-			for (RollingStockUnit unit : units) {
-				if (first) {
-					first = false;
-				} else {
-					s += "-";
-				}
-				s += unit.toString();
-			}
-			return s;
-		}
 	}
 	
-	private static class EntryComparator implements Comparator<Entry<Set<RollingStockUnit>, Double>> {
+	private static class EntryComparator implements Comparator<Entry<Composition, Double>> {
 
 		@Override
-		public int compare(Entry<Set<RollingStockUnit>, Double> o1, Entry<Set<RollingStockUnit>, Double> o2) {
+		public int compare(Entry<Composition, Double> o1, Entry<Composition, Double> o2) {
 			int res1 = -Double.compare(o1.getValue(), o2.getValue());
 			if (res1 != 0)
 				return res1;

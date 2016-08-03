@@ -7,6 +7,8 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
 
+import com.google.common.collect.*;
+
 import wagon.infrastructure.Station;
 import wagon.rollingstock.*;
 
@@ -167,15 +169,15 @@ public class RealisationData {
 		if (text == null)
 			throw new NullPointerException("Argument cannot be null");
 		else if (text.equals(""))
-			return new TrainService(trainNr, new HashSet<>());
+			return new TrainService(trainNr, new Composition());
 		text = text.replaceAll("[^ ,a-zA-Z0-9]", "");
 		String[] parts = text.split(",");
-		Set<RollingStockUnit> units = new HashSet<>();
+		Multiset<RollingStockUnit> units = LinkedHashMultiset.create();
 		for (int i = 0; i < parts.length; i++) {
 			RollingStockUnit unit = toUnit(parts[i]);
 			units.add(unit);
 		}
-		return new TrainService(trainNr, units);
+		return new TrainService(trainNr, new Composition(units));
 	}
 	
 	private RollingStockUnit toUnit(String text) {

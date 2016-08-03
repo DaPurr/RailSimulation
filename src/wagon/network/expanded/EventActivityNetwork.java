@@ -93,17 +93,17 @@ public class EventActivityNetwork {
 		Station station2 = new Station("Cps");
 		Station station3 = new Station("Rta");
 		
-		Set<RollingStockUnit> units1 = new HashSet<>();
+		Multiset<RollingStockUnit> units1 = LinkedHashMultiset.create();
 		units1.add(new SGM3Unit());
-		TrainService comp1 = new TrainService(1, units1);
+		TrainService comp1 = new TrainService(1, new Composition(units1));
 		
-		Set<RollingStockUnit> units2 = new HashSet<>();
+		LinkedHashMultiset<RollingStockUnit> units2 = LinkedHashMultiset.create();
 		units2.add(new SGM3Unit());
-		TrainService comp2 = new TrainService(2, units2);
+		TrainService comp2 = new TrainService(2, new Composition(units2));
 		
-		Set<RollingStockUnit> units3 = new HashSet<>();
+		LinkedHashMultiset<RollingStockUnit> units3 = LinkedHashMultiset.create();
 		units3.add(new SGM3Unit());
-		TrainService comp3 = new TrainService(3, units3);
+		TrainService comp3 = new TrainService(3, new Composition(units3));
 		
 		ScheduledTrip sd1 = new ScheduledTrip(comp1, 
 				LocalTime.parse("06:47"), 
@@ -155,13 +155,13 @@ public class EventActivityNetwork {
 		Station stationB = new Station("B");
 		Station stationC = new Station("C");
 		
-		Set<RollingStockUnit> units1 = new HashSet<>();
+		LinkedHashMultiset<RollingStockUnit> units1 = LinkedHashMultiset.create();
 		units1.add(new SLT4Unit());
-		TrainService comp1 = new TrainService(1, units1);
+		TrainService comp1 = new TrainService(1, new Composition(units1));
 		
-		Set<RollingStockUnit> units2 = new HashSet<>();
+		LinkedHashMultiset<RollingStockUnit> units2 = LinkedHashMultiset.create();
 		units2.add(new SLT4Unit());
-		TrainService comp2 = new TrainService(2, units2);
+		TrainService comp2 = new TrainService(2, new Composition(units2));
 		
 		ScheduledTrip trip1 = new ScheduledTrip(comp1, 
 				LocalTime.parse("10:53"), 
@@ -197,13 +197,13 @@ public class EventActivityNetwork {
 		Station stationB = new Station("B");
 		Station stationC = new Station("C");
 		
-		Set<RollingStockUnit> units1 = new HashSet<>();
+		LinkedHashMultiset<RollingStockUnit> units1 = LinkedHashMultiset.create();
 		units1.add(new SLT4Unit());
-		TrainService comp1 = new TrainService(1, units1);
+		TrainService comp1 = new TrainService(1, new Composition(units1));
 		
-		Set<RollingStockUnit> units2 = new HashSet<>();
+		LinkedHashMultiset<RollingStockUnit> units2 = LinkedHashMultiset.create();
 		units2.add(new SLT4Unit());
-		TrainService comp2 = new TrainService(2, units2);
+		TrainService comp2 = new TrainService(2, new Composition(units2));
 		
 		ScheduledTrip trip1 = new ScheduledTrip(comp1, 
 				LocalTime.parse("12:00"), 
@@ -245,17 +245,17 @@ public class EventActivityNetwork {
 		Station stationC = new Station("C");
 		Station stationD = new Station("D");
 		
-		Set<RollingStockUnit> units1 = new HashSet<>();
+		LinkedHashMultiset<RollingStockUnit> units1 = LinkedHashMultiset.create();
 		units1.add(new SLT4Unit());
-		TrainService comp1 = new TrainService(1, units1);
+		TrainService comp1 = new TrainService(1, new Composition(units1));
 		
-		Set<RollingStockUnit> units2 = new HashSet<>();
+		LinkedHashMultiset<RollingStockUnit> units2 = LinkedHashMultiset.create();
 		units2.add(new SLT4Unit());
-		TrainService comp2 = new TrainService(2, units2);
+		TrainService comp2 = new TrainService(2, new Composition(units2));
 		
-		Set<RollingStockUnit> units3 = new HashSet<>();
+		LinkedHashMultiset<RollingStockUnit> units3 = LinkedHashMultiset.create();
 		units3.add(new SLT4Unit());
-		TrainService comp3 = new TrainService(3, units3);
+		TrainService comp3 = new TrainService(3, new Composition(units3));
 		
 		ScheduledTrip trip1 = new ScheduledTrip(comp1, 
 				LocalTime.parse("10:53"), 
@@ -297,17 +297,17 @@ public class EventActivityNetwork {
 		Station stationB = new Station("B");
 		Station stationC = new Station("C");
 		
-		Set<RollingStockUnit> units1 = new HashSet<>();
+		LinkedHashMultiset<RollingStockUnit> units1 = LinkedHashMultiset.create();
 		units1.add(new SLT4Unit());
-		TrainService comp1 = new TrainService(1, units1);
+		TrainService comp1 = new TrainService(1, new Composition(units1));
 		
-		Set<RollingStockUnit> units2 = new HashSet<>();
+		LinkedHashMultiset<RollingStockUnit> units2 = LinkedHashMultiset.create();
 		units2.add(new SLT4Unit());
-		TrainService comp2 = new TrainService(2, units2);
+		TrainService comp2 = new TrainService(2, new Composition(units2));
 		
-		Set<RollingStockUnit> units3 = new HashSet<>();
+		LinkedHashMultiset<RollingStockUnit> units3 = LinkedHashMultiset.create();
 		units3.add(new SLT4Unit());
-		TrainService comp3 = new TrainService(3, units3);
+		TrainService comp3 = new TrainService(3, new Composition(units3));
 		
 		ScheduledTrip trip1 = new ScheduledTrip(comp1, 
 				LocalTime.parse("11:05"), 
@@ -389,7 +389,7 @@ public class EventActivityNetwork {
 		long countWaitEdges = 0;
 		long countTripEdges = 0;
 		long countTransferEdges = 0;
-		for (TrainService comp : timetable.compositions()) {
+		for (TrainService comp : timetable.getTrainServices()) {
 			Iterator<ScheduledTrip> tripIter = timetable.getRoute(comp, dayOfWeek).iterator();
 			if (!tripIter.hasNext())
 				continue;
@@ -546,7 +546,7 @@ public class EventActivityNetwork {
 		int countArrivals = 0;
 		int countDepartures = 0;
 		int counter = 0;
-		for (TrainService comp : timetable.compositions()) {
+		for (TrainService comp : timetable.getTrainServices()) {
 			for (ScheduledTrip trip : timetable.getRoute(comp, dayOfWeek)) {
 				Station fromStation = trip.fromStation();
 				Station toStation = trip.toStation();
@@ -654,10 +654,10 @@ public class EventActivityNetwork {
 		Station station = new Station(name);
 		NavigableSet<DepartureNode> set = departuresByStation.get(station);
 		
-		Set<RollingStockUnit> units1 = new HashSet<>();
+		LinkedHashMultiset<RollingStockUnit> units1 = LinkedHashMultiset.create();
 		units1.add(new VIRM4Unit());
 		ScheduledTrip dummyTrip = new ScheduledTrip(
-				new TrainService(0, units1), 
+				new TrainService(0, new Composition(units1)), 
 				time, 
 				time, 
 				new Station(name), 
@@ -687,10 +687,10 @@ public class EventActivityNetwork {
 			throw new IllegalArgumentException("Arguments cannot be null");
 		Station station = new Station(name);
 		NavigableSet<ArrivalNode> set = arrivalsByStation.get(station);
-		Set<RollingStockUnit> units1 = new HashSet<>();
+		LinkedHashMultiset<RollingStockUnit> units1 = LinkedHashMultiset.create();
 		units1.add(new VIRM4Unit());
 		ScheduledTrip dummyTrip = new ScheduledTrip(
-				new TrainService(0, units1), 
+				new TrainService(0, new Composition(units1)), 
 				time, 
 				time, 
 				new Station(name), 

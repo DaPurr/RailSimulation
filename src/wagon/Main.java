@@ -27,10 +27,10 @@ public class Main {
 
 	public static void main(String[] args) {
 		try {
-			Timetable sample = Timetable.importFromExcel("data/materieelplan/full_dataset.xlsx");
+//			Timetable sample = Timetable.importFromExcel("data/materieelplan/full_dataset.xlsx");
 //			Timetable sample = Timetable.importFromExcel("data/materieelplan/smaller_sample_schedule1.xlsx", 2);
 //			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/smaller_sample_schedule1_export.xml");
-//			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/full_dataset_export.xml");
+			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/full_dataset_export.xml");
 //			sample.export("data/materieelplan/processed/full_dataset_export.xml");
 //			sample.export("data/materieelplan/processed/smaller_sample_schedule1_day2_export.xml");
 //			EventActivityNetwork network = EventActivityNetwork.createTransferNetwork(sample, 2, 1);
@@ -102,18 +102,18 @@ public class Main {
 		catch (IOException e) {
 			e.printStackTrace();
 		} 
-//		catch (SAXException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		catch (ParserConfigurationException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		catch (InvalidFormatException e) {
+		catch (SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+//		catch (InvalidFormatException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 	
 	private static Map<Journey, ArrivalProcess> estimateArrivalProcesses(CiCoData cicoData) {

@@ -1,7 +1,5 @@
 package wagon.rollingstock;
 
-import java.util.*;
-
 import wagon.timetable.ComfortNorm;
 
 /**
@@ -16,31 +14,31 @@ import wagon.timetable.ComfortNorm;
 public class TrainService {
 	
 	private int id;
-	private Set<RollingStockUnit> wagons;
+	private Composition composition;
 	
-	public TrainService(int id, List<RollingStockUnit> wagons) {
+	public TrainService(int id, Composition composition) {
 		this.id = id;
-		this.wagons = wagons;
+		this.composition = composition;
 	}
 
 	public int id() {
 		return id;
 	}
 	
-	public Set<RollingStockUnit> getUnits() {
-		return new HashSet<>(wagons);
+	public Composition getComposition() {
+		return composition;
 	}
 	
 	public TrainService copy() {
 		TrainService comp = new TrainService(
 				id, 
-				new ArrayList<>(wagons));
+				composition.copy());
 		return comp;
 	}
 
 	public int getNrWagons() {
 		int count = 0;
-		for (RollingStockUnit unit : wagons)
+		for (RollingStockUnit unit : composition)
 			count += unit.getNrWagons();
 		return count;
 	}
@@ -55,56 +53,56 @@ public class TrainService {
 
 	public int getSeats1() {
 		int count = 0;
-		for (RollingStockUnit unit : wagons)
+		for (RollingStockUnit unit : composition)
 			count += unit.getSeats1();
 		return count;
 	}
 
 	public int getSeats2() {
 		int count = 0;
-		for (RollingStockUnit unit : wagons)
+		for (RollingStockUnit unit : composition)
 			count += unit.getSeats2();
 		return count;
 	}
 
 	public int getFoldableSeats() {
 		int count = 0;
-		for (RollingStockUnit unit : wagons)
+		for (RollingStockUnit unit : composition)
 			count += unit.getFoldableSeats();
 		return count;
 	}
 
 	public int getStandArea() {
 		int count = 0;
-		for (RollingStockUnit unit : wagons)
+		for (RollingStockUnit unit : composition)
 			count += unit.getStandArea();
 		return count;
 	}
 
 	public int getNormC1() {
 		int count = 0;
-		for (RollingStockUnit unit : wagons)
+		for (RollingStockUnit unit : composition)
 			count += unit.getNormC1();
 		return count;
 	}
 
 	public int getNormC2() {
 		int count = 0;
-		for (RollingStockUnit unit : wagons)
+		for (RollingStockUnit unit : composition)
 			count += unit.getNormC2();
 		return count;
 	}
 
 	public int getNormA2() {
 		int count = 0;
-		for (RollingStockUnit unit : wagons)
+		for (RollingStockUnit unit : composition)
 			count += unit.getNormA2();
 		return count;
 	}
 
 	public int getNormV2() {
 		int count = 0;
-		for (RollingStockUnit unit : wagons)
+		for (RollingStockUnit unit : composition)
 			count += unit.getNormV2();
 		return count;
 	}
@@ -118,15 +116,15 @@ public class TrainService {
 		
 		switch (norm) {
 		case A:
-			for (RollingStockUnit unit : wagons)
+			for (RollingStockUnit unit : composition)
 				count += unit.getNormA2();
 			return count;
 		case C:
-			for (RollingStockUnit unit : wagons)
+			for (RollingStockUnit unit : composition)
 				count += unit.getNormC2();
 			return count;
 		case V:
-			for (RollingStockUnit unit : wagons)
+			for (RollingStockUnit unit : composition)
 				count += unit.getNormV2();
 			return count;
 		}
@@ -150,6 +148,6 @@ public class TrainService {
 	
 	@Override
 	public String toString() {
-		return "[" + id + ": " + wagons.toString() + "]";
+		return "[" + id + ": " + composition.toString() + "]";
 	}
 }

@@ -1,11 +1,12 @@
 package sandbox;
 
 import java.io.IOException;
-import java.util.*;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
+
+import com.google.common.collect.*;
 
 import wagon.data.*;
 import wagon.rollingstock.*;
@@ -24,10 +25,9 @@ public class RealisationDataSandbox {
 					timetable, 
 					rdata, 
 					0);
-//			System.out.println(rcbasic.toString());
-			Set<RollingStockUnit> units = new HashSet<>();
+			Multiset<RollingStockUnit> units = LinkedHashMultiset.create();
 			units.add(new VIRM4Unit());
-			TrainService comp = new TrainService(511, units);
+			TrainService comp = new TrainService(511, new Composition(units));
 			TrainService realizedComp = rcbasic.realizedComposition(comp, null);
 			System.out.println(realizedComp.toString());
 		} catch (IOException e) {

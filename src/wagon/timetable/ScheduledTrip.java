@@ -16,7 +16,7 @@ import wagon.rollingstock.TrainService;
 
 public class ScheduledTrip implements Comparable<ScheduledTrip> {
 
-	private TrainService composition;
+	private TrainService trainService;
 	private LocalTime arrTime;
 	private LocalTime depTime;
 	private Station toStation;
@@ -30,10 +30,10 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 	 * @param composition	train composition
 	 * @param time			scheduled departure time
 	 */
-	public ScheduledTrip(TrainService composition, LocalTime depTime, 
+	public ScheduledTrip(TrainService trainService, LocalTime depTime, 
 			LocalTime arrTime, Station fromStation, Station toStation, 
 			ComfortNorm norm, int dayOfWeek) {
-		this.composition = composition;
+		this.trainService = trainService;
 		this.depTime = depTime;
 		this.arrTime = arrTime;
 		this.fromStation = fromStation;
@@ -45,12 +45,12 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 	/**
 	 * @return	(simplified) train composition
 	 */
-	public TrainService composition() {
-		return composition;
+	public TrainService getTrainService() {
+		return trainService;
 	}
 	
-	public void setComposition(TrainService comp) {
-		this.composition = comp;
+	public void setTrainService(TrainService service) {
+		this.trainService = service;
 	}
 	
 	/**
@@ -103,7 +103,7 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 	
 	public ScheduledTrip copy() {
 		ScheduledTrip trip = new ScheduledTrip(
-				composition.copy(), 
+				trainService.copy(), 
 				depTime, 
 				arrTime, 
 				fromStation, 
@@ -155,6 +155,6 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 	
 	@Override
 	public String toString() {
-		return "[day: " + dayOfWeek + ", " + depTime + ": " + fromStation + "\t" + toStation + " " + arrTime + " (" + composition.toString() + ")]";
+		return "[day: " + dayOfWeek + ", " + depTime + ": " + fromStation + "\t" + toStation + " " + arrTime + " (" + trainService.toString() + ")]";
 	}
 }

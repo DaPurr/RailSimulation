@@ -7,6 +7,8 @@ import java.util.*;
 
 import org.junit.Test;
 
+import com.google.common.collect.*;
+
 import wagon.infrastructure.Station;
 import wagon.rollingstock.*;
 import wagon.timetable.*;
@@ -22,9 +24,9 @@ public class TimetableTest {
 		Station stationFrom = new Station("from");
 		Station stationTo = new Station("to");
 		
-		Set<RollingStockUnit> units1 = new HashSet<>();
+		Multiset<RollingStockUnit> units1 = LinkedHashMultiset.create();
 		units1.add(new VIRM6Unit());
-		TrainService comp = new TrainService(1, units1);
+		TrainService comp = new TrainService(1, new Composition(units1));
 		
 		for (int i = 0; i < nrTimetables; i++) {
 			LocalTime time = LocalTime.parse("12:00:00");
@@ -63,9 +65,9 @@ public class TimetableTest {
 		Station stationFrom = new Station("from");
 		Station stationTo = new Station("to");
 
-		Set<RollingStockUnit> units1 = new HashSet<>();
+		Multiset<RollingStockUnit> units1 = LinkedHashMultiset.create();
 		units1.add(new VIRM6Unit());
-		TrainService comp = new TrainService(1, units1);
+		TrainService comp = new TrainService(1, new Composition(units1));
 		
 		for (int i = 0; i < nrTimetables; i++) {
 			LocalTime time = LocalTime.parse("12:00:00");
@@ -106,9 +108,9 @@ public class TimetableTest {
 		Station to2 = new Station("Rta");
 		Station to3 = new Station("Rtd");
 		
-		Set<RollingStockUnit> units1 = new HashSet<>();
+		Multiset<RollingStockUnit> units1 = LinkedHashMultiset.create();
 		units1.add(new SLT4Unit());
-		TrainService comp = new TrainService(1, units1);
+		TrainService comp = new TrainService(1, new Composition(units1));
 		
 		LocalTime time1 = LocalTime.parse("12:00:00");
 		ScheduledTrip sd1 = new ScheduledTrip(comp, time1, time1.plusMinutes(2), from1, to1, ComfortNorm.C, 2);
@@ -146,13 +148,13 @@ public class TimetableTest {
 		Station to2 = new Station("Rta");
 		Station to3 = new Station("Rtd");
 		
-		Set<RollingStockUnit> units1 = new HashSet<>();
+		Multiset<RollingStockUnit> units1 = LinkedHashMultiset.create();
 		units1.add(new SLT4Unit());
-		TrainService comp1 = new TrainService(1, units1);
+		TrainService comp1 = new TrainService(1, new Composition(units1));
 		
-		Set<RollingStockUnit> units2 = new HashSet<>();
+		Multiset<RollingStockUnit> units2 = LinkedHashMultiset.create();
 		units2.add(new SGM3Unit());
-		TrainService comp2 = new TrainService(1, units2);
+		TrainService comp2 = new TrainService(1, new Composition(units2));
 		
 		LocalTime time1 = LocalTime.parse("12:00:00");
 		ScheduledTrip sd1 = new ScheduledTrip(comp1, time1, time1.plusMinutes(2), from1, to1, ComfortNorm.C, 2);
