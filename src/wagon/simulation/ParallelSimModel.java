@@ -5,6 +5,9 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 
+import org.apache.commons.math3.random.MersenneTwister;
+import org.apache.commons.math3.random.RandomGenerator;
+
 import com.google.common.collect.*;
 
 import wagon.data.*;
@@ -15,7 +18,8 @@ public class ParallelSimModel {
 	
 	private final int horizon = 24*60*60; // simulation horizon in seconds
 
-	private long seed;
+	private RandomGenerator random;
+	
 	private Options options;
 	private CiCoData cicoData;
 	private Timetable timetable;
@@ -28,7 +32,7 @@ public class ParallelSimModel {
 			Timetable timetable, 
 			RealisationData rdata, 
 			Options options) {
-		seed = options.getSeed();
+		random = new MersenneTwister(options.getSeed());
 		this.options = options;
 		this.timetable = timetable;
 		
@@ -74,7 +78,7 @@ public class ParallelSimModel {
 		
 		// estimate mismatch probabilities
 		log.info("Begin estimating mismatch probabilities...");
-		rcomposer = new RollingStockComposerBasic(timetable, rdata, seed);
+		rcomposer = new RollingStockComposerBasic(timetable, rdata, random.nextLong());
 		log.info("...Finish estimating mismatch probabilities");
 	}
 	
@@ -89,9 +93,8 @@ public class ParallelSimModel {
 		Set<Future<Report>> futures = new HashSet<>();
 		Set<Report> reports = Collections.newSetFromMap(new ConcurrentHashMap<>());
 		for (int i = 0; i < iterations; i++) {
-			Callable<Report> callable = new SimCallable(new RollingStockComposerBasic(rcomposer, seed));
+			Callable<Report> callable = new SimCallable(new RollingStockComposerBasic(rcomposer, random.nextLong()));
 			futures.add(service.submit(callable));
-			seed++;
 		}
 		service.shutdown();
 		try {
@@ -129,13 +132,12 @@ public class ParallelSimModel {
 		double maxLambda = Double.NEGATIVE_INFINITY;
 		for (Journey journey : map.keySet()) {
 			Collection<Passenger> passengers = map.get(journey);
-			HybridArrivalProcess arrivalProcess = new HybridArrivalProcess(passengers, 0, horizon, 5*60, seed);
+			HybridArrivalProcess arrivalProcess = new HybridArrivalProcess(passengers, 0, horizon, 5*60, random.nextLong());
 //			ArrivalProcess arrivalProcess = new PiecewiseConstantProcess(passengers, 5*60, seed);
 			resultMap.put(journey, arrivalProcess);
 			double lambda = arrivalProcess.getLambdaUpperBound();
 			if (lambda > maxLambda)
 				maxLambda = lambda;
-			seed++;
 		}
 		return resultMap;
 	}

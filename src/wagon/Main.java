@@ -67,37 +67,37 @@ public class Main {
 //			arrivals.exportArrivalRate("data/cico/rates_piecewise_constant.csv");
 //			System.out.println("p: " + arrivals.kolmogorovSmirnovTest("matlab/ks_test_rtd_20160209.csv"));
 			
-			Map<Journey, ArrivalProcess> arrivalProcesses = estimateArrivalProcesses(cicoData);
+//			Map<Journey, ArrivalProcess> arrivalProcesses = estimateArrivalProcesses(cicoData);
 			RealisationData rdata = RealisationData.importFromFile(
 					"data/realisatie/DM_INZET_MATERIEEL_CAP.csv", 
 					"data/realisatie/train_numbers.csv");
-			RollingStockComposer rcomposer = new RollingStockComposerBasic(sample, rdata, 0);
+//			RollingStockComposer rcomposer = new RollingStockComposerBasic(sample, rdata, 0);
 //			
-			long startTime = System.nanoTime();
-			SimModel sim = new SimModel(
-					sample, 
-					arrivalProcesses, 
-					cicoData, 
-					rcomposer, 
-					options);
-			Report report = sim.start();
-			System.out.println(report.summary());
-			System.out.println(report.reportBestAndWorstTrains());
-			long endTime = System.nanoTime();
-			double duration = (endTime - startTime)*1e-9;
-			System.out.println("Simulation took " + duration + " s");
-			
 //			long startTime = System.nanoTime();
-//			ParallelSimModel parSim = new ParallelSimModel(
+//			SimModel sim = new SimModel(
 //					sample, 
-//					rdata, 
+//					arrivalProcesses, 
+//					cicoData, 
+//					rcomposer, 
 //					options);
-//			ParallelReport parReport = parSim.start(4);
-//			System.out.println(parReport.summary());
-//			System.out.println(parReport.reportBestAndWorstTrains());
+//			Report report = sim.start();
+//			System.out.println(report.summary(sample.getAllTrips(options.getDayOfWeek())));
+//			System.out.println(report.reportBestAndWorstTrains(sample.getAllTrips(options.getDayOfWeek())));
 //			long endTime = System.nanoTime();
-//			double duration = (endTime-startTime)*1e-9;
+//			double duration = (endTime - startTime)*1e-9;
 //			System.out.println("Simulation took " + duration + " s");
+			
+			long startTime = System.nanoTime();
+			ParallelSimModel parSim = new ParallelSimModel(
+					sample, 
+					rdata, 
+					options);
+			ParallelReport parReport = parSim.start(16);
+			System.out.println(parReport.summary());
+			System.out.println(parReport.reportBestAndWorstTrains());
+			long endTime = System.nanoTime();
+			double duration = (endTime-startTime)*1e-9;
+			System.out.println("Simulation took " + duration + " s");
 		}
 		catch (IOException e) {
 			e.printStackTrace();
