@@ -1,6 +1,5 @@
 package wagon.simulation;
 
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 /**
@@ -9,7 +8,7 @@ import java.time.LocalTime;
  * @author Nemanja Milovanovic
  *
  */
-public abstract class Event implements Comparable<Event> {
+abstract class Event implements Comparable<Event> {
 	
 	/**
 	 * Constructs an <code>Event</code> object.
@@ -39,10 +38,13 @@ public abstract class Event implements Comparable<Event> {
 		int res1 = time().compareTo(other.time());
 		if (res1 != 0)
 			return res1;
+		
 		// for a trip from A -> B, when we say we board for this trip, we board at A and 
 		// when we say we alight this trip we alight at B, so first we process boarding 
 		// events, then alighting events.
-		return -this.getClass().getName().compareTo(other.getClass().getName());
+		int res2 = this.getClass().getName().compareTo(other.getClass().getName());
+//		if (res2 != 0)
+		return res2;
 	}
 	
 }
