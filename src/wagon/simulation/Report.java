@@ -10,7 +10,7 @@ import wagon.timetable.ScheduledTrip;
 public class Report {
 
 //	private SystemState state;
-	private Set<ScheduledTrip> trips;
+//	private Set<ScheduledTrip> trips;
 	
 	private Map<ScheduledTrip, Counter> tripToB;
 	private Map<ScheduledTrip, Counter> tripToN;
@@ -23,7 +23,7 @@ public class Report {
 	public Report(SystemState state, int dayOfWeek) {
 		tripToB = new LinkedHashMap<>(state.tripToB);
 		tripToN = new LinkedHashMap<>(state.tripToN);
-		trips = state.getTimetable().getAllTrips(dayOfWeek);
+//		trips = state.getTimetable().getAllTrips(dayOfWeek);
 	}
 	
 	/**
@@ -32,7 +32,7 @@ public class Report {
 	 * 			of the KPI values overall, and ordered by morning and 
 	 * 			afternoon rush hour. 
 	 */
-	public String summary() {
+	public String summary(Collection<ScheduledTrip> trips) {
 		String s = "";
 		s += "ALL TRIPS" + System.lineSeparator();
 		s += "=========================" + System.lineSeparator();
@@ -140,7 +140,7 @@ public class Report {
 		return set;
 	}
 	
-	public String reportBestAndWorstTrains() {
+	public String reportBestAndWorstTrains(Collection<ScheduledTrip> trips) {
 		Map<Integer, Collection<ScheduledTrip>> trainMap = new HashMap<>();
 //		Collection<ScheduledTrip> trips = state.getTimetable().getAllTrips(dayOfWeek);
 		

@@ -34,7 +34,9 @@ public class AlightingEvent extends Event {
 //		state.setCounterN(trip, currentOccupation - passengersToAlight);
 		
 		// determine new occupation
-		state.setOccupation(trainID, currentOccupation - passengersToAlight);
+		double oldOccupation = state.setOccupation(trainID, currentOccupation - passengersToAlight);
+		if (oldOccupation < currentOccupation-passengersToAlight)
+			throw new IllegalStateException("New occupation cannot be higher when alighting");
 	}
 
 }

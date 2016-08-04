@@ -120,7 +120,8 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 		int hc3 = toStation.hashCode();
 		int hc4 = fromStation.hashCode();
 		int hc5 = Integer.hashCode(dayOfWeek);
-		return 3*hc1 + 5*hc2 + 7*hc3 + 11*hc4 + 13*hc5;
+		int hc6 = Integer.hashCode(trainService.id());
+		return 3*hc1 + 5*hc2 + 7*hc3 + 11*hc4 + 13*hc5 + 17*hc6;
 	}
 	
 	@Override
@@ -133,11 +134,15 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 		boolean b4 = this.fromStation.equals(o.fromStation);
 		boolean b5 = this.toStation.equals(o.toStation);
 		boolean b6 = this.dayOfWeek == o.dayOfWeek;
-		return b6 && b1 && b3 && b4 && b5;
+		boolean b2 = this.trainService.id() == o.trainService.id();
+		return b2 && b6 && b1 && b3 && b4 && b5;
 	}
 
 	@Override
 	public int compareTo(ScheduledTrip that) {
+		int res0 = Integer.compare(trainService.id(), that.trainService.id());
+		if (res0 != 0)
+			return res0;
 		int res1 = Integer.compare(this.dayOfWeek, that.dayOfWeek);
 		if (res1 != 0)
 			return res1;

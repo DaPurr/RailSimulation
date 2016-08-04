@@ -109,6 +109,7 @@ public class SimModel {
 	}
 	
 	private void processArrivalToEvents(Path path) {
+		List<Event> events = new ArrayList<>();
 		ScheduledTrip boardingTrip = null;
 		ScheduledTrip alightingTrip = null;
 		
@@ -117,15 +118,19 @@ public class SimModel {
 				TripEdge tEdge = (TripEdge) edge;
 				alightingTrip = tEdge.trip();
 				
-				if (boardingTrip == null)
+				if (boardingTrip == null) {
 					boardingTrip = tEdge.trip();
+					Event boarding = new BoardingEvent(tEdge.trip(), tEdge.trip().departureTime());
+					events.add(boarding);
+				}
 			} else if (edge instanceof TransferEdge) {
 				// we have transfered, so insert alighting and previous boarding event
 				AlightingEvent alight = new AlightingEvent(alightingTrip, alightingTrip.arrivalTime());
-				eventQueue.add(alight);
+				events.add(alight);
+//				eventQueue.add(alight);
 				
-				BoardingEvent board = new BoardingEvent(boardingTrip, boardingTrip.departureTime());
-				eventQueue.add(board);
+//				BoardingEvent board = new BoardingEvent(boardingTrip, boardingTrip.departureTime());
+//				eventQueue.add(board);
 				
 				// reset boarding trip so that we insert the trip directly after the transfer
 				boardingTrip = null;
@@ -133,10 +138,19 @@ public class SimModel {
 		}
 		
 		// add boarding and alighting
-		BoardingEvent board = new BoardingEvent(boardingTrip, boardingTrip.departureTime());
-		eventQueue.add(board);
+//		BoardingEvent board = new BoardingEvent(boardingTrip, boardingTrip.departureTime());
+//		eventQueue.add(board);
 		AlightingEvent alight = new AlightingEvent(alightingTrip, alightingTrip.arrivalTime());
-		eventQueue.add(alight);
+		events.add(alight);
+//		eventQueue.add(alight);
+		
+		// add events to queue
+		for (Event event : events) {
+			int size = eventQueue.size();
+			eventQueue.add(event);
+			if (eventQueue.size() != size+1)
+				throw new IllegalStateException("Queue didn't increase by 1");
+		}
 	}
 	
 	private boolean hasNullRoute(List<Path> paths) {

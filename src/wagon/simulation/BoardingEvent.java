@@ -49,7 +49,9 @@ public class BoardingEvent extends Event {
 		state.setCounterN(trip, currentOccupation + passengersToBoard);
 		
 		// determine new occupation
-		state.setOccupation(trainID, currentOccupation + passengersToBoard);
+		double oldOccupation = state.setOccupation(trainID, currentOccupation + passengersToBoard);
+		if (oldOccupation > currentOccupation + passengersToBoard)
+			throw new IllegalStateException("New occupation cannot be lower than old occupation when boarding");
 	}
 
 }
