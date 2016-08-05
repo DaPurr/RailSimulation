@@ -72,7 +72,7 @@ public class Main {
 					"data/realisatie/DM_INZET_MATERIEEL_CAP.csv", 
 					"data/realisatie/train_numbers.csv");
 //			RollingStockComposer rcomposer = new RollingStockComposerBasic(sample, rdata, 0);
-//			
+////			
 //			long startTime = System.nanoTime();
 //			SimModel sim = new SimModel(
 //					sample, 
@@ -92,7 +92,7 @@ public class Main {
 					sample, 
 					rdata, 
 					options);
-			ParallelReport parReport = parSim.start(16);
+			ParallelReport parReport = parSim.start(4);
 			System.out.println(parReport.summary());
 			System.out.println(parReport.reportBestAndWorstTrains());
 			long endTime = System.nanoTime();

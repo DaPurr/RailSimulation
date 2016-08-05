@@ -24,6 +24,8 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 	private ComfortNorm norm;
 	private int dayOfWeek;
 	
+	private boolean changedComposition = false;
+	
 	/**
 	 * Constructs a <code>ScheduldDeparture</code> object.
 	 * 
@@ -42,6 +44,10 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 		this.dayOfWeek = dayOfWeek;
 	}
 	
+	public boolean isCompositionChanged() {
+		return changedComposition;
+	}
+	
 	/**
 	 * @return	(simplified) train composition
 	 */
@@ -50,6 +56,8 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 	}
 	
 	public void setTrainService(TrainService service) {
+		if (!trainService.getComposition().equals(service.getComposition()))
+			changedComposition = true;
 		this.trainService = service;
 	}
 	
