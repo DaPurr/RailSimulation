@@ -37,7 +37,7 @@ public class SimModel {
 		eventQueue = new PriorityQueue<>();
 		this.options = options;
 		this.arrivalProcesses = arrivalProcesses;
-//		generateMismatches(timetable, rcomposer);
+		generateMismatches(timetable, rcomposer);
 		
 		EventActivityNetwork network = EventActivityNetwork.createTransferNetwork(
 				timetable, 
@@ -171,7 +171,7 @@ public class SimModel {
 			SortedSet<ScheduledTrip> sortedTrips = timetable.getRoute(comp, options.getDayOfWeek());
 			if (sortedTrips != null) {
 				for (ScheduledTrip trip : sortedTrips) {
-					if (!currentPlannedComposition.equals(trip.getTrainService())) {
+					if (!currentPlannedComposition.equals(trip.getTrainService().getComposition())) {
 						generate = true;
 					}
 					if (generate) {
