@@ -7,7 +7,6 @@ import org.apache.commons.math3.random.MersenneTwister;
 
 public class HybridArrivalProcess implements ArrivalProcess {
 	
-//	private List<Double> arrivals;
 	private List<Passenger> passengers;
 	private int segmentWidth;
 	private int segments;
@@ -16,6 +15,8 @@ public class HybridArrivalProcess implements ArrivalProcess {
 	private double[] slope;
 	
 	private MersenneTwister random;
+	
+	long errorCount = 0;
 	
 	public HybridArrivalProcess(
 			Collection<Passenger> passengers, 
@@ -205,7 +206,9 @@ public class HybridArrivalProcess implements ArrivalProcess {
 				beginTime, 
 				endTime, 
 				segmentWidth, 
-				0);
+				leftBorderPoint, 
+				rightBorderPoint, 
+				random.nextLong());
 		// get parameters
 		int nrSegments = (endTime-beginTime)/segmentWidth;
 		for (int i = 0; i < nrSegments; i++) {
@@ -215,6 +218,7 @@ public class HybridArrivalProcess implements ArrivalProcess {
 			int correspondingSegment = beginTime/segmentWidth + i;
 			
 			if (Double.isNaN(intercept)) {
+				errorCount++;
 				this.slope[correspondingSegment] = 0;
 				this.intercept[correspondingSegment] = (double) arrivalsPerSegment.get(correspondingSegment).size()/segmentWidth;
 			} else {
