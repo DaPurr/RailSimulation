@@ -10,12 +10,15 @@ import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
 import com.joptimizer.functions.*;
+import com.joptimizer.optimizers.BarrierMethod;
 import com.joptimizer.optimizers.JOptimizer;
 import com.joptimizer.optimizers.OptimizationRequest;
 
 public class PiecewiseLinearProcess implements ArrivalProcess {
 	
 //	private final int horizon = 24*60*60;
+	
+	private final double zeroTol = 1e-5;
 	
 	private MersenneTwister random;
 	private int segments;
@@ -35,7 +38,7 @@ public class PiecewiseLinearProcess implements ArrivalProcess {
 			int beginTime, 
 			int endTime, 
 			int segmentWidth, 
-			int seed) {
+			long seed) {
 		this(
 				passengers, 
 				beginTime, 
@@ -53,7 +56,7 @@ public class PiecewiseLinearProcess implements ArrivalProcess {
 			int segmentWidth, 
 			double leftBorderPoint, 
 			double rightBorderPoint, 
-			int seed) {
+			long seed) {
 		random = new MersenneTwister(seed);
 		
 		this.segmentWidth = segmentWidth;
@@ -164,7 +167,7 @@ public class PiecewiseLinearProcess implements ArrivalProcess {
 	}
 	
 	private void fitModel() {
-		StrictlyConvexMultivariateRealFunction obj = new ObjFunction(
+		ConvexMultivariateRealFunction obj = new ObjFunction(
 				arrivals, 
 				beginTime, 
 				endTime, 
@@ -191,15 +194,17 @@ public class PiecewiseLinearProcess implements ArrivalProcess {
 		double[] initialPoint = getFeasiblePoint();
 		or.setInitialPoint(initialPoint);
 		
-		JOptimizer opt = new JOptimizer();
+		BarrierFunction barrier = new LogarithmicBarrier(nonNegativeConstraints, 2*segments);
+		BarrierMethod opt = new BarrierMethod(barrier);
+//		JOptimizer opt = new JOptimizer();
 		opt.setOptimizationRequest(or);
 		
 //		BasicConfigurator.configure();
-		List<Logger> loggers = Collections.<Logger>list(LogManager.getCurrentLoggers());
-		loggers.add(LogManager.getRootLogger());
-		for ( Logger logger : loggers ) {
-		    logger.setLevel(Level.OFF);
-		}
+//		List<Logger> loggers = Collections.<Logger>list(LogManager.getCurrentLoggers());
+//		loggers.add(LogManager.getRootLogger());
+//		for ( Logger logger : loggers ) {
+//		    logger.setLevel(Level.OFF);
+//		}
 		
 		try {
 			int returnCode = opt.optimize();
@@ -216,29 +221,75 @@ public class PiecewiseLinearProcess implements ArrivalProcess {
 	
 	private double[] getFeasiblePoint() {
 		double[] point = new double[2*segments];
-		double constant = 1.0;
 		
-		if (!Double.isNaN(leftBorderPoint) && Double.isNaN(rightBorderPoint))
-			constant = leftBorderPoint;
-		else if (Double.isNaN(leftBorderPoint) && !Double.isNaN(rightBorderPoint))
-			constant = rightBorderPoint;
-		else if (!Double.isNaN(leftBorderPoint) && !Double.isNaN(rightBorderPoint)) {
-			constant = rightBorderPoint;
-			
-			for (int i = 0; i < segments; i++)
-				point[i] = constant;
-			
-			double b_1 = (rightBorderPoint-leftBorderPoint)/(w[1]-w[0]);
-			double a_1 = leftBorderPoint - w[0]*b_1;
-			point[0] = a_1;
-			point[segments] = b_1;
-			return point;
+		double y1 = 1.0;
+		double y2 = 1.0;
+		
+		if (!Double.isNaN(leftBorderPoint)) {
+			y1 = leftBorderPoint;
+			if (y1 == 0)
+				y1 = zeroTol;
+		}
+		if (!Double.isNaN(rightBorderPoint)) {
+			y2 = rightBorderPoint;
+			if (y2 == 0)
+				y2 = zeroTol;
 		}
 		
-		for (int i = 0; i < segments; i++)
-			point[i] = constant;
+		if (segments == 1) {
+			double[] coeffs = fitLine(w[0], y1, w[1], y2);
+			point[0] = coeffs[0];
+			point[1] = coeffs[1];
+		} else {
+			double constant = (y1 + y2)/2;
+			if (constant == 0)
+				constant = 1;
+			double[] coeffs1 = fitLine(w[0], y1, w[1], constant);
+			double[] coeffs2 = fitLine(w[w.length-2], constant, w[w.length-1], y2);
+			
+			// first segment possibly linear
+			point[0] = coeffs1[0];
+			point[segments] = coeffs1[1];
+			
+			// last segment possibly linear
+			point[segments-1] = coeffs2[0];
+			point[2*segments-1] = coeffs2[1];
+			
+			// all in between are constant
+			for (int i = 1; i < segments-1; i++)
+				point[i] = constant;
+		}
+		
+		
+//		double constant = 1.0;
+		
+//		if (!Double.isNaN(leftBorderPoint) && Double.isNaN(rightBorderPoint))
+//			constant = leftBorderPoint;
+//		else if (Double.isNaN(leftBorderPoint) && !Double.isNaN(rightBorderPoint))
+//			constant = rightBorderPoint;
+//		else if (!Double.isNaN(leftBorderPoint) && !Double.isNaN(rightBorderPoint)) {
+//			constant = rightBorderPoint;
+//			
+//			for (int i = 0; i < segments; i++)
+//				point[i] = constant;
+//			
+//			double b_1 = (rightBorderPoint-leftBorderPoint)/(w[1]-w[0]);
+//			double a_1 = leftBorderPoint - w[0]*b_1;
+//			point[0] = a_1;
+//			point[segments] = b_1;
+//			return point;
+//		}
+//		
+//		for (int i = 0; i < segments; i++)
+//			point[i] = constant;
 		
 		return point;
+	}
+	
+	private double[] fitLine(double x1, double y1, double x2, double y2) {
+		double b = (y2-y1)/(x2-x1);
+		double a = y1 - x1*b;
+		return new double[] {a, b};
 	}
 	
 	private LinearMultivariateRealFunction[] constraintsNonNegativity() {
@@ -335,11 +386,19 @@ public class PiecewiseLinearProcess implements ArrivalProcess {
 		List<Double> vector = new ArrayList<>(segments-1 + 2);
 		appendList(vector, 0.0, segments-1);
 		
-		if (!Double.isNaN(leftBorderPoint))
-			vector.add(leftBorderPoint);
+		if (!Double.isNaN(leftBorderPoint)) {
+			if (leftBorderPoint == 0)
+				vector.add(zeroTol);
+			else
+				vector.add(leftBorderPoint);
+		}
 		
-		if (!Double.isNaN(rightBorderPoint))
-			vector.add(rightBorderPoint);
+		if (!Double.isNaN(rightBorderPoint)) {
+			if (rightBorderPoint == 0)
+				vector.add(zeroTol);
+			else
+				vector.add(rightBorderPoint);
+		}
 		
 		double[] arrayVector = new double[vector.size()];
 		for (int i = 0; i < vector.size(); i++)
@@ -348,26 +407,7 @@ public class PiecewiseLinearProcess implements ArrivalProcess {
 		return arrayVector;
 	}
 	
-//	private String printVector(double[] vector) {
-//		String s = "";
-//		for (double val : vector)
-//			s += String.format("%.3f", val) + System.lineSeparator();
-//		return s;
-//	}
-	
-//	private String printMatrix(double[][] matrix) {
-//		String s = "";
-//		for (int i = 0; i < matrix.length; i++) {
-//			for (int j = 0; j < matrix[0].length; j++) {
-//				double val = matrix[i][j];
-//				s += String.format("%.3f", val) + "\t";
-//			}
-//			s += System.lineSeparator();
-//		}
-//		return s;
-//	}
-	
-	private static class ObjFunction implements StrictlyConvexMultivariateRealFunction {
+	private static class ObjFunction implements ConvexMultivariateRealFunction {
 		
 		private List<List<Double>> matrixArrivals;
 		private int segments;

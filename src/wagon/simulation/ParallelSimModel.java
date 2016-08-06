@@ -128,17 +128,20 @@ public class ParallelSimModel {
 		}
 
 		// for each journey, estimate arrival process
+		long errorCount = 0;
 		ConcurrentMap<Journey, ArrivalProcess> resultMap = new ConcurrentHashMap<>();
 		double maxLambda = Double.NEGATIVE_INFINITY;
 		for (Journey journey : map.keySet()) {
 			Collection<Passenger> passengers = map.get(journey);
-			HybridArrivalProcess arrivalProcess = new HybridArrivalProcess(passengers, 0, horizon, 5*60, random.nextLong());
+			HybridArrivalProcess arrivalProcess = new HybridArrivalProcess(passengers, 0, horizon, options.getSegmentWidth()*60, random.nextLong());
+			errorCount += arrivalProcess.errorCount;
 //			ArrivalProcess arrivalProcess = new PiecewiseConstantProcess(passengers, 5*60, seed);
 			resultMap.put(journey, arrivalProcess);
 			double lambda = arrivalProcess.getLambdaUpperBound();
 			if (lambda > maxLambda)
 				maxLambda = lambda;
 		}
+		log.info("Number of failed estimations: " + errorCount);
 		return resultMap;
 	}
 	

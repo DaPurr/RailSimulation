@@ -46,6 +46,7 @@ public class Main {
 			options.setPathToStations("data/cico/omzettabel_stations.csv");
 			options.setDayOfWeek(2);
 			options.setSeed(0);
+			options.setSegmentWidth(5); // needs to divide 60
 //			
 			CiCoData cicoData = CiCoData
 					.importRawData(options);
@@ -72,7 +73,7 @@ public class Main {
 					"data/realisatie/DM_INZET_MATERIEEL_CAP.csv", 
 					"data/realisatie/train_numbers.csv");
 //			RollingStockComposer rcomposer = new RollingStockComposerBasic(sample, rdata, 0);
-////			
+			
 //			long startTime = System.nanoTime();
 //			SimModel sim = new SimModel(
 //					sample, 

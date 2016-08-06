@@ -20,6 +20,8 @@ public class Options {
 	private LocalTime timeLowerBound;
 	private LocalTime timeUpperBound;
 	
+	private int segmentWidth;
+	
 	private long seed = 0;
 	
 	/**
@@ -34,10 +36,19 @@ public class Options {
 		pathToStations = null;
 		
 		transferTime = 0;
+		segmentWidth = 5;
 		checkInTimeCorrection = 0;
 		checkOutTimeCorrection = 0;
 		timeLowerBound = LocalTime.parse("00:00:00");
 		timeUpperBound = LocalTime.parse("23:59:59");
+	}
+	
+	public int getSegmentWidth() {
+		return segmentWidth;
+	}
+	
+	public void setSegmentWidth(int width) {
+		segmentWidth = width;
 	}
 	
 	public void setSeed(long seed) {
