@@ -260,29 +260,6 @@ public class PiecewiseLinearProcess implements ArrivalProcess {
 				point[i] = constant;
 		}
 		
-		
-//		double constant = 1.0;
-		
-//		if (!Double.isNaN(leftBorderPoint) && Double.isNaN(rightBorderPoint))
-//			constant = leftBorderPoint;
-//		else if (Double.isNaN(leftBorderPoint) && !Double.isNaN(rightBorderPoint))
-//			constant = rightBorderPoint;
-//		else if (!Double.isNaN(leftBorderPoint) && !Double.isNaN(rightBorderPoint)) {
-//			constant = rightBorderPoint;
-//			
-//			for (int i = 0; i < segments; i++)
-//				point[i] = constant;
-//			
-//			double b_1 = (rightBorderPoint-leftBorderPoint)/(w[1]-w[0]);
-//			double a_1 = leftBorderPoint - w[0]*b_1;
-//			point[0] = a_1;
-//			point[segments] = b_1;
-//			return point;
-//		}
-//		
-//		for (int i = 0; i < segments; i++)
-//			point[i] = constant;
-		
 		return point;
 	}
 	

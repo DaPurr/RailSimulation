@@ -130,8 +130,10 @@ public class Main {
 		// for each journey, estimate arrival process
 		ConcurrentMap<Journey, ArrivalProcess> resultMap = new ConcurrentHashMap<>();
 		long seed = 0;
+		long count = 0;
 		double maxLambda = Double.NEGATIVE_INFINITY;
 		for (Journey journey : map.keySet()) {
+			count++;
 			Collection<Passenger> passengers = map.get(journey);
 			HybridArrivalProcess arrivalProcess = new HybridArrivalProcess(passengers, 0, Main.HORIZON, 5*60, seed);
 //			ArrivalProcess arrivalProcess = new PiecewiseConstantProcess(passengers, 5*60, seed);
@@ -140,6 +142,7 @@ public class Main {
 			if (lambda > maxLambda)
 				maxLambda = lambda;
 			seed++;
+			System.out.println("journey " + count + "/" + map.keySet().size());
 		}
 		return resultMap;
 	}

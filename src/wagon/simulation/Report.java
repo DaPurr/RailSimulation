@@ -99,7 +99,7 @@ public class Report {
 		double sumB = 0.0;
 		for (ScheduledTrip trip : trips) {
 			Counter counterN = getTripCounterN(trip);
-			Counter counterB = getTripCounterB(trip);
+ 			Counter counterB = getTripCounterB(trip);
 			if (counterN == null || counterB == null)
 				throw new IllegalArgumentException("Counters for trip cannot be found.");
 			double countB = counterB.getValue();

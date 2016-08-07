@@ -22,12 +22,20 @@ public class HybridArrivalProcessSandbox {
 			
 			Collection<Passenger> selectedPassengers = cicoData.getPassengersWithJourney("rta", "rtd");
 			
+			long startTime = System.nanoTime();
 			HybridArrivalProcess hap = new HybridArrivalProcess(
 					selectedPassengers, 
 					0, 
 					24*60*60, 
 					5*60, 
 					0);
+			long endTime = System.nanoTime();
+			double duration = (endTime-startTime)*1e-9;
+			System.out.println("Computation time: " + duration + " s");
+			
+			List<Double> arrivals = hap.generateArrivalsFromProcess(24*60*60);
+			System.out.println("Original passengers: " + selectedPassengers.size());
+			System.out.println("Generated passengers: " + arrivals.size());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

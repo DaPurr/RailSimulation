@@ -10,13 +10,12 @@ public class HybridArrivalProcess implements ArrivalProcess {
 	private List<Passenger> passengers;
 	private int segmentWidth;
 	private int segments;
+	private double[] w; // knots
 	
 	private double[] intercept;
 	private double[] slope;
 	
 	private MersenneTwister random;
-	
-	long errorCount = 0;
 	
 	public HybridArrivalProcess(
 			Collection<Passenger> passengers, 
@@ -31,6 +30,12 @@ public class HybridArrivalProcess implements ArrivalProcess {
 		
 		this.intercept = new double[segments];
 		this.slope = new double[segments];
+		
+		// make knots
+		w = new double[segments+1];
+		for (int i = 0; i < w.length; i++) {
+			w[i] = leftBound + i*segmentWidth;
+		}
 		
 		// convert collection of passengers to arrivals
 //		for (Passenger passenger : passengers) {
@@ -201,7 +206,7 @@ public class HybridArrivalProcess implements ArrivalProcess {
 			int segmentWidth, 
 			double leftBorderPoint, 
 			double rightBorderPoint) {
-		PiecewiseLinearProcess process = new PiecewiseLinearProcess(
+		ScaledPiecewiseLinearProcess process = new ScaledPiecewiseLinearProcess(
 				passengers, 
 				beginTime, 
 				endTime, 
@@ -218,7 +223,6 @@ public class HybridArrivalProcess implements ArrivalProcess {
 			int correspondingSegment = beginTime/segmentWidth + i;
 			
 			if (Double.isNaN(intercept)) {
-				errorCount++;
 				this.slope[correspondingSegment] = 0;
 				this.intercept[correspondingSegment] = (double) arrivalsPerSegment.get(correspondingSegment).size()/segmentWidth;
 			} else {
@@ -238,19 +242,15 @@ public class HybridArrivalProcess implements ArrivalProcess {
 		currTime += randomExponential;
 		
 		if (currTime < horizon) {
-			int currentSegment = (int) Math.floor(currTime/segmentWidth);
-			double acceptProb = intercept[currentSegment] + slope[currentSegment]*currTime;
-			acceptProb /= lambdaUB;
+			double acceptProb = lambda(currTime)/lambdaUB;
 			double r = random.nextDouble();
 			while (r > acceptProb && currTime < horizon) {
 				randomExponential = exponential.sample();
 				currTime += randomExponential;
 
-				currentSegment = (int) Math.floor(currTime/segmentWidth);
 				if (currTime >= horizon)
 					break;
-				acceptProb = intercept[currentSegment] + slope[currentSegment]*currTime;
-				acceptProb /= lambdaUB;
+				acceptProb = lambda(currTime)/lambdaUB;
 				r = random.nextDouble();
 			}
 		}
@@ -275,16 +275,28 @@ public class HybridArrivalProcess implements ArrivalProcess {
 		
 		// check all segment points
 		for (int i = 0; i < segments; i++) {
-			int w_i = i*segmentWidth;
-			double lambda = intercept[i] + w_i*slope[i];
+			double lambda = intercept[i];
 			if (lambda > max)
 				max = lambda;
 		}
 		
 		// check for last boundary
-		max = Double.max(max, intercept[segments-1] + slope[segments-1]*(segments*segmentWidth));
+		max = Double.max(max, intercept[segments-1] + slope[segments-1]);
 		
 		return max;
+	}
+	
+	private double lambda(double t) {
+		int segment = (int) Math.floor(t/segmentWidth);
+		double a_i = intercept[segment];
+		double b_i = slope[segment];
+		double w_i = w[segment+1];
+		double w_i_1 = w[segment];
+		double d = w_i-w_i_1;
+		double s = (t-w_i_1)/d;
+		
+		double lambda_t = a_i + b_i*s;
+		return lambda_t;
 	}
 
 }
