@@ -12,7 +12,7 @@ public class CiCoDataSandbox {
 		options.setDayOfWeek(2);
 		options.setPathToStations("data/cico/omzettabel_stations.csv");
 		options.setPathToCiCoData("data/cico/ritten_20160112.csv");
-		String station = "rta";
+		String station = "rtd";
 		try {
 			CiCoData cicoData = CiCoData.importRawData(options);
 			cicoData.exportEmpiricalArrivalRateOfCheckInStation(
@@ -27,6 +27,7 @@ public class CiCoDataSandbox {
 					5*60, 
 					"data/cico/export/20160209_"+station+".csv");
 			
+			options.setPathToCiCoData("data/cico/ritten_20160315.csv");
 			cicoData = CiCoData.importRawData(options);
 			cicoData.exportEmpiricalArrivalRateOfCheckInStation(
 					station, 

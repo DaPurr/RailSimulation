@@ -37,7 +37,7 @@ public class SimModel {
 		eventQueue = new PriorityQueue<>();
 		this.options = options;
 		this.arrivalProcesses = arrivalProcesses;
-		generateMismatches(timetable, rcomposer);
+//		generateMismatches(timetable, rcomposer);
 		
 		EventActivityNetwork network = EventActivityNetwork.createTransferNetwork(
 				timetable, 
@@ -180,6 +180,9 @@ public class SimModel {
 						currentPlannedComposition = trip.getTrainService().getComposition();
 					}
 					trip.setTrainService(realizedTrainService);
+//					Composition sgm2 = new Composition();
+//					sgm2.add(new SGM2Unit());
+//					trip.setTrainService(new TrainService(trip.getTrainService().id(), sgm2));
 				}
 			}
 		}

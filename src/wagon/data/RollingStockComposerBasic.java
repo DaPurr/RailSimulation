@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 
+import wagon.infrastructure.Station;
 import wagon.rollingstock.*;
 import wagon.timetable.*;
 
@@ -67,36 +68,42 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 	
 	private void estimateProbabilities() {
 		MismatchCounter counts = new MismatchCounter();
+		Map<TripStub, Composition> tripToPlannedComp = new HashMap<>();
 		for (TrainService service : timetable.getTrainServices()) {
 			SortedSet<ScheduledTrip> plannedTrips = timetable.getRoute(service);
 			int currentDayOfWeek = Integer.MAX_VALUE;
 			Composition currentComp = new Composition();
 			boolean processTrip = true;
 			for (ScheduledTrip trip : plannedTrips) {
-				Composition comp = trip.getTrainService().getComposition();
-				if (!currentComp.equals(comp)) {
+				Composition tripComp = trip.getTrainService().getComposition();
+				if (tripComp.equals(currentComp))
 					processTrip = true;
-					currentComp = comp;
-				}
 				if (trip.getDayOfWeek() != currentDayOfWeek) {
 					processTrip = true;
 					currentDayOfWeek = trip.getDayOfWeek();
 				}
-				
 				if (processTrip) {
-					// increment counters: go through all trips in realisation data with same 
-					// train number and day
-					SortedSet<RealisationDataEntry> entries = rdata.getEntriesByTrain(service.id());
-					if (entries != null) {
-						for (RealisationDataEntry entry : entries) {
-							if (tripEqualsEntry(trip, entry))
-								counts.incrementCount(
-										trip.getTrainService().getComposition(), 
-										entry.getRealizedComposition().getComposition());
-						}
-					}
+					currentComp = tripComp;
+					TripStub tripStub = new TripStub(trip.getTrainService().id(), trip.fromStation(), trip.toStation());
+					tripToPlannedComp.put(tripStub, trip.getTrainService().getComposition());
 					processTrip = false;
 				}
+			}
+		}
+		
+		for (TrainService service : timetable.getTrainServices()) {
+			SortedSet<RealisationDataEntry> entries = rdata.getEntriesByTrain(service.id());
+			if (entries == null)
+				continue;
+			for (RealisationDataEntry entry : entries) {
+				TripStub tripStub = new TripStub(
+						entry.getTrainNr(), 
+						entry.getDepartureStation(), 
+						entry.getArrivalStation());
+				Composition plannedComp = tripToPlannedComp.get(tripStub);
+				if (plannedComp == null)
+					continue;
+				counts.incrementCount(plannedComp, entry.getRealizedComposition().getComposition());
 			}
 		}
 		
@@ -120,13 +127,13 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 		}
 	}
 	
-	private boolean tripEqualsEntry(ScheduledTrip trip, RealisationDataEntry entry) {
-		boolean b1 = trip.getTrainService().id() == entry.getTrainNr();
-		boolean b2 = trip.fromStation().equals(entry.getDepartureStation());
-		boolean b3 = trip.toStation().equals(entry.getArrivalStation());
-		boolean b4 = trip.getDayOfWeek() == entry.getPlannedDepartureTime().getDayOfWeek().getValue();
-		return b1 && b2 && b3 && b4;
-	}
+//	private boolean tripEqualsEntry(ScheduledTrip trip, RealisationDataEntry entry) {
+//		boolean b1 = trip.getTrainService().id() == entry.getTrainNr();
+//		boolean b2 = trip.fromStation().equals(entry.getDepartureStation());
+//		boolean b3 = trip.toStation().equals(entry.getArrivalStation());
+//		boolean b4 = trip.getDayOfWeek() == entry.getPlannedDepartureTime().getDayOfWeek().getValue();
+//		return b1 && b2 && b3 && b4;
+//	}
 	
 	@Override
 	public String toString() {
@@ -215,6 +222,96 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 			if (res1 != 0)
 				return res1;
 			return o1.getKey().toString().compareTo(o2.getKey().toString());
+		}
+		
+	}
+	
+	private static class Pair<U, V> {
+		public final U x;
+		public final V y;
+		
+		public Pair(U x, V y) {
+			this.x = x;
+			this.y = y;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((x == null) ? 0 : x.hashCode());
+			result = prime * result + ((y == null) ? 0 : y.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (!(obj instanceof Pair))
+				return false;
+			Pair<U,V> other = (Pair<U,V>) obj;
+			if (x == null) {
+				if (other.x != null)
+					return false;
+			} else if (!x.equals(other.x))
+				return false;
+			if (y == null) {
+				if (other.y != null)
+					return false;
+			} else if (!y.equals(other.y))
+				return false;
+			return true;
+		}
+		
+		
+	}
+	
+	private static class TripStub {
+		private Station from;
+		private Station to;
+		private int trainNr;
+		
+		public TripStub(int trainNr, Station from, Station to) {
+			this.trainNr = trainNr;
+			this.from = from;
+			this.to= to;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((from == null) ? 0 : from.hashCode());
+			result = prime * result + ((to == null) ? 0 : to.hashCode());
+			result = prime * result + trainNr;
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (!(obj instanceof TripStub))
+				return false;
+			TripStub other = (TripStub) obj;
+			if (from == null) {
+				if (other.from != null)
+					return false;
+			} else if (!from.equals(other.from))
+				return false;
+			if (to == null) {
+				if (other.to != null)
+					return false;
+			} else if (!to.equals(other.to))
+				return false;
+			if (trainNr != other.trainNr)
+				return false;
+			return true;
 		}
 		
 	}

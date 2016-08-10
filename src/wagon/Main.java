@@ -45,8 +45,9 @@ public class Main {
 			options.setPathToCiCoData("data/cico/ritten_20160209.csv");
 			options.setPathToStations("data/cico/omzettabel_stations.csv");
 			options.setDayOfWeek(2);
-			options.setSeed(0);
+//			options.setSeed(0);
 			options.setSegmentWidth(5); // needs to divide 60
+			options.setTransferTime(1);
 //			
 			CiCoData cicoData = CiCoData
 					.importRawData(options);

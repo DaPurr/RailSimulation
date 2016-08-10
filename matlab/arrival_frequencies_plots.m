@@ -1,15 +1,15 @@
 % 10 min interval
-data_20160112 = csvread('../data/cico/export/20160112_rta.csv');
+data_20160112 = csvread('../data/cico/export/20160112_rtd.csv');
 %data_rta_ut_20160112 = csvread('../data/cico/frequencies/20160112/freqs_rta_ut_10min.csv');
 %data_rta_rtd_20160112 = csvread('../data/cico/frequencies/20160112/freqs_rta_rtd_10min.csv');
 %data_rta_gd_20160112 = csvread('../data/cico/frequencies/20160112/freqs_rta_gd_10min.csv');
 
-data_20160209 = csvread('../data/cico/export/20160209_rta.csv');
+data_20160209 = csvread('../data/cico/export/20160209_rtd.csv');
 % data_rta_ut_20160209 = csvread('../data/cico/rta_ut_20160209.csv');
 %data_rta_rtd_20160209 = csvread('../data/cico/rta_rtd_20160209.csv');
 %data_rta_gd_20160209 = csvread('../data/cico/frequencies/20160209/freqs_rta_gd_10min.csv');
 
-data_20160315 = csvread('../data/cico/export/20160315_rta.csv');
+data_20160315 = csvread('../data/cico/export/20160315_rtd.csv');
 %data_rta_ut_20160315 = csvread('../data/cico/frequencies/20160315/freqs_rta_ut_10min.csv');
 %data_rta_rtd_20160315 = csvread('../data/cico/frequencies/20160315/freqs_rta_rtd_10min.csv');
 %data_rta_gd_20160315 = csvread('../data/cico/frequencies/20160315/freqs_rta_gd_10min.csv');

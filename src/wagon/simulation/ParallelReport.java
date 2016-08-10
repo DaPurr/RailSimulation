@@ -90,11 +90,21 @@ public class ParallelReport {
 		double[] kpi = new double[reports.size()];
 		int count = 0;
 		for (Report report : reports) {
-			double val = report.calculateKPIOld(trips);
-			kpi[count] = val;
+			double numerator = 0.0;
+			double denominator = 0.0;
+			for (ScheduledTrip trip : trips) {
+				Counter counterN = report.getTripCounterN(trip);
+				if (counterN == null)
+					throw new IllegalArgumentException("Counters for trip cannot be found.");
+				double countN = counterN.getValue();
+				int normCapacity = trip.getTrainService().normCapacity2(trip.getNorm());
+				normCapacity += trip.getTrainService().normCapacity1(trip.getNorm());
+				numerator += countN*Math.min(normCapacity/countN, 1);
+				denominator += countN;
+			}
+			kpi[count] = numerator/denominator;
 			count++;
 		}
-		
 		double mean = mean(kpi);
 		double std = std(kpi);
 		return new KPIEstimate(mean, std);
@@ -104,11 +114,24 @@ public class ParallelReport {
 		double[] kpi = new double[reports.size()];
 		int count = 0;
 		for (Report report : reports) {
-			double val = report.calculateKPINew(trips);
-			kpi[count] = val;
+			double sumF = 0.0;
+			double sumB = 0.0;
+			for (ScheduledTrip trip : trips) {
+				Counter counterN = report.getTripCounterN(trip);
+	 			Counter counterB = report.getTripCounterB(trip);
+				if (counterN == null || counterB == null)
+					throw new IllegalArgumentException("Counters for trip cannot be found.");
+				double countB = counterB.getValue();
+				double countN = counterN.getValue();
+				int seats = trip.getTrainService().getAllSeats() + trip.getTrainService().getFoldableSeats();
+				double seatsAvailable = Math.max(seats - (countN - countB), 0.0);
+				double countF = Math.min(seatsAvailable, countB);
+				sumF += countF;
+				sumB += countB;
+			}
+			kpi[count] = sumF/sumB;
 			count++;
 		}
-		
 		double mean = mean(kpi);
 		double std = std(kpi);
 		return new KPIEstimate(mean, std);

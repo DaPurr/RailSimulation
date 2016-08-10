@@ -22,7 +22,7 @@ public class Options {
 	
 	private int segmentWidth;
 	
-	private long seed = 0;
+	private Long seed = null;
 	
 	/**
 	 * Constructs an object of class <code>Option</code>.
@@ -55,7 +55,7 @@ public class Options {
 		this.seed = seed;
 	}
 	
-	public long getSeed() {
+	public Long getSeed() {
 		return seed;
 	}
 	

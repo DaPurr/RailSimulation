@@ -32,7 +32,11 @@ public class ParallelSimModel {
 			Timetable timetable, 
 			RealisationData rdata, 
 			Options options) {
-		random = new MersenneTwister(options.getSeed());
+		Long seed = options.getSeed();
+		if (seed == null)
+			random = new MersenneTwister();
+		else
+			random = new MersenneTwister(options.getSeed());
 		this.options = options;
 		this.timetable = timetable;
 		
