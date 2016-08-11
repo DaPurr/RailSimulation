@@ -37,7 +37,7 @@ public class SimModel {
 		eventQueue = new PriorityQueue<>();
 		this.options = options;
 		this.arrivalProcesses = arrivalProcesses;
-//		generateMismatches(timetable, rcomposer);
+		generateMismatches(timetable, rcomposer);
 		
 		EventActivityNetwork network = EventActivityNetwork.createTransferNetwork(
 				timetable, 

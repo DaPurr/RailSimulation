@@ -1,7 +1,9 @@
 package wagon;
 
 import java.io.*;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -26,12 +28,14 @@ public class Main {
 	private final static int HORIZON = 24*60*60;
 
 	public static void main(String[] args) {
+//		LocalDateTime dateTime = LocalDateTime.of(2016, 1, 25, 16, 5, 14);
+//		System.out.println(dateTime.format(DateTimeFormatter.ofPattern("ddMMMyyyy:HH:mm:ss", Locale.US)));
 		try {
-//			Timetable sample = Timetable.importFromExcel("data/materieelplan/full_dataset.xlsx");
+			Timetable sample = Timetable.importFromExcel("data/materieelplan/full_dataset2.xlsx", true);
 //			Timetable sample = Timetable.importFromExcel("data/materieelplan/smaller_sample_schedule1.xlsx", 2);
 //			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/smaller_sample_schedule1_export.xml");
-			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/full_dataset_export.xml");
-//			sample.export("data/materieelplan/processed/full_dataset_export.xml");
+//			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/full_dataset_export.xml");
+			sample.export("data/materieelplan/processed/full_dataset_export2.xml");
 //			sample.export("data/materieelplan/processed/smaller_sample_schedule1_day2_export.xml");
 //			EventActivityNetwork network = EventActivityNetwork.createTransferNetwork(sample, 2, 1);
 //			EventActivityNetwork network = EventActivityNetwork.createTestNetwork5();
@@ -47,7 +51,7 @@ public class Main {
 			options.setDayOfWeek(2);
 //			options.setSeed(0);
 			options.setSegmentWidth(5); // needs to divide 60
-			options.setTransferTime(1);
+			options.setTransferTime(8);
 //			
 			CiCoData cicoData = CiCoData
 					.importRawData(options);
@@ -83,8 +87,8 @@ public class Main {
 //					rcomposer, 
 //					options);
 //			Report report = sim.start();
-//			System.out.println(report.summary(sample.getAllTrips(options.getDayOfWeek())));
-//			System.out.println(report.reportBestAndWorstTrains(sample.getAllTrips(options.getDayOfWeek())));
+//			System.out.println(report.summary());
+//			System.out.println(report.reportBestAndWorstTrains());
 //			long endTime = System.nanoTime();
 //			double duration = (endTime - startTime)*1e-9;
 //			System.out.println("Simulation took " + duration + " s");
@@ -104,18 +108,18 @@ public class Main {
 		catch (IOException e) {
 			e.printStackTrace();
 		} 
-		catch (SAXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-//		catch (InvalidFormatException e) {
+//		catch (SAXException e) {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
+//		catch (ParserConfigurationException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+		catch (InvalidFormatException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	private static Map<Journey, ArrivalProcess> estimateArrivalProcesses(CiCoData cicoData) {

@@ -2,7 +2,7 @@ package wagon.data;
 
 import java.io.*;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Logger;
@@ -152,16 +152,22 @@ public class RealisationData {
 	}
 	
 	private LocalDateTime toLocalDateTimeObjectRealized(String text) {
+		DateTimeFormatterBuilder formatBuilder = new DateTimeFormatterBuilder();
+		formatBuilder.parseCaseInsensitive();
+		formatBuilder.appendPattern("ddMMMyyyy:HH:mm:ss");
 		LocalDateTime date = LocalDateTime.parse(
 				text.toLowerCase(), 
-				DateTimeFormatter.ofPattern("ddMMMyyyy:HH:mm:ss"));
+				formatBuilder.toFormatter(Locale.US));
 		return date;
 	}
 	
 	private LocalDateTime toLocalDateTimeObjectPlanned(String text) {
+		DateTimeFormatterBuilder formatBuilder = new DateTimeFormatterBuilder();
+		formatBuilder.parseCaseInsensitive();
+		formatBuilder.appendPattern("ddMMMyy:HH:mm:ss");
 		LocalDateTime date = LocalDateTime.parse(
 				text.toLowerCase(), 
-				DateTimeFormatter.ofPattern("ddMMMyy:HH:mm:ss"));
+				formatBuilder.toFormatter(Locale.US));
 		return date;
 	}
 	

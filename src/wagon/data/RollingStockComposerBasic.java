@@ -84,7 +84,10 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 				}
 				if (processTrip) {
 					currentComp = tripComp;
-					TripStub tripStub = new TripStub(trip.getTrainService().id(), trip.fromStation(), trip.toStation());
+					TripStub tripStub = new TripStub(
+							trip.getTrainService().id(), 
+							trip.fromStation(), trip.toStation(), 
+							trip.getDayOfWeek());
 					tripToPlannedComp.put(tripStub, trip.getTrainService().getComposition());
 					processTrip = false;
 				}
@@ -99,7 +102,8 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 				TripStub tripStub = new TripStub(
 						entry.getTrainNr(), 
 						entry.getDepartureStation(), 
-						entry.getArrivalStation());
+						entry.getArrivalStation(), 
+						entry.getPlannedDepartureTime().toLocalDate().getDayOfWeek().getValue());
 				Composition plannedComp = tripToPlannedComp.get(tripStub);
 				if (plannedComp == null)
 					continue;
@@ -272,18 +276,21 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 	private static class TripStub {
 		private Station from;
 		private Station to;
+		private int dayOfWeek;
 		private int trainNr;
 		
-		public TripStub(int trainNr, Station from, Station to) {
+		public TripStub(int trainNr, Station from, Station to, int dayOfWeek) {
 			this.trainNr = trainNr;
 			this.from = from;
-			this.to= to;
+			this.to = to;
+			this.dayOfWeek = dayOfWeek;
 		}
 
 		@Override
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
+			result = prime * result + dayOfWeek;
 			result = prime * result + ((from == null) ? 0 : from.hashCode());
 			result = prime * result + ((to == null) ? 0 : to.hashCode());
 			result = prime * result + trainNr;
@@ -299,6 +306,8 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 			if (!(obj instanceof TripStub))
 				return false;
 			TripStub other = (TripStub) obj;
+			if (dayOfWeek != other.dayOfWeek)
+				return false;
 			if (from == null) {
 				if (other.from != null)
 					return false;

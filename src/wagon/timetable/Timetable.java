@@ -2,6 +2,7 @@ package wagon.timetable;
 
 import java.io.*;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
@@ -12,9 +13,11 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.poi.hssf.util.CellReference;
+import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
@@ -237,22 +240,22 @@ public class Timetable {
 	 * @throws InvalidFormatException
 	 * @throws IOException
 	 */
-	public static Timetable importFromExcel(String filename) 
+	public static Timetable importFromExcel(String filename, boolean hasHeader) 
 			throws InvalidFormatException, IOException {
 		// only allow xls(x) files
 		if (!filename.matches(".*\\.xls.?"))
 			throw new IllegalArgumentException("File needs to be excel format.");
 		Timetable timetable = new Timetable();
 		timetable.log.info("File: " + filename + " is xls(x).");
-		File file = new File(filename);
+//		File file = new File(filename);
 //		InputStream is = new FileInputStream(file);
 		
 		// code from Stack Overflow to stream input
-		StreamingReader reader = StreamingReader.builder()
+		InputStream is = new FileInputStream(new File(filename));
+		Workbook workbook = StreamingReader.builder()
 				.rowCacheSize(100)
 				.bufferSize(1024)
-				.sheetIndex(0)
-				.read(file);
+				.open(is);
 		
 		timetable.log.info("Begin parsing Excel...");
 //		XSSFWorkbook workbook = new XSSFWorkbook(file);
@@ -263,11 +266,13 @@ public class Timetable {
 				new LinkedHashMap<>();
 		
 		int rowCount = 1;
-		for (Row row : reader) {
-			Cell cell = row.getCell(0);
+		Sheet sheet = workbook.getSheetAt(0);
+		for (Row row : sheet) {
 			// skip row if we have a header line
-			if (cell.getCellType() == Cell.CELL_TYPE_STRING)
+			if (hasHeader) {
+				hasHeader = false;
 				continue;
+			}
 			
 			CellReference cellRef = new CellReference("L");
 			
@@ -307,7 +312,7 @@ public class Timetable {
 			rowCount++;
 		}
 //		workbook.close();
-		reader.close();
+		workbook.close();
 		
 		// fixing departure/arrival times
 		trainRoutes = fixTripTimes(trainRoutes);
@@ -548,24 +553,28 @@ public class Timetable {
 	}
 	
 	private static LocalTime extractTimeFromCell(Cell cell) {
-		if (cell.getCellType() != Cell.CELL_TYPE_NUMERIC)
-			throw new IllegalArgumentException("Wrong cell type for dates.");
-		// hopefully we have been supplied a valid timestamp
-		int number = (int) cell.getNumericCellValue();
-		
-		// now we do magic
-		int fourth = number/1000;
-		number -= fourth*1000;
-		int third = number/100;
-		number -= third*100;
-		int second = number/10;
-		number -= second*10;
-		int first = number;
-//		String date = "2016-04-11T" + fourth + third + ":" + second + first + ":00";
-		LocalTime time = LocalTime.of(
-				fourth*10 + third,
-				second*10 + first);
-		return time;
+		if (cell.getCellType() == Cell.CELL_TYPE_NUMERIC) {
+			// hopefully we have been supplied a valid timestamp
+			int number = (int) cell.getNumericCellValue();
+
+			// now we do magic
+			int fourth = number/1000;
+			number -= fourth*1000;
+			int third = number/100;
+			number -= third*100;
+			int second = number/10;
+			number -= second*10;
+			int first = number;
+			LocalTime time = LocalTime.of(
+					fourth*10 + third,
+					second*10 + first);
+			return time;
+		} else if (cell.getCellType() == Cell.CELL_TYPE_STRING) {
+			DateTimeFormatter format = DateTimeFormatter.ofPattern("HHmm", Locale.US);
+			LocalTime localTime = LocalTime.parse(cell.getStringCellValue(), format);
+			return localTime;
+		}
+		throw new IllegalArgumentException("Wrong cell type for dates.");
 	}
 	
 	private static Station extractStationFromCell(Cell cell) {
