@@ -25,17 +25,15 @@ import wagon.timetable.Timetable;
 
 public class Main {
 	
-	private final static int HORIZON = 24*60*60;
-
 	public static void main(String[] args) {
 //		LocalDateTime dateTime = LocalDateTime.of(2016, 1, 25, 16, 5, 14);
 //		System.out.println(dateTime.format(DateTimeFormatter.ofPattern("ddMMMyyyy:HH:mm:ss", Locale.US)));
 		try {
-			Timetable sample = Timetable.importFromExcel("data/materieelplan/full_dataset2.xlsx", true);
+//			Timetable sample = Timetable.importFromExcel("data/materieelplan/full_dataset2.xlsx", true);
 //			Timetable sample = Timetable.importFromExcel("data/materieelplan/smaller_sample_schedule1.xlsx", 2);
 //			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/smaller_sample_schedule1_export.xml");
-//			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/full_dataset_export.xml");
-			sample.export("data/materieelplan/processed/full_dataset_export2.xml");
+			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/full_dataset2_export.xml");
+//			sample.export("data/materieelplan/processed/full_dataset2_export.xml");
 //			sample.export("data/materieelplan/processed/smaller_sample_schedule1_day2_export.xml");
 //			EventActivityNetwork network = EventActivityNetwork.createTransferNetwork(sample, 2, 1);
 //			EventActivityNetwork network = EventActivityNetwork.createTestNetwork5();
@@ -51,7 +49,8 @@ public class Main {
 			options.setDayOfWeek(2);
 //			options.setSeed(0);
 			options.setSegmentWidth(5); // needs to divide 60
-			options.setTransferTime(8);
+			options.setTransferTime(1);
+			options.setNumberofProcessors(4);
 //			
 			CiCoData cicoData = CiCoData
 					.importRawData(options);
@@ -60,8 +59,8 @@ public class Main {
 //			cicoData.exportEmpiricalArrivalRateOfJourney(
 //					"rta", 
 //					"ut", 
-//					10*60, 
-//					"data/cico/rta_ut_20160209.csv");
+//					5*60, 
+//					"data/cico/export/20160209_rta_ut.csv");
 //			cicoData.exportEmpiricalArrivalRateOfCheckInStation(
 //					"rta", 
 //					10*60, 
@@ -73,7 +72,7 @@ public class Main {
 //			arrivals.exportArrivalRate("data/cico/rates_piecewise_constant.csv");
 //			System.out.println("p: " + arrivals.kolmogorovSmirnovTest("matlab/ks_test_rtd_20160209.csv"));
 			
-//			Map<Journey, ArrivalProcess> arrivalProcesses = estimateArrivalProcesses(cicoData);
+//			Map<Journey, ArrivalProcess> arrivalProcesses = estimateArrivalProcesses(cicoData, options);
 			RealisationData rdata = RealisationData.importFromFile(
 					"data/realisatie/DM_INZET_MATERIEEL_CAP.csv", 
 					"data/realisatie/train_numbers.csv");
@@ -98,9 +97,10 @@ public class Main {
 					sample, 
 					rdata, 
 					options);
-			ParallelReport parReport = parSim.start(4);
+			ParallelReport parReport = parSim.start(1);
 			System.out.println(parReport.summary());
-			System.out.println(parReport.reportBestAndWorstTrains());
+//			System.out.println(parReport.reportWorstJourneys());
+			System.out.println(parReport.reportWorstTrains());
 			long endTime = System.nanoTime();
 			double duration = (endTime-startTime)*1e-9;
 			System.out.println("Simulation took " + duration + " s");
@@ -108,21 +108,21 @@ public class Main {
 		catch (IOException e) {
 			e.printStackTrace();
 		} 
-//		catch (SAXException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		catch (ParserConfigurationException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		catch (InvalidFormatException e) {
+		catch (SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		catch (ParserConfigurationException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+//		catch (InvalidFormatException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 	}
 	
-	private static Map<Journey, ArrivalProcess> estimateArrivalProcesses(CiCoData cicoData) {
+	private static Map<Journey, ArrivalProcess> estimateArrivalProcesses(CiCoData cicoData, Options options) {
 		// group passengers based on their journeys
 		Multimap<Journey, Passenger> map = LinkedHashMultimap.create();
 		for (Passenger passenger : cicoData.getPassengers()) {
@@ -140,8 +140,8 @@ public class Main {
 		for (Journey journey : map.keySet()) {
 			count++;
 			Collection<Passenger> passengers = map.get(journey);
-			HybridArrivalProcess arrivalProcess = new HybridArrivalProcess(passengers, 0, Main.HORIZON, 5*60, seed);
-//			ArrivalProcess arrivalProcess = new PiecewiseConstantProcess(passengers, 5*60, seed);
+//			HybridArrivalProcess arrivalProcess = new HybridArrivalProcess(passengers, 0, Main.HORIZON, 5*60, seed);
+			PiecewiseConstantProcess arrivalProcess = new PiecewiseConstantProcess(passengers, options.getSegmentWidth()*60, seed);
 			resultMap.put(journey, arrivalProcess);
 			double lambda = arrivalProcess.getLambdaUpperBound();
 			if (lambda > maxLambda)

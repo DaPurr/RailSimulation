@@ -94,33 +94,13 @@ public class PiecewiseLinearProcess implements ArrivalProcess {
 	}
 
 	@Override
+	@Deprecated
 	public double generateArrival(double time, int horizon) {
-		
-		double currTime = time;
-		
-		double lambdaUB = getLambdaUpperBound();
-		ExponentialDistribution exponential = new ExponentialDistribution(random, 1/lambdaUB);
-		double randomExponential = exponential.sample();
-		currTime += randomExponential;
-		
-		if (currTime < horizon) {
-			int currentSegment = (int) Math.floor(currTime/segmentWidth);
-			double acceptProb = intercept[currentSegment] + slope[currentSegment]*currTime;
-			acceptProb /= lambdaUB;
-			double r = random.nextDouble();
-			while (r > acceptProb && currTime < horizon) {
-				randomExponential = exponential.sample();
-				currTime += randomExponential;
-
-				acceptProb = intercept[currentSegment] + slope[currentSegment]*currTime;
-				acceptProb /= lambdaUB;
-				r = random.nextDouble();
-			}
-		}
-		return currTime;
+		return Double.NEGATIVE_INFINITY;
 	}
 
 	@Override
+	@Deprecated
 	public List<Double> generateArrivalsFromProcess(int horizon) {
 		List<Double> events = new ArrayList<>();
 		double currTime = 0;

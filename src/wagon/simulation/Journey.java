@@ -24,4 +24,9 @@ public class Journey {
 	public int hashCode() {
 		return 13*origin.hashCode() + 23*destination.hashCode();
 	}
+	
+	@Override
+	public String toString() {
+		return "(" + origin.name() + ", " + destination.name() + ")";
+	}
 }

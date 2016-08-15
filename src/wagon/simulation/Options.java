@@ -13,6 +13,8 @@ public class Options {
 	private String pathToCiCoData;
 	private String pathToStations;
 	
+	private int nProcessors = 1;
+	
 	private int dayOfWeek;
 	private int transferTime;
 	private int checkInTimeCorrection;
@@ -41,6 +43,14 @@ public class Options {
 		checkOutTimeCorrection = 0;
 		timeLowerBound = LocalTime.parse("00:00:00");
 		timeUpperBound = LocalTime.parse("23:59:59");
+	}
+	
+	public void setNumberofProcessors(int n) {
+		nProcessors = n;
+	}
+	
+	public int getNumberOfProcessors() {
+		return nProcessors;
 	}
 	
 	public int getSegmentWidth() {

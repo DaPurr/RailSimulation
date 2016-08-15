@@ -10,10 +10,9 @@ import org.xml.sax.SAXException;
 import wagon.data.*;
 import wagon.infrastructure.Station;
 import wagon.simulation.*;
-import wagon.timetable.ScheduledTrip;
-import wagon.timetable.Timetable;
+import wagon.timetable.*;
 
-public class TransferTimeExperiment {
+public class SegmentWidthExperiment {
 
 	public static void main(String[] args) {
 		try {
@@ -24,7 +23,7 @@ public class TransferTimeExperiment {
 			options.setPathToStations("data/cico/omzettabel_stations.csv");
 			options.setDayOfWeek(2);
 //			options.setSeed(0);
-			options.setSegmentWidth(5); // needs to divide 60
+			options.setTransferTime(1);
 			
 			CiCoData cicoData = CiCoData
 					.importRawData(options);
@@ -33,15 +32,13 @@ public class TransferTimeExperiment {
 					"data/realisatie/DM_INZET_MATERIEEL_CAP.csv", 
 					"data/realisatie/train_numbers.csv");
 			
-			int LB = 0;
-			int UB = 10;
-			int step = 1;
+			int[] widths = new int[] {5, 10, 15, 20, 30};
 			
 			List<Double> kpi = new ArrayList<>();
 			List<Double> times = new ArrayList<>();
 			
-			for (int t = LB; t <= UB; t += step) {
-				options.setTransferTime(t);
+			for (int w : widths) {
+				options.setSegmentWidth(w); // needs to divide 60
 				long startTime = System.nanoTime();
 				ParallelSimModel parSim = new ParallelSimModel(
 						sample, 
@@ -86,5 +83,4 @@ public class TransferTimeExperiment {
 		passengers.removeAll(passengersToDelete);
 		cicoData.setPassengers(passengers);
 	}
-
 }

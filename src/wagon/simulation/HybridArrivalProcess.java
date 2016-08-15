@@ -49,6 +49,44 @@ public class HybridArrivalProcess implements ArrivalProcess {
 		estimateModel();
 	}
 	
+	public double logLikelihood() {
+		List<List<Double>> matrixArrivals = new ArrayList<>();
+		
+		for (int i = 0; i < segments; i++)
+			matrixArrivals.add(new ArrayList<>());
+		
+		// divide arrivals into segments
+		for (Passenger passenger : passengers) {
+			double val = passenger.getCheckInTime().toLocalTime().toSecondOfDay();
+			int index = (int) Math.floor(val/segmentWidth);
+			matrixArrivals.get(index).add(val);
+		}
+		
+		int min_arrivals = Integer.MAX_VALUE;
+		for (int i = 0; i < matrixArrivals.size(); i++) {
+			if (matrixArrivals.get(i).size() < min_arrivals)
+				min_arrivals = matrixArrivals.get(i).size();
+		}
+		
+		double term1 = 0.0;
+		double term2 = 0.0;
+		for (int i = 0; i < segments; i++) {
+			double a_i = intercept[i];
+			double b_i = slope[i];
+			double w_i = w[i+1];
+			double w_i_1 = w[i];
+			double d = w_i-w_i_1;
+			
+			for (double arrival : matrixArrivals.get(i)) {
+				term1 += Math.log(a_i + b_i*( (arrival-w_i_1)/d ));
+			}
+			
+			term2 += d*(a_i + 0.5*b_i);
+		}
+		double fX = term1 - term2;
+		return fX;
+	}
+	
 	private void estimateModel() {
 		List<Integer> segmentsWithConstantRate = new ArrayList<>();
 		List<List<Passenger>> arrivalsPerSegment = new ArrayList<>();

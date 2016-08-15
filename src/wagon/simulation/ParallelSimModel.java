@@ -26,6 +26,8 @@ public class ParallelSimModel {
 	private Map<Journey, ArrivalProcess> arrivalProcesses;
 	private RollingStockComposerBasic rcomposer;
 	
+//	private Map<Journey, Set<ScheduledTrip>> journeyToTrips;
+	
 	private Logger log = Logger.getLogger(this.getClass().getName());
 	
 	public ParallelSimModel(
@@ -39,6 +41,7 @@ public class ParallelSimModel {
 			random = new MersenneTwister(options.getSeed());
 		this.options = options;
 		this.timetable = timetable;
+//		journeyToTrips = new ConcurrentHashMap<>();
 		
 		cicoData = null;
 
@@ -91,8 +94,9 @@ public class ParallelSimModel {
 			throw new IllegalArgumentException("Number of iterations must be > 0");
 		// start parallel computing
 		log.info("Start parallel computing...");
-		int threads = Runtime.getRuntime().availableProcessors();
-		threads /= 2;
+//		int threads = Runtime.getRuntime().availableProcessors();
+//		threads /= 2;
+		int threads = options.getNumberOfProcessors();
 		ExecutorService service = Executors.newFixedThreadPool(threads);
 		Set<Future<Report>> futures = new HashSet<>();
 		Set<Report> reports = Collections.newSetFromMap(new ConcurrentHashMap<>());
@@ -118,6 +122,7 @@ public class ParallelSimModel {
 			e.printStackTrace();
 		}
 		
+//		return new ParallelReport(reports, timetable.getAllTrips(options.getDayOfWeek()), journeyToTrips);
 		return new ParallelReport(reports, timetable.getAllTrips(options.getDayOfWeek()));
 	}
 	
@@ -137,7 +142,7 @@ public class ParallelSimModel {
 		for (Journey journey : map.keySet()) {
 			Collection<Passenger> passengers = map.get(journey);
 			HybridArrivalProcess arrivalProcess = new HybridArrivalProcess(passengers, 0, horizon, options.getSegmentWidth()*60, random.nextLong());
-//			ArrivalProcess arrivalProcess = new PiecewiseConstantProcess(passengers, 5*60, seed);
+//			PiecewiseConstantProcess arrivalProcess = new PiecewiseConstantProcess(passengers, options.getSegmentWidth()*60, random.nextLong());
 			resultMap.put(journey, arrivalProcess);
 			double lambda = arrivalProcess.getLambdaUpperBound();
 			if (lambda > maxLambda)
@@ -145,6 +150,15 @@ public class ParallelSimModel {
 		}
 		return resultMap;
 	}
+	
+//	synchronized void addTripToJourney(Journey journey, ScheduledTrip trip) {
+//		Set<ScheduledTrip> set = journeyToTrips.get(journey);
+//		if (set == null) {
+//			set = new LinkedHashSet<>();
+//			journeyToTrips.put(journey, set);
+//		}
+//		set.add(trip);
+//	}
 	
 	private class SimCallable implements Callable<Report> {
 		
@@ -162,7 +176,8 @@ public class ParallelSimModel {
 					arrivalProcesses, 
 					cicoData, 
 					rcomposer, 
-					options);
+					options, 
+					ParallelSimModel.this);
 			Report report = sim.start();
 			sim = null; // try to help garbage collection
 			return report;

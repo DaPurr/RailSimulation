@@ -16,6 +16,8 @@ import wagon.timetable.*;
 public class SimModel {
 	
 	public final static LocalTime BASE_TIME = LocalTime.of(0, 0, 0);
+	
+	private ParallelSimModel parent;
 
 	private SystemState state;
 	private PriorityQueue<Event> eventQueue;
@@ -48,6 +50,17 @@ public class SimModel {
 				network, 
 				timetable, 
 				cicoData);
+	}
+	
+	public SimModel(
+			Timetable timetable, 
+			Map<Journey, ArrivalProcess> arrivalProcesses, 
+			CiCoData cicoData, 
+			RollingStockComposer rcomposer, 
+			Options options, 
+			ParallelSimModel parent) {
+		this(timetable, arrivalProcesses, cicoData, rcomposer, options);
+		this.parent = parent;
 	}
 	
 	public Report start() {
@@ -101,6 +114,19 @@ public class SimModel {
 				RouteSelection routeSelector = new EarliestArrivalSelector();
 				Path plannedRoute = routeSelector.selectPath(paths);
 				processArrivalToEvents(plannedRoute);
+				
+				// add journey trips to parent
+//				boolean add = true;
+//				for (WeightedEdge edge : plannedRoute.getEdges()) {
+//					if (edge instanceof TripEdge) {
+//						TripEdge tEdge = (TripEdge) edge;
+//						if (add) {
+//							add = false;
+//							parent.addTripToJourney(journey, tEdge.trip());
+//						}
+//					} else if (edge instanceof TransferEdge)
+//						add = true;
+//				}
 			} else {
 				log.fine("NULL ROUTE: " + BASE_TIME.plusSeconds(arrivalTime) + " " + journey.origin + " -> " + journey.destination);
 			}
@@ -127,10 +153,6 @@ public class SimModel {
 				// we have transfered, so insert alighting and previous boarding event
 				AlightingEvent alight = new AlightingEvent(alightingTrip, alightingTrip.arrivalTime());
 				events.add(alight);
-//				eventQueue.add(alight);
-				
-//				BoardingEvent board = new BoardingEvent(boardingTrip, boardingTrip.departureTime());
-//				eventQueue.add(board);
 				
 				// reset boarding trip so that we insert the trip directly after the transfer
 				boardingTrip = null;
@@ -138,11 +160,8 @@ public class SimModel {
 		}
 		
 		// add boarding and alighting
-//		BoardingEvent board = new BoardingEvent(boardingTrip, boardingTrip.departureTime());
-//		eventQueue.add(board);
 		AlightingEvent alight = new AlightingEvent(alightingTrip, alightingTrip.arrivalTime());
 		events.add(alight);
-//		eventQueue.add(alight);
 		
 		// add events to queue
 		for (Event event : events) {
@@ -180,9 +199,6 @@ public class SimModel {
 						currentPlannedComposition = trip.getTrainService().getComposition();
 					}
 					trip.setTrainService(realizedTrainService);
-//					Composition sgm2 = new Composition();
-//					sgm2.add(new SGM2Unit());
-//					trip.setTrainService(new TrainService(trip.getTrainService().id(), sgm2));
 				}
 			}
 		}

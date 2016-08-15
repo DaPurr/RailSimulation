@@ -384,11 +384,9 @@ public class ScaledPiecewiseLinearProcess implements ArrivalProcess {
 				
 				for (double arrival : matrixArrivals.get(i)) {
 					term1 += Math.log(a_i + b_i*( (arrival-w_i_1)/d ));
-//					term1 += Math.log(a_i);
 				}
 				
 				term2 += d*(a_i + 0.5*b_i);
-//				term2 += d*(a_i);
 			}
 			double fX = term1 - term2;
 			return -fX;

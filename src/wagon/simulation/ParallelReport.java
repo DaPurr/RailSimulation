@@ -18,6 +18,31 @@ public class ParallelReport {
 		this.trips = trips;
 	}
 	
+//	public String reportWorstJourneys() {
+//		List<JourneyWithKPI> journeyList = new ArrayList<>();
+//		for (Entry<Journey, Set<ScheduledTrip>> entry : journeyTrips.entrySet()) {
+//			Journey journey = entry.getKey();
+//			KPIEstimate kpiNew = calculateKPINew(entry.getValue());
+//			KPIEstimate kpiOld = calculateKPIOld(entry.getValue());
+//			journeyList.add(new JourneyWithKPI(journey, kpiNew, kpiOld));
+//		}
+//		
+//		Collections.sort(journeyList);
+//		
+//		// report worst 10
+//		String s = "";
+//		s += System.lineSeparator();
+//		s += "WORST 10 JOURNEYS" + System.lineSeparator();
+//		s += "===================" + System.lineSeparator();
+//		for (int i = 0; i < 10; i++) {
+//			if (i >= journeyList.size())
+//				break;
+//			JourneyWithKPI journeyKPI = journeyList.get(i);
+//			s += journeyKPI.journey + ": KPI_{new}=" + journeyKPI.kpiNew + "\tKPI_{old}=" + journeyKPI.kpiOld + System.lineSeparator();
+//		}
+//		return s;
+//	}
+	
 	public String summary() {
 		String s = "";
 		s += "ALL TRIPS" + System.lineSeparator();
@@ -48,7 +73,7 @@ public class ParallelReport {
 		return s;
 	}
 	
-	public String reportBestAndWorstTrains() {
+	public String reportWorstTrains() {
 		Map<Integer, Collection<ScheduledTrip>> trainMap = new HashMap<>();
 		
 		// add trips to all train numbers
@@ -123,7 +148,8 @@ public class ParallelReport {
 					throw new IllegalArgumentException("Counters for trip cannot be found.");
 				double countB = counterB.getValue();
 				double countN = counterN.getValue();
-				int seats = trip.getTrainService().getAllSeats() + trip.getTrainService().getFoldableSeats();
+				int seats = trip.getTrainService().getSeats2() + trip.getTrainService().getFoldableSeats();
+				seats += trip.getTrainService().getSeats1();
 				double seatsAvailable = Math.max(seats - (countN - countB), 0.0);
 				double countF = Math.min(seatsAvailable, countB);
 				sumF += countF;
@@ -190,6 +216,51 @@ public class ParallelReport {
 			sum += term*term;
 		}
 		return sum/(vals.length-1);
+	}
+	
+	private static class JourneyWithKPI implements Comparable<JourneyWithKPI> {
+		
+		private Journey journey;
+		private KPIEstimate kpiNew;
+		private KPIEstimate kpiOld;
+		
+		public JourneyWithKPI(
+				Journey journey, 
+				KPIEstimate kpiNew, 
+				KPIEstimate kpiOld) {
+			this.journey = journey;
+			this.kpiNew = kpiNew;
+			this.kpiOld = kpiOld;
+		}
+		
+		@Override
+		public boolean equals(Object other) {
+			if (other == this)
+				return true;
+			if (!(other instanceof JourneyWithKPI))
+				return false;
+			JourneyWithKPI o = (JourneyWithKPI) other;
+			return this.journey.equals(o.journey) &&
+					this.kpiNew.equals(o.kpiNew) &&
+					this.kpiOld.equals(o.kpiOld);
+		}
+		
+		@Override
+		public int hashCode() {
+			return 7*journey.hashCode() + 13*kpiNew.hashCode() + 17*kpiOld.hashCode();
+		}
+
+		@Override
+		public int compareTo(JourneyWithKPI o) {
+			int res1 = this.kpiNew.compareTo(o.kpiNew);
+			if (res1 != 0)
+				return res1;
+			int res2 = this.kpiOld.compareTo(o.kpiOld);
+			if (res2 != 0)
+				return res2;
+			return journey.toString().compareTo(o.journey.toString());
+		}
+		
 	}
 	
 	private static class TrainWithKPI implements Comparable<TrainWithKPI> {

@@ -6,7 +6,7 @@ import java.util.*;
 import wagon.data.CiCoData;
 import wagon.simulation.*;
 
-public class HybridArrivalProcessSandbox {
+public class PiecewiseConstantProcessSandbox {
 
 	public static void main(String[] args) {
 		Options options = new Options();
@@ -23,10 +23,8 @@ public class HybridArrivalProcessSandbox {
 			Collection<Passenger> selectedPassengers = cicoData.getPassengersWithJourney("rta", "rtd");
 			
 			long startTime = System.nanoTime();
-			HybridArrivalProcess hap = new HybridArrivalProcess(
+			PiecewiseConstantProcess hap = new PiecewiseConstantProcess(
 					selectedPassengers, 
-					0, 
-					24*60*60, 
 					5*60, 
 					0);
 			long endTime = System.nanoTime();
@@ -41,4 +39,5 @@ public class HybridArrivalProcessSandbox {
 			e.printStackTrace();
 		}
 	}
+
 }
