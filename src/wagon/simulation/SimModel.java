@@ -116,17 +116,17 @@ public class SimModel {
 				processArrivalToEvents(plannedRoute);
 				
 				// add journey trips to parent
-//				boolean add = true;
-//				for (WeightedEdge edge : plannedRoute.getEdges()) {
-//					if (edge instanceof TripEdge) {
-//						TripEdge tEdge = (TripEdge) edge;
-//						if (add) {
-//							add = false;
-//							parent.addTripToJourney(journey, tEdge.trip());
-//						}
-//					} else if (edge instanceof TransferEdge)
-//						add = true;
-//				}
+				boolean add = true;
+				for (WeightedEdge edge : plannedRoute.getEdges()) {
+					if (edge instanceof TripEdge) {
+						TripEdge tEdge = (TripEdge) edge;
+						if (add) {
+							add = false;
+							parent.addTripToJourney(journey, tEdge.trip());
+						}
+					} else if (edge instanceof TransferEdge)
+						add = true;
+				}
 			} else {
 				log.fine("NULL ROUTE: " + BASE_TIME.plusSeconds(arrivalTime) + " " + journey.origin + " -> " + journey.destination);
 			}

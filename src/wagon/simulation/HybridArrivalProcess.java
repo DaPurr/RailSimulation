@@ -47,6 +47,13 @@ public class HybridArrivalProcess implements ArrivalProcess {
 //		Collections.sort(arrivals);
 		
 		estimateModel();
+		
+		// CiCo correction
+//		double k = 1.215767122505321;
+//		for (int i = 0; i < segments; i++) {
+//			intercept[i] *= k;
+//			slope[i] *= k;
+//		}
 	}
 	
 	public double logLikelihood() {

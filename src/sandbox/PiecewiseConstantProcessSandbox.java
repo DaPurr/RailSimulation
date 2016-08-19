@@ -20,7 +20,7 @@ public class PiecewiseConstantProcessSandbox {
 			
 			cicoData.getJourneySummary();
 			
-			Collection<Passenger> selectedPassengers = cicoData.getPassengersWithJourney("rta", "rtd");
+			Collection<Passenger> selectedPassengers = cicoData.getPassengersWithJourney("ut", "asd");
 			
 			long startTime = System.nanoTime();
 			PiecewiseConstantProcess hap = new PiecewiseConstantProcess(

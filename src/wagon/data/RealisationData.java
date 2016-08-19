@@ -44,18 +44,31 @@ public class RealisationData {
 			if (setTrainNumbers.contains(trainNr)) {
 				count++;
 				LocalDateTime realizedDepartureTime = RealisationData.DUMMY;
-				if (!parts[3].equals(""))
+				if (!parts[3].equals("")) {
 					realizedDepartureTime = rdata.toLocalDateTimeObjectRealized(parts[3]);
+				}
 				LocalDateTime plannedDepartureTime = RealisationData.DUMMY;
-				if (!parts[4].equals(""))
+				if (!parts[4].equals("")) {
 					plannedDepartureTime = rdata.toLocalDateTimeObjectPlanned(parts[4]);
+				}
 				Station departureStation = new Station(parts[5]);
 				LocalDateTime realizedArrivalTime = RealisationData.DUMMY;
-				if (!parts[6].equals(""))
+				if (!parts[6].equals("")) {
 					realizedArrivalTime = rdata.toLocalDateTimeObjectRealized(parts[6]);
+				}
 				LocalDateTime plannedArrivalTime = RealisationData.DUMMY;
-				if (!parts[7].equals(""))
+				if (!parts[7].equals("")) {
 					plannedArrivalTime = rdata.toLocalDateTimeObjectPlanned(parts[7]);
+				}
+				
+				if (parts[9].equals("") || 
+						parts[12].equals("") || 
+						realizedDepartureTime == RealisationData.DUMMY || 
+						realizedArrivalTime == RealisationData.DUMMY || 
+						plannedArrivalTime == RealisationData.DUMMY ||
+						plannedDepartureTime == RealisationData.DUMMY)
+					continue;
+				
 				Station arrivalStation = new Station(parts[8]);
 				TrainService plannedComposition = rdata.toComposition(trainNr, parts[9]);
 				TrainService realizedComposition = rdata.toComposition(trainNr, parts[12]);

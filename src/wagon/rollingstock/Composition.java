@@ -32,6 +32,20 @@ public class Composition implements Iterable<RollingStockUnit> {
 		return comp;
 	}
 	
+	public static Composition toComposition(String comp) {
+		Composition composition = new Composition();
+		String[] parts = comp.split("-");
+		for (String part : parts) {
+			RollingStockUnit unit = RollingStockUnit
+					.toUnit(
+							TrainType.valueOf(part.substring(0, part.length()-1)), 
+							Integer.valueOf(part.substring(part.length()-1, part.length()))
+							);
+			composition.add(unit);
+		}
+		return composition;
+	}
+	
 	@Override
 	public boolean equals(Object o) {
 		if (this == o)
@@ -49,12 +63,13 @@ public class Composition implements Iterable<RollingStockUnit> {
 	
 	@Override
 	public String toString() {
-		String s = "[";
+		String s = "";
 		int count = 0;
 		for (RollingStockUnit unit : units) {
 			if (count != 0)
 				s += "-";
 			s += unit.toString();
+			count++;
 		}
 		return s;
 	}

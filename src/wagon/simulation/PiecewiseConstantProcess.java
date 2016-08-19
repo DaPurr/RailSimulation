@@ -165,27 +165,6 @@ public class PiecewiseConstantProcess implements ArrivalProcess {
 		return events;
 	}
 	
-//	public void exportDrawsFromProcess(int window, String fileName) throws IOException {
-//		int nrWindows = (int) Math.ceil((double)horizon/window);
-//		int[] counts = new int[nrWindows];
-//		Arrays.fill(counts, 0);
-//		List<Double> events = generateArrivalsFromProcess();
-//		for (double v : events) {
-//			if (v < horizon)
-//				counts[v/window]++;
-//		}
-//		File file = new File(fileName);
-//		BufferedWriter bw = new BufferedWriter(new FileWriter(file));
-//		for (int i = 0; i < counts.length; i++) {
-//			int v = counts[i];
-//			int xAxis = i*window + window/2;
-//			bw.write(xAxis + "," + String.valueOf( (double)v/window ));
-//			bw.newLine();
-//		}
-//		bw.flush();
-//		bw.close();
-//	}
-	
 //	public void exportArrivalRate(String fileName) throws IOException {
 //		File file = new File(fileName);
 //		BufferedWriter bw = new BufferedWriter(new FileWriter(file));

@@ -1,5 +1,6 @@
 package wagon.data;
 
+import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -29,6 +30,10 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 		probabilities = new LinkedHashMap<>();
 		
 		estimateProbabilities();
+	}
+	
+	private RollingStockComposerBasic(RandomGenerator random) {
+		this.random = random;
 	}
 	
 	/**
@@ -131,6 +136,46 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 		}
 	}
 	
+	public RollingStockComposerBasic decreaseMismatches(double phi) {
+		RollingStockComposerBasic rcomposer = new RollingStockComposerBasic(this.random);
+		Map<Composition, Map<Composition, Double>> newProbs = deepCopyProbabilities();
+		for (Entry<Composition, Map<Composition, Double>> outerEntry : newProbs.entrySet()) {
+			Composition x = outerEntry.getKey();
+			boolean hasX = false;
+			
+			// now recompute probabilities
+			for (Entry<Composition, Double> innerEntry : outerEntry.getValue().entrySet()) {
+				Composition y = innerEntry.getKey();
+				double oldPi = innerEntry.getValue();
+				if (x.equals(y)) {
+					innerEntry.setValue(oldPi + phi*(1-oldPi));
+					hasX = true;
+				} else {
+					innerEntry.setValue(oldPi*(1-phi));
+				}
+			}
+			
+			if (!hasX) {
+				outerEntry.getValue().put(x, phi);
+			}
+		}
+		
+		rcomposer.probabilities = newProbs;
+		return rcomposer;
+	}
+	
+	private Map<Composition, Map<Composition, Double>> deepCopyProbabilities() {
+		Map<Composition, Map<Composition, Double>> map = new HashMap<>();
+		for (Entry<Composition, Map<Composition, Double>> outerEntry : probabilities.entrySet()) {
+			Map<Composition, Double> y = new HashMap<>();
+			for (Entry<Composition, Double> innerEntry : outerEntry.getValue().entrySet()) {
+				y.put(innerEntry.getKey(), innerEntry.getValue().doubleValue());
+			}
+			map.put(outerEntry.getKey(), y);
+		}
+		return map;
+	}
+	
 //	private boolean tripEqualsEntry(ScheduledTrip trip, RealisationDataEntry entry) {
 //		boolean b1 = trip.getTrainService().id() == entry.getTrainNr();
 //		boolean b2 = trip.fromStation().equals(entry.getDepartureStation());
@@ -158,6 +203,45 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 			s += System.lineSeparator();
 		}
 		return s;
+	}
+	
+	public void exportProbabilities(String fileName) throws IOException {
+		File file = new File(fileName);
+		BufferedWriter bw = new BufferedWriter(new FileWriter(file));
+		for (Entry<Composition, Map<Composition, Double>> entry : probabilities.entrySet()) {
+			Composition x = entry.getKey();
+			Map<Composition, Double> xProbs = entry.getValue();
+			bw.write(x.toString());
+			for (Entry<Composition, Double> yEntry : xProbs.entrySet()) {
+				bw.write("," + yEntry.getKey().toString() + ":" + yEntry.getValue());
+			}
+			bw.newLine();
+		}
+		bw.close();
+	}
+	
+	public static RollingStockComposerBasic importFromFile(String fileName, long seed) throws IOException {
+		Map<Composition, Map<Composition, Double>> probs = new LinkedHashMap<>();
+		
+		File file = new File(fileName);
+		BufferedReader br = new BufferedReader(new FileReader(file));
+		for (String line = br.readLine(); line != null; line = br.readLine()) {
+			String[] parts = line.split(",");
+			Composition x = Composition.toComposition(parts[0]);
+			Map<Composition, Double> yProbs = new LinkedHashMap<>();
+			for (int i = 1; i < parts.length; i++) {
+				String[] yParts = parts[i].split(":");
+				Composition y = Composition.toComposition(yParts[0]);
+				double prob = Integer.valueOf(yParts[1]);
+				yProbs.put(y, prob);
+			}
+			probs.put(x, yProbs);
+		}
+		br.close();
+		
+		RollingStockComposerBasic rcomposer = new RollingStockComposerBasic(new MersenneTwister(seed));
+		rcomposer.probabilities = probs;
+		return rcomposer;
 	}
 	
 	private static class MismatchCounter {

@@ -25,11 +25,13 @@ public class CiCoData {
 	private final static int horizon = 24*60*60;
 
 	private Set<Passenger> passengers;
+	private Map<Long, Integer> productToCustomerCode;
 	
 	private Logger log = Logger.getLogger(this.getClass().getName());
 	
 	private CiCoData() {
 		passengers = new LinkedHashSet<>();
+		productToCustomerCode = new LinkedHashMap<>();
 	}
 	
 	/**
@@ -48,8 +50,23 @@ public class CiCoData {
 		this.passengers = passengers;
 	}
 	
-	public static CiCoData importRawData(
-			Options options) throws IOException {
+	private static Map<Long, Integer> importProductToCustomerCodeFile(String fileName) throws IOException {
+		Map<Long, Integer> map = new LinkedHashMap<>();
+		
+		File file = new File(fileName);
+		BufferedReader br = new BufferedReader(new FileReader(file));
+		String line = br.readLine();
+		for (line = br.readLine(); line != null; line = br.readLine()) {
+			String[] parts = line.split(";");
+			long productCode = Long.parseLong(parts[0]);
+			int customerCode = Integer.parseInt(parts[1]);
+			map.put(productCode, customerCode);
+		}
+		br.close();
+		return map;
+	}
+	
+	public static CiCoData importRawData(Options options) throws IOException {
 		String cicoFileName = options.getPathToCiCoData();
 		String stationTableFileName = options.getPathToStations();
 		if (!cicoFileName.matches(".*\\.csv") ||
@@ -57,6 +74,7 @@ public class CiCoData {
 			throw new IllegalArgumentException("File needs to be CSV format.");
 		
 		CiCoData cicoData = new CiCoData();
+		cicoData.productToCustomerCode = importProductToCustomerCodeFile("data/cico/CQM klantsoorten.csv");
 		
 		Map<Integer, String> stationCodeToName = new LinkedHashMap<>();
 		File file = new File(stationTableFileName);
@@ -65,6 +83,9 @@ public class CiCoData {
 		String line = br.readLine();
 		line = br.readLine();
 		cicoData.log.info("Start reading station conversion table ...");
+		
+		int[] code = new int[9];
+		
 		while (line != null) {
 			String[] parts = line.split(",");
 			stationCodeToName.put(Integer.parseInt(parts[0]), 
@@ -85,10 +106,10 @@ public class CiCoData {
 			String[] parts = line.split(",");
 			
 			// skip if 1st class
-			if (!parts[4].equals("2")) {
-				line = br.readLine();
-				continue;
-			}
+//			if (!parts[4].equals("2")) {
+//				line = br.readLine();
+//				continue;
+//			}
 			
 			counter++;
 			
@@ -116,6 +137,11 @@ public class CiCoData {
 				continue;
 			}
 			
+			// count customer code
+			long productCode = Long.parseLong(parts[15]);
+			int customerCode = cicoData.productToCustomerCode.get(productCode);
+			code[customerCode-1]++;
+			
 			Station fromStation = toStationObject(parts[11], stationCodeToName);
 			Station toStation = toStationObject(parts[28], stationCodeToName);
 			Passenger passenger = new Passenger(
@@ -134,7 +160,19 @@ public class CiCoData {
 		br.close();
 		cicoData.log.info("... Finish processing " + counter + " passenger check-ins and check-outs");
 		
+		System.out.println("Product code counts: " + arrayToString(code));
+		
 		return cicoData;
+	}
+	
+	private static String arrayToString(int[] array) {
+		String s = "";
+		for (int i = 0; i < array.length; i++) {
+			if (i != 0)
+				s += ", ";
+			s += array[i];
+		}
+		return s;
 	}
 	
 	private static LocalDateTime toLocalDateTimeObject(String text) {

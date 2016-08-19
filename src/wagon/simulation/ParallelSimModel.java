@@ -2,6 +2,7 @@ package wagon.simulation;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.logging.Logger;
 
@@ -26,7 +27,8 @@ public class ParallelSimModel {
 	private Map<Journey, ArrivalProcess> arrivalProcesses;
 	private RollingStockComposerBasic rcomposer;
 	
-//	private Map<Journey, Set<ScheduledTrip>> journeyToTrips;
+	private Map<Journey, Set<ScheduledTrip>> journeyToTrips;
+	private Map<Journey, Integer> journeyCounts;
 	
 	private Logger log = Logger.getLogger(this.getClass().getName());
 	
@@ -41,7 +43,8 @@ public class ParallelSimModel {
 			random = new MersenneTwister(options.getSeed());
 		this.options = options;
 		this.timetable = timetable;
-//		journeyToTrips = new ConcurrentHashMap<>();
+		journeyToTrips = new ConcurrentHashMap<>();
+		journeyCounts = new ConcurrentHashMap<>();
 		
 		cicoData = null;
 
@@ -78,15 +81,23 @@ public class ParallelSimModel {
 		log.info("Passengers remaining: " + passengers.size());
 		cicoData.setPassengers(passengers);
 		
+		// estimate mismatch probabilities
+		log.info("Begin estimating mismatch probabilities...");
+		rcomposer = new RollingStockComposerBasic(timetable, rdata, random.nextLong());
+		rcomposer = rcomposer.decreaseMismatches(1.0);
+		log.info("...Finish estimating mismatch probabilities");
+//		log.info("Exporting probabilities...");
+//		try {
+//			rcomposer.exportProbabilities("data/materieelplan/mismatch_probs.csv");
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//		log.info("... Finish exporting mismatch probabilities");
+		
 		// estimate arrival processes
 		log.info("Begin estimating arrival processes...");
 		arrivalProcesses = estimateArrivalProcesses(cicoData);
 		log.info("...Finish estimating arrival processes");
-		
-		// estimate mismatch probabilities
-		log.info("Begin estimating mismatch probabilities...");
-		rcomposer = new RollingStockComposerBasic(timetable, rdata, random.nextLong());
-		log.info("...Finish estimating mismatch probabilities");
 	}
 	
 	public ParallelReport start(int iterations) {
@@ -122,8 +133,20 @@ public class ParallelSimModel {
 			e.printStackTrace();
 		}
 		
-//		return new ParallelReport(reports, timetable.getAllTrips(options.getDayOfWeek()), journeyToTrips);
-		return new ParallelReport(reports, timetable.getAllTrips(options.getDayOfWeek()));
+		// clean up journey list
+		cleanJourneyMap(iterations);
+		
+		return new ParallelReport(reports, timetable.getAllTrips(options.getDayOfWeek()), journeyToTrips);
+//		return new ParallelReport(reports, timetable.getAllTrips(options.getDayOfWeek()));
+	}
+	
+	private void cleanJourneyMap(int iterations) {
+		for (Entry<Journey, Integer> entry : journeyCounts.entrySet()) {
+			Journey journey = entry.getKey();
+			int count = entry.getValue();
+			if (count < 10*iterations)
+				journeyToTrips.remove(journey);
+		}
 	}
 	
 	private Map<Journey, ArrivalProcess> estimateArrivalProcesses(CiCoData cicoData) {
@@ -151,14 +174,19 @@ public class ParallelSimModel {
 		return resultMap;
 	}
 	
-//	synchronized void addTripToJourney(Journey journey, ScheduledTrip trip) {
-//		Set<ScheduledTrip> set = journeyToTrips.get(journey);
-//		if (set == null) {
-//			set = new LinkedHashSet<>();
-//			journeyToTrips.put(journey, set);
-//		}
-//		set.add(trip);
-//	}
+	synchronized void addTripToJourney(Journey journey, ScheduledTrip trip) {
+		Set<ScheduledTrip> set = journeyToTrips.get(journey);
+		Integer count = journeyCounts.get(journey);
+		if (set == null) {
+			set = new LinkedHashSet<>();
+			journeyToTrips.put(journey, set);
+		}
+		if (count == null) {
+			count = 0;
+		}
+		journeyCounts.put(journey, count+1);
+		set.add(trip);
+	}
 	
 	private class SimCallable implements Callable<Report> {
 		

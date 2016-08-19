@@ -15,24 +15,24 @@ public class CiCoDataSandbox {
 		String station = "rtd";
 		try {
 			CiCoData cicoData = CiCoData.importRawData(options);
-			cicoData.exportEmpiricalArrivalRateOfCheckInStation(
-					station, 
-					5*60, 
-					"data/cico/export/20160112_" + station + ".csv");
+//			cicoData.exportEmpiricalArrivalRateOfCheckInStation(
+//					station, 
+//					5*60, 
+//					"data/cico/export/20160112_" + station + ".csv");
 			
 			options.setPathToCiCoData("data/cico/ritten_20160209.csv");
 			cicoData = CiCoData.importRawData(options);
-			cicoData.exportEmpiricalArrivalRateOfCheckInStation(
-					station, 
-					5*60, 
-					"data/cico/export/20160209_"+station+".csv");
+//			cicoData.exportEmpiricalArrivalRateOfCheckInStation(
+//					station, 
+//					5*60, 
+//					"data/cico/export/20160209_"+station+".csv");
 			
-			options.setPathToCiCoData("data/cico/ritten_20160315.csv");
-			cicoData = CiCoData.importRawData(options);
-			cicoData.exportEmpiricalArrivalRateOfCheckInStation(
-					station, 
-					5*60, 
-					"data/cico/export/20160315_"+station+".csv");
+//			options.setPathToCiCoData("data/cico/ritten_20160315.csv");
+//			cicoData = CiCoData.importRawData(options);
+//			cicoData.exportEmpiricalArrivalRateOfCheckInStation(
+//					station, 
+//					5*60, 
+//					"data/cico/export/20160315_"+station+".csv");
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

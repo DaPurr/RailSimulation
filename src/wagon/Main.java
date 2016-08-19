@@ -47,14 +47,14 @@ public class Main {
 			options.setPathToCiCoData("data/cico/ritten_20160209.csv");
 			options.setPathToStations("data/cico/omzettabel_stations.csv");
 			options.setDayOfWeek(2);
-//			options.setSeed(0);
-			options.setSegmentWidth(5); // needs to divide 60
+			options.setSeed(1234);
+			options.setSegmentWidth(5); // in minutes
 			options.setTransferTime(1);
 			options.setNumberofProcessors(4);
 //			
-			CiCoData cicoData = CiCoData
-					.importRawData(options);
-			cleanCiCoData(cicoData, sample);
+//			CiCoData cicoData = CiCoData
+//					.importRawData(options);
+//			cleanCiCoData(cicoData, sample);
 //			cicoData.getJourneySummary();
 //			cicoData.exportEmpiricalArrivalRateOfJourney(
 //					"rta", 
@@ -97,10 +97,10 @@ public class Main {
 					sample, 
 					rdata, 
 					options);
-			ParallelReport parReport = parSim.start(1);
+			ParallelReport parReport = parSim.start(4);
 			System.out.println(parReport.summary());
-//			System.out.println(parReport.reportWorstJourneys());
 			System.out.println(parReport.reportWorstTrains());
+			System.out.println(parReport.reportWorstJourneys());
 			long endTime = System.nanoTime();
 			double duration = (endTime-startTime)*1e-9;
 			System.out.println("Simulation took " + duration + " s");

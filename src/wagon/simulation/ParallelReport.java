@@ -3,45 +3,51 @@ package wagon.simulation;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import wagon.timetable.*;
 
 public class ParallelReport {
+	
+	private final double cicoCorrectionFactor = 1.215767122505321;
 
 	private Set<Report> reports;
 	private Set<ScheduledTrip> trips;
+	private Map<Journey, Set<ScheduledTrip>> journeyTrips;
 	
 	public ParallelReport(
 			Collection<Report> reports, 
-			Set<ScheduledTrip> trips) {
+			Set<ScheduledTrip> trips, 
+			Map<Journey, Set<ScheduledTrip>> journeyTrips) {
 		this.reports = new HashSet<>(reports);
 		this.trips = trips;
+		this.journeyTrips = journeyTrips;
 	}
 	
-//	public String reportWorstJourneys() {
-//		List<JourneyWithKPI> journeyList = new ArrayList<>();
-//		for (Entry<Journey, Set<ScheduledTrip>> entry : journeyTrips.entrySet()) {
-//			Journey journey = entry.getKey();
-//			KPIEstimate kpiNew = calculateKPINew(entry.getValue());
-//			KPIEstimate kpiOld = calculateKPIOld(entry.getValue());
-//			journeyList.add(new JourneyWithKPI(journey, kpiNew, kpiOld));
-//		}
-//		
-//		Collections.sort(journeyList);
-//		
-//		// report worst 10
-//		String s = "";
-//		s += System.lineSeparator();
-//		s += "WORST 10 JOURNEYS" + System.lineSeparator();
-//		s += "===================" + System.lineSeparator();
-//		for (int i = 0; i < 10; i++) {
-//			if (i >= journeyList.size())
-//				break;
-//			JourneyWithKPI journeyKPI = journeyList.get(i);
-//			s += journeyKPI.journey + ": KPI_{new}=" + journeyKPI.kpiNew + "\tKPI_{old}=" + journeyKPI.kpiOld + System.lineSeparator();
-//		}
-//		return s;
-//	}
+	public String reportWorstJourneys() {
+		List<JourneyWithKPI> journeyList = new ArrayList<>();
+		for (Entry<Journey, Set<ScheduledTrip>> entry : journeyTrips.entrySet()) {
+ 			Journey journey = entry.getKey();
+			KPIEstimate kpiNew = calculateKPINew(entry.getValue());
+			KPIEstimate kpiOld = calculateKPIOld(entry.getValue());
+			journeyList.add(new JourneyWithKPI(journey, kpiNew, kpiOld));
+		}
+		
+		Collections.sort(journeyList);
+		
+		// report worst 15
+		String s = "";
+		s += System.lineSeparator();
+		s += "WORST 10 JOURNEYS" + System.lineSeparator();
+		s += "===================" + System.lineSeparator();
+		for (int i = 0; i < 15; i++) {
+			if (i >= journeyList.size())
+				break;
+			JourneyWithKPI journeyKPI = journeyList.get(i);
+			s += journeyKPI.journey + ": KPI_{new}=" + journeyKPI.kpiNew + "\tKPI_{old}=" + journeyKPI.kpiOld + System.lineSeparator();
+		}
+		return s;
+	}
 	
 	public String summary() {
 		String s = "";
@@ -122,8 +128,10 @@ public class ParallelReport {
 				if (counterN == null)
 					throw new IllegalArgumentException("Counters for trip cannot be found.");
 				double countN = counterN.getValue();
-				int normCapacity = trip.getTrainService().normCapacity2(trip.getNorm());
+				countN *= cicoCorrectionFactor; // apply CiCo correction factor to capacity
+				double normCapacity = trip.getTrainService().normCapacity2(trip.getNorm());
 				normCapacity += trip.getTrainService().normCapacity1(trip.getNorm());
+//				normCapacity *= (2-cicoCorrectionFactor); // apply CiCo correction factor to capacity
 				numerator += countN*Math.min(normCapacity/countN, 1);
 				denominator += countN;
 			}
@@ -147,9 +155,12 @@ public class ParallelReport {
 				if (counterN == null || counterB == null)
 					throw new IllegalArgumentException("Counters for trip cannot be found.");
 				double countB = counterB.getValue();
+				countB *= cicoCorrectionFactor; // apply CiCo correction factor to capacity
 				double countN = counterN.getValue();
-				int seats = trip.getTrainService().getSeats2() + trip.getTrainService().getFoldableSeats();
+				countN *= cicoCorrectionFactor;
+				double seats = trip.getTrainService().getSeats2() + trip.getTrainService().getFoldableSeats();
 				seats += trip.getTrainService().getSeats1();
+//				seats *= (2-cicoCorrectionFactor); // apply CiCo correction factor to capacity
 				double seatsAvailable = Math.max(seats - (countN - countB), 0.0);
 				double countF = Math.min(seatsAvailable, countB);
 				sumF += countF;
