@@ -23,6 +23,8 @@ public class SimModel {
 	private PriorityQueue<Event> eventQueue;
 	private Options options;
 	private Map<Journey, ArrivalProcess> arrivalProcesses;
+	private Map<Journey, Set<ScheduledTrip>> journeyTrips;
+	private Map<Journey, Integer> journeyCounts;
 	
 	private Logger log = Logger.getLogger(this.getClass().getName());
 	
@@ -35,11 +37,14 @@ public class SimModel {
 		
 		log.setLevel(Level.INFO);
 		
+		journeyTrips = new LinkedHashMap<>();
+		journeyCounts = new LinkedHashMap<>();
+		
 		// initialize basic variables
 		eventQueue = new PriorityQueue<>();
 		this.options = options;
 		this.arrivalProcesses = arrivalProcesses;
-		generateMismatches(timetable, rcomposer);
+//		generateMismatches(timetable, rcomposer);
 		
 		EventActivityNetwork network = EventActivityNetwork.createTransferNetwork(
 				timetable, 
@@ -70,7 +75,7 @@ public class SimModel {
 			Event event = eventQueue.poll();
 			event.process(state);
 		}
-		Report report = new Report(state, options.getDayOfWeek());
+		Report report = new Report(state, options.getDayOfWeek(), journeyTrips);
 		state = null; // help garbage collection
 		return report;
 	}
@@ -122,7 +127,12 @@ public class SimModel {
 						TripEdge tEdge = (TripEdge) edge;
 						if (add) {
 							add = false;
-							parent.addTripToJourney(journey, tEdge.trip());
+							if (tEdge.trip().departureTime().compareTo(LocalTime.parse("07:00")) >= 0 &&
+									tEdge.trip().departureTime().compareTo(LocalTime.parse("09:00")) <= 0)
+								parent.addTripToJourney(journey, tEdge.trip());
+							else if (tEdge.trip().departureTime().compareTo(LocalTime.parse("16:00")) >= 0 &&
+									tEdge.trip().departureTime().compareTo(LocalTime.parse("18:00")) <= 0)
+								parent.addTripToJourney(journey, tEdge.trip());
 						}
 					} else if (edge instanceof TransferEdge)
 						add = true;
@@ -132,6 +142,20 @@ public class SimModel {
 			}
 		}
 		return countPassengersWithRoutes;
+	}
+	
+	private void addTripToJourney(Journey journey, ScheduledTrip trip) {
+		Set<ScheduledTrip> set = journeyTrips.get(journey);
+		Integer count = journeyCounts.get(journey);
+		if (set == null) {
+			set = new LinkedHashSet<>();
+			journeyTrips.put(journey, set);
+		}
+		if (count == null) {
+			count = 0;
+		}
+		journeyCounts.put(journey, count+1);
+		set.add(trip);
 	}
 	
 	private void processArrivalToEvents(Path path) {

@@ -44,11 +44,11 @@ public class Main {
 //			System.out.println(path.toString());
 			
 			Options options = new Options();
-			options.setPathToCiCoData("data/cico/ritten_20160209.csv");
+			options.setPathToCiCoData("data/cico/ritten_20160112.csv");
 			options.setPathToStations("data/cico/omzettabel_stations.csv");
 			options.setDayOfWeek(2);
 			options.setSeed(1234);
-			options.setSegmentWidth(5); // in minutes
+			options.setSegmentWidth(1); // in minutes
 			options.setTransferTime(1);
 			options.setNumberofProcessors(4);
 //			

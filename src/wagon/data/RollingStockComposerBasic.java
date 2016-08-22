@@ -17,6 +17,7 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 	private RealisationData rdata;
 	
 	private Map<Composition, Map<Composition, Double>> probabilities;
+	private MismatchCounter misCounter;
 	
 	private RandomGenerator random;
 	
@@ -47,6 +48,35 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 		this.rdata = rcomposer.rdata;
 		this.probabilities = rcomposer.probabilities;
 		random = new MersenneTwister(seed);
+	}
+	
+	public String summary() {
+		String s = "";
+		double countPlanned = 0;
+		double countTotal = 0;
+		double countLower = 0;
+		double countHigher = 0;
+		for (Composition x : misCounter.kingMap.keySet()) {
+			Map<Composition, Integer> map = misCounter.kingMap.get(x);
+			for (Composition y : map.keySet()) {
+				countTotal += misCounter.getCount(x, y);
+				if (x.equals(y)) {
+					countPlanned += misCounter.getCount(x, y);
+				} else {
+					if (x.getAllSeats() < y.getAllSeats())
+						countHigher += misCounter.getCount(x, y);
+					if (x.getAllSeats() > y.getAllSeats())
+						countLower += misCounter.getCount(x, y);
+				}
+			}
+		}
+		
+		s += "Total: " + countTotal + System.lineSeparator();
+		s += "Planned: " + countPlanned + "(" + (countPlanned/countTotal) + ")" + System.lineSeparator();
+		s += "Lower: " + countLower + "(" + (countLower/(countTotal-countPlanned)) + ")" + System.lineSeparator();
+		s += "Higher: " + countHigher + "(" + (countHigher/(countTotal-countPlanned)) + ")" + System.lineSeparator();
+		
+		return s;
 	}
 	
 	@Override
@@ -81,7 +111,7 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 			boolean processTrip = true;
 			for (ScheduledTrip trip : plannedTrips) {
 				Composition tripComp = trip.getTrainService().getComposition();
-				if (tripComp.equals(currentComp))
+				if (!tripComp.equals(currentComp))
 					processTrip = true;
 				if (trip.getDayOfWeek() != currentDayOfWeek) {
 					processTrip = true;
@@ -134,6 +164,8 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 			}
 			probabilities.put(comp, map);
 		}
+		
+		misCounter = counts;
 	}
 	
 	public RollingStockComposerBasic decreaseMismatches(double phi) {

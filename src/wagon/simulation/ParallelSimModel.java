@@ -84,7 +84,7 @@ public class ParallelSimModel {
 		// estimate mismatch probabilities
 		log.info("Begin estimating mismatch probabilities...");
 		rcomposer = new RollingStockComposerBasic(timetable, rdata, random.nextLong());
-		rcomposer = rcomposer.decreaseMismatches(1.0);
+		rcomposer = rcomposer.decreaseMismatches(options.getPhi());
 		log.info("...Finish estimating mismatch probabilities");
 //		log.info("Exporting probabilities...");
 //		try {
@@ -161,15 +161,12 @@ public class ParallelSimModel {
 
 		// for each journey, estimate arrival process
 		ConcurrentMap<Journey, ArrivalProcess> resultMap = new ConcurrentHashMap<>();
-		double maxLambda = Double.NEGATIVE_INFINITY;
 		for (Journey journey : map.keySet()) {
 			Collection<Passenger> passengers = map.get(journey);
 			HybridArrivalProcess arrivalProcess = new HybridArrivalProcess(passengers, 0, horizon, options.getSegmentWidth()*60, random.nextLong());
 //			PiecewiseConstantProcess arrivalProcess = new PiecewiseConstantProcess(passengers, options.getSegmentWidth()*60, random.nextLong());
+//			RealizedDataProcess arrivalProcess = new RealizedDataProcess(passengers);
 			resultMap.put(journey, arrivalProcess);
-			double lambda = arrivalProcess.getLambdaUpperBound();
-			if (lambda > maxLambda)
-				maxLambda = lambda;
 		}
 		return resultMap;
 	}

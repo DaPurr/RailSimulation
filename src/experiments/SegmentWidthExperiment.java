@@ -19,11 +19,12 @@ public class SegmentWidthExperiment {
 			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/full_dataset2_export.xml");
 			
 			Options options = new Options();
-			options.setPathToCiCoData("data/cico/ritten_20160209.csv");
+			options.setPathToCiCoData("data/cico/ritten_20160112.csv");
 			options.setPathToStations("data/cico/omzettabel_stations.csv");
 			options.setDayOfWeek(2);
 //			options.setSeed(0);
 			options.setTransferTime(1);
+			options.setNumberofProcessors(4);
 			
 			CiCoData cicoData = CiCoData
 					.importRawData(options);
@@ -32,7 +33,7 @@ public class SegmentWidthExperiment {
 					"data/realisatie/DM_INZET_MATERIEEL_CAP.csv", 
 					"data/realisatie/train_numbers.csv");
 			
-			int[] widths = new int[] {5, 10, 15, 20, 30};
+			int[] widths = new int[] {1, 3, 5, 10, 12, 15, 20, 30};
 			
 			List<Double> kpi = new ArrayList<>();
 			List<Double> times = new ArrayList<>();

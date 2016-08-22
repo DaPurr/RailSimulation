@@ -20,11 +20,12 @@ public class TransferTimeExperiment {
 			Timetable sample = Timetable.importFromXML("data/materieelplan/processed/full_dataset2_export.xml");
 			
 			Options options = new Options();
-			options.setPathToCiCoData("data/cico/ritten_20160209.csv");
+			options.setPathToCiCoData("data/cico/ritten_20160112.csv");
 			options.setPathToStations("data/cico/omzettabel_stations.csv");
 			options.setDayOfWeek(2);
 //			options.setSeed(0);
-			options.setSegmentWidth(5); // needs to divide 60
+			options.setSegmentWidth(1); // needs to divide 60
+			options.setNumberofProcessors(4);
 			
 			CiCoData cicoData = CiCoData
 					.importRawData(options);
@@ -33,14 +34,12 @@ public class TransferTimeExperiment {
 					"data/realisatie/DM_INZET_MATERIEEL_CAP.csv", 
 					"data/realisatie/train_numbers.csv");
 			
-			int LB = 0;
-			int UB = 10;
-			int step = 1;
+			int[] transferTimes = new int[] {0, 1, 2, 3, 5, 7, 8};
 			
 			List<Double> kpi = new ArrayList<>();
 			List<Double> times = new ArrayList<>();
 			
-			for (int t = LB; t <= UB; t += step) {
+			for (int t : transferTimes) {
 				options.setTransferTime(t);
 				long startTime = System.nanoTime();
 				ParallelSimModel parSim = new ParallelSimModel(

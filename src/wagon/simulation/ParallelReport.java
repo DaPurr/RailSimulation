@@ -169,8 +169,10 @@ public class ParallelReport {
 			kpi[count] = sumF/sumB;
 			count++;
 		}
+		
 		double mean = mean(kpi);
 		double std = std(kpi);
+		
 		return new KPIEstimate(mean, std);
 	}
 	

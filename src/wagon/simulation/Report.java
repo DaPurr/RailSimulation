@@ -15,15 +15,20 @@ public class Report {
 	private Map<ScheduledTrip, Counter> tripToB;
 	private Map<ScheduledTrip, Counter> tripToN;
 	
+	private final double cicoCorrectionFactor = 1.215767122505321;
+	
+	private Map<Journey, Set<ScheduledTrip>> journeyTrips;
+	
 	/**
 	 * Constructs a <code>Report</code> object.
 	 * 
 	 * @param state	the system state after simulation
 	 */
-	public Report(SystemState state, int dayOfWeek) {
+	public Report(SystemState state, int dayOfWeek, Map<Journey, Set<ScheduledTrip>> journeyTrips) {
 		tripToB = new LinkedHashMap<>(state.tripToB);
 		tripToN = new LinkedHashMap<>(state.tripToN);
 		trips = state.getTimetable().getAllTrips(dayOfWeek);
+		this.journeyTrips = journeyTrips;
 	}
 	
 	/**
@@ -62,6 +67,19 @@ public class Report {
 		return s;
 	}
 	
+	public Set<ScheduledTrip> getAllTrips() {
+		return trips;
+	}
+	
+	public Set<ScheduledTrip> getTripsOfService(int id) {
+		Set<ScheduledTrip> set = new HashSet<>();
+		for (ScheduledTrip trip : trips) {
+			if (trip.getTrainService().id() == id)
+				set.add(trip);
+		}
+		return set;
+	}
+	
 	public void exportToFile(String file_name) throws IOException {
 		// TODO: Ability to export results to file
 	}
@@ -80,6 +98,7 @@ public class Report {
 			if (counterN == null)
 				throw new IllegalArgumentException("Counters for trip cannot be found.");
 			double countN = counterN.getValue();
+			countN *= cicoCorrectionFactor; // apply CiCo correction factor to capacity
 			int normCapacity = trip.getTrainService().normCapacity2(trip.getNorm());
 			normCapacity += trip.getTrainService().normCapacity1(trip.getNorm());
 			numerator += countN*Math.min(normCapacity/countN, 1);
@@ -103,7 +122,9 @@ public class Report {
 			if (counterN == null || counterB == null)
 				throw new IllegalArgumentException("Counters for trip cannot be found.");
 			double countB = counterB.getValue();
+			countB *= cicoCorrectionFactor; // apply CiCo correction factor to capacity
 			double countN = counterN.getValue();
+			countN *= cicoCorrectionFactor; // apply CiCo correction factor to capacity
 			int seats = trip.getTrainService().getAllSeats() + trip.getTrainService().getFoldableSeats();
 			double seatsAvailable = Math.max(seats - (countN - countB), 0.0);
 			double countF = Math.min(seatsAvailable, countB);
@@ -140,7 +161,32 @@ public class Report {
 		return set;
 	}
 	
-	public String reportBestAndWorstTrains() {
+	public String reportWorstJourneys() {
+		List<JourneyWithKPI> journeyList = new ArrayList<>();
+		for (Entry<Journey, Set<ScheduledTrip>> entry : journeyTrips.entrySet()) {
+ 			Journey journey = entry.getKey();
+			double kpiNew = calculateKPINew(entry.getValue());
+			double kpiOld = calculateKPIOld(entry.getValue());
+			journeyList.add(new JourneyWithKPI(journey, kpiNew, kpiOld));
+		}
+		
+		Collections.sort(journeyList);
+		
+		// report worst 15
+		String s = "";
+		s += System.lineSeparator();
+		s += "WORST 10 JOURNEYS" + System.lineSeparator();
+		s += "===================" + System.lineSeparator();
+		for (int i = 0; i < 15; i++) {
+			if (i >= journeyList.size())
+				break;
+			JourneyWithKPI journeyKPI = journeyList.get(i);
+			s += journeyKPI.journey + ": KPI_{new}=" + journeyKPI.kpiNew + "\tKPI_{old}=" + journeyKPI.kpiOld + System.lineSeparator();
+		}
+		return s;
+	}
+	
+	public String reportWorstTrains() {
 		Map<Integer, Collection<ScheduledTrip>> trainMap = new HashMap<>();
 //		Collection<ScheduledTrip> trips = state.getTimetable().getAllTrips(dayOfWeek);
 		
@@ -266,5 +312,50 @@ public class Report {
 			return Integer.compare(this.trainNr, o.trainNr);
 		}
 		
+	}
+	
+	private static class JourneyWithKPI implements Comparable<JourneyWithKPI> {
+
+		private Journey journey;
+		private double kpiNew;
+		private double kpiOld;
+
+		public JourneyWithKPI(
+				Journey journey, 
+				double kpiNew, 
+				double kpiOld) {
+			this.journey = journey;
+			this.kpiNew = kpiNew;
+			this.kpiOld = kpiOld;
+		}
+
+		@Override
+		public boolean equals(Object other) {
+			if (other == this)
+				return true;
+			if (!(other instanceof JourneyWithKPI))
+				return false;
+			JourneyWithKPI o = (JourneyWithKPI) other;
+			return this.journey.equals(o.journey) &&
+					this.kpiNew == o.kpiNew &&
+					this.kpiOld == o.kpiOld;
+		}
+
+		@Override
+		public int hashCode() {
+			return 7*journey.hashCode() + 13*Double.hashCode(kpiNew) + 17*Double.hashCode(kpiOld);
+		}
+
+		@Override
+		public int compareTo(JourneyWithKPI o) {
+			int res1 = Double.compare(this.kpiNew, o.kpiNew);
+			if (res1 != 0)
+				return res1;
+			int res2 = Double.compare(this.kpiOld, o.kpiOld);
+			if (res2 != 0)
+				return res2;
+			return journey.toString().compareTo(o.journey.toString());
+		}
+
 	}
 }
