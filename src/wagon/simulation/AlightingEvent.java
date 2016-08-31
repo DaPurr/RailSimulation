@@ -3,17 +3,21 @@ package wagon.simulation;
 import java.time.LocalTime;
 
 import wagon.rollingstock.TrainService;
-import wagon.timetable.ScheduledTrip;
+import wagon.timetable.Trip;
 
 public class AlightingEvent extends Event {
 	
 	private LocalTime time;
-	private ScheduledTrip trip;
+	private Trip trip;
 
-	public AlightingEvent(ScheduledTrip trip, LocalTime time) {
+	public AlightingEvent(Trip trip, LocalTime time) {
 		super();
 		this.trip = trip;
 		this.time = time;
+	}
+	
+	public Trip getTrip() {
+		return trip;
 	}
 
 	@Override

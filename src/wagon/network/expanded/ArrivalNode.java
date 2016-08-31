@@ -1,10 +1,10 @@
 package wagon.network.expanded;
 
-import wagon.timetable.ScheduledTrip;
+import wagon.timetable.Trip;
 
 public class ArrivalNode extends EventNode {
 
-	public ArrivalNode(ScheduledTrip trip) {
+	public ArrivalNode(Trip trip) {
 		super(trip);
 	}
 	

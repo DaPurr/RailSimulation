@@ -53,7 +53,7 @@ public class TestMain {
 				s += ", ";
 			s += String.valueOf(d);
 		}
-		return s;
+		return s + "]";
 	}
 	
 	private static void cleanCiCoData(CiCoData cicoData, Timetable timetable) {

@@ -3,7 +3,7 @@ package wagon.simulation;
 import java.time.LocalTime;
 
 import wagon.rollingstock.TrainService;
-import wagon.timetable.ScheduledTrip;
+import wagon.timetable.Trip;
 
 /**
  * This class represents a boarding event. The <code>process</code> method is overridden to 
@@ -15,7 +15,7 @@ import wagon.timetable.ScheduledTrip;
 public class BoardingEvent extends Event {
 	
 	private LocalTime time;
-	private ScheduledTrip trip;
+	private Trip trip;
 
 	/**
 	 * Constructs a <code>BoardingEvent</code> object.
@@ -24,10 +24,14 @@ public class BoardingEvent extends Event {
 	 * @param groups	the passenger groups about to board the train
 	 * @param time		the time at which the event takes place
 	 */
-	public BoardingEvent(ScheduledTrip trip, LocalTime time) {
+	public BoardingEvent(Trip trip, LocalTime time) {
 		super();
 		this.trip = trip;
 		this.time = time;
+	}
+	
+	public Trip getTrip() {
+		return trip;
 	}
 
 	@Override

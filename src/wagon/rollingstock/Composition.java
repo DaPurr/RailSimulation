@@ -49,7 +49,7 @@ public class Composition implements Iterable<RollingStockUnit> {
 	}
 	
 	public int getAllSeats() {
-		return getSeats1() + getSeats2();
+		return getSeats1() + getSeats2() + getFoldableSeats();
 	}
 
 	public int getSeats1() {

@@ -243,6 +243,22 @@ public class HybridArrivalProcess implements ArrivalProcess {
 		}
 	}
 	
+	public List<Double> getIntercept() {
+		List<Double> list = new ArrayList<>();
+		for (double d : intercept) {
+			list.add(d);
+		}
+		return list;
+	}
+	
+	public List<Double> getSlope() {
+		List<Double> list = new ArrayList<>();
+		for (double d : slope) {
+			list.add(d);
+		}
+		return list;
+	}
+	
 	private void fitLinearProcess(
 			Collection<Passenger> passengers, 
 			List<List<Passenger>> arrivalsPerSegment, 

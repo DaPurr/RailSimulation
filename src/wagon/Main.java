@@ -47,10 +47,11 @@ public class Main {
 			options.setPathToCiCoData("data/cico/ritten_20160112.csv");
 			options.setPathToStations("data/cico/omzettabel_stations.csv");
 			options.setDayOfWeek(2);
-			options.setSeed(1234);
+			options.setSeed(5678);
 			options.setSegmentWidth(1); // in minutes
 			options.setTransferTime(1);
 			options.setNumberofProcessors(4);
+			options.setPhi(1.0);
 //			
 //			CiCoData cicoData = CiCoData
 //					.importRawData(options);
@@ -97,7 +98,7 @@ public class Main {
 					sample, 
 					rdata, 
 					options);
-			ParallelReport parReport = parSim.start(4);
+			ParallelReport parReport = parSim.start(32);
 			System.out.println(parReport.summary());
 			System.out.println(parReport.reportWorstTrains());
 			System.out.println(parReport.reportWorstJourneys());

@@ -10,7 +10,7 @@ public class PiecewiseConstantProcessSandbox {
 
 	public static void main(String[] args) {
 		Options options = new Options();
-		options.setPathToCiCoData("data/cico/ritten_20160209.csv");
+		options.setPathToCiCoData("data/cico/ritten_20160112.csv");
 		options.setPathToStations("data/cico/omzettabel_stations.csv");
 		options.setDayOfWeek(2);
 		CiCoData cicoData;
@@ -20,12 +20,12 @@ public class PiecewiseConstantProcessSandbox {
 			
 			cicoData.getJourneySummary();
 			
-			Collection<Passenger> selectedPassengers = cicoData.getPassengersWithJourney("ut", "asd");
+			Collection<Passenger> selectedPassengers = cicoData.getPassengersWithJourney("rta", "ut");
 			
 			long startTime = System.nanoTime();
 			PiecewiseConstantProcess hap = new PiecewiseConstantProcess(
 					selectedPassengers, 
-					5*60, 
+					3*60, 
 					0);
 			long endTime = System.nanoTime();
 			double duration = (endTime-startTime)*1e-9;

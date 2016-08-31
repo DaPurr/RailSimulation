@@ -14,7 +14,7 @@ import wagon.rollingstock.TrainService;
  *
  */
 
-public class ScheduledTrip implements Comparable<ScheduledTrip> {
+public class Trip implements Comparable<Trip> {
 
 	private TrainService trainService;
 	private LocalTime arrTime;
@@ -32,7 +32,7 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 	 * @param composition	train composition
 	 * @param time			scheduled departure time
 	 */
-	public ScheduledTrip(TrainService trainService, LocalTime depTime, 
+	public Trip(TrainService trainService, LocalTime depTime, 
 			LocalTime arrTime, Station fromStation, Station toStation, 
 			ComfortNorm norm, int dayOfWeek) {
 		this.trainService = trainService;
@@ -109,8 +109,8 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 		return dayOfWeek;
 	}
 	
-	public ScheduledTrip copy() {
-		ScheduledTrip trip = new ScheduledTrip(
+	public Trip copy() {
+		Trip trip = new Trip(
 				trainService.copy(), 
 				depTime, 
 				arrTime, 
@@ -123,31 +123,31 @@ public class ScheduledTrip implements Comparable<ScheduledTrip> {
 	
 	@Override
 	public int hashCode() {
-		int hc1 = arrTime.hashCode();
-		int hc2 = depTime.hashCode();
+//		int hc1 = arrTime.hashCode();
+//		int hc2 = depTime.hashCode();
 		int hc3 = toStation.hashCode();
 		int hc4 = fromStation.hashCode();
 		int hc5 = Integer.hashCode(dayOfWeek);
 		int hc6 = Integer.hashCode(trainService.id());
-		return 3*hc1 + 5*hc2 + 7*hc3 + 11*hc4 + 13*hc5 + 17*hc6;
+		return 7*hc3 + 11*hc4 + 13*hc5 + 17*hc6;
 	}
 	
 	@Override
 	public boolean equals(Object other) {
-		if (!(other instanceof ScheduledTrip))
+		if (!(other instanceof Trip))
 			return false;
-		ScheduledTrip o = (ScheduledTrip) other;
-		boolean b1 = this.arrTime.equals(o.arrTime);
-		boolean b3 = this.depTime.equals(o.depTime);
+		Trip o = (Trip) other;
+//		boolean b1 = this.arrTime.equals(o.arrTime);
+//		boolean b3 = this.depTime.equals(o.depTime);
 		boolean b4 = this.fromStation.equals(o.fromStation);
 		boolean b5 = this.toStation.equals(o.toStation);
 		boolean b6 = this.dayOfWeek == o.dayOfWeek;
 		boolean b2 = this.trainService.id() == o.trainService.id();
-		return b2 && b6 && b1 && b3 && b4 && b5;
+		return b2 && b6 && b4 && b5;
 	}
 
 	@Override
-	public int compareTo(ScheduledTrip that) {
+	public int compareTo(Trip that) {
 		int res0 = Integer.compare(trainService.id(), that.trainService.id());
 		if (res0 != 0)
 			return res0;

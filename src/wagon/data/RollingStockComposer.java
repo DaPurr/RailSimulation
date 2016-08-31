@@ -1,9 +1,9 @@
 package wagon.data;
 
 import wagon.rollingstock.TrainService;
-import wagon.timetable.ScheduledTrip;
+import wagon.timetable.Trip;
 
 public interface RollingStockComposer {
 
-	public TrainService realizedComposition(TrainService comp, ScheduledTrip trip);
+	public TrainService realizedComposition(TrainService comp, Trip trip);
 }

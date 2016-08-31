@@ -3,7 +3,6 @@ package wagon.simulation;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
 
 import wagon.timetable.*;
 
@@ -12,13 +11,13 @@ public class ParallelReport {
 	private final double cicoCorrectionFactor = 1.215767122505321;
 
 	private Set<Report> reports;
-	private Set<ScheduledTrip> trips;
-	private Map<Journey, Set<ScheduledTrip>> journeyTrips;
+	private Set<Trip> trips;
+	private Map<Journey, Set<Trip>> journeyTrips;
 	
 	public ParallelReport(
 			Collection<Report> reports, 
-			Set<ScheduledTrip> trips, 
-			Map<Journey, Set<ScheduledTrip>> journeyTrips) {
+			Set<Trip> trips, 
+			Map<Journey, Set<Trip>> journeyTrips) {
 		this.reports = new HashSet<>(reports);
 		this.trips = trips;
 		this.journeyTrips = journeyTrips;
@@ -26,7 +25,7 @@ public class ParallelReport {
 	
 	public String reportWorstJourneys() {
 		List<JourneyWithKPI> journeyList = new ArrayList<>();
-		for (Entry<Journey, Set<ScheduledTrip>> entry : journeyTrips.entrySet()) {
+		for (Entry<Journey, Set<Trip>> entry : journeyTrips.entrySet()) {
  			Journey journey = entry.getKey();
 			KPIEstimate kpiNew = calculateKPINew(entry.getValue());
 			KPIEstimate kpiOld = calculateKPIOld(entry.getValue());
@@ -56,19 +55,19 @@ public class ParallelReport {
 		s += "KPI_{old}=" + calculateKPIOld(trips) + System.lineSeparator();
 		s += "KPI_{new}=" + calculateKPINew(trips) + System.lineSeparator();
 		s += System.lineSeparator();
-		Set<ScheduledTrip> tripsMorningRush = getTripsMorningRushHour(trips);
+		Set<Trip> tripsMorningRush = getTripsMorningRushHour(trips);
 		s += "MORNING RUSH HOUR" + System.lineSeparator();
 		s += "=========================" + System.lineSeparator();
 		s += "KPI_{old}=" + calculateKPIOld(tripsMorningRush) + System.lineSeparator();
 		s += "KPI_{new}=" + calculateKPINew(tripsMorningRush) + System.lineSeparator();
 		s += System.lineSeparator();
-		Set<ScheduledTrip> tripsAfternoonRush = getTripsAfternoonRushHour(trips);
+		Set<Trip> tripsAfternoonRush = getTripsAfternoonRushHour(trips);
 		s += "AFTERNOON RUSH HOUR" + System.lineSeparator();
 		s += "=========================" + System.lineSeparator();
 		s += "KPI_{old}=" + calculateKPIOld(tripsAfternoonRush) + System.lineSeparator();
 		s += "KPI_{new}=" + calculateKPINew(tripsAfternoonRush) + System.lineSeparator();
 		s += System.lineSeparator();
-		Set<ScheduledTrip> tripsAllRush = new HashSet<>(tripsMorningRush);
+		Set<Trip> tripsAllRush = new HashSet<>(tripsMorningRush);
 		tripsAllRush.addAll(tripsAfternoonRush);
 		s += "COMBINED RUSH HOUR" + System.lineSeparator();
 		s += "=========================" + System.lineSeparator();
@@ -80,12 +79,12 @@ public class ParallelReport {
 	}
 	
 	public String reportWorstTrains() {
-		Map<Integer, Collection<ScheduledTrip>> trainMap = new HashMap<>();
+		Map<Integer, Collection<Trip>> trainMap = new HashMap<>();
 		
 		// add trips to all train numbers
-		for (ScheduledTrip trip : trips) {
+		for (Trip trip : trips) {
 			int trainNr = trip.getTrainService().id();
-			Collection<ScheduledTrip> collection = trainMap.get(trainNr);
+			Collection<Trip> collection = trainMap.get(trainNr);
 			if (collection == null) {
 				collection = new ArrayList<>();
 				trainMap.put(trainNr, collection);
@@ -94,7 +93,7 @@ public class ParallelReport {
 		}
 		
 		List<TrainWithKPI> trainList = new ArrayList<>();
-		for (Entry<Integer, Collection<ScheduledTrip>> entry : trainMap.entrySet()) {
+		for (Entry<Integer, Collection<Trip>> entry : trainMap.entrySet()) {
 			int trainNr = entry.getKey();
 			KPIEstimate kpiNew = calculateKPINew(entry.getValue());
 			KPIEstimate kpiOld = calculateKPIOld(entry.getValue());
@@ -117,20 +116,21 @@ public class ParallelReport {
 		return s;
 	}
 	
-	public KPIEstimate calculateKPIOld(Collection<ScheduledTrip> trips) {
+	public KPIEstimate calculateKPIOld(Collection<Trip> trips) {
 		double[] kpi = new double[reports.size()];
 		int count = 0;
 		for (Report report : reports) {
 			double numerator = 0.0;
 			double denominator = 0.0;
-			for (ScheduledTrip trip : trips) {
-				Counter counterN = report.getTripCounterN(trip);
-				if (counterN == null)
-					throw new IllegalArgumentException("Counters for trip cannot be found.");
-				double countN = counterN.getValue();
+			for (Trip trip : trips) {
+				TripCounters tripCounters = report.tripToCounters.get(trip);
+				if (tripCounters == null) {
+//					throw new IllegalArgumentException("Counters for trip cannot be found.");
+					continue;
+				}
+				double countN = tripCounters.getN();
 				countN *= cicoCorrectionFactor; // apply CiCo correction factor to capacity
-				double normCapacity = trip.getTrainService().normCapacity2(trip.getNorm());
-				normCapacity += trip.getTrainService().normCapacity1(trip.getNorm());
+				double normCapacity = tripCounters.getNormCapacity();
 //				normCapacity *= (2-cicoCorrectionFactor); // apply CiCo correction factor to capacity
 				numerator += countN*Math.min(normCapacity/countN, 1);
 				denominator += countN;
@@ -143,23 +143,23 @@ public class ParallelReport {
 		return new KPIEstimate(mean, std);
 	}
 	
-	public KPIEstimate calculateKPINew(Collection<ScheduledTrip> trips) {
+	public KPIEstimate calculateKPINew(Collection<Trip> trips) {
 		double[] kpi = new double[reports.size()];
 		int count = 0;
 		for (Report report : reports) {
 			double sumF = 0.0;
 			double sumB = 0.0;
-			for (ScheduledTrip trip : trips) {
-				Counter counterN = report.getTripCounterN(trip);
-	 			Counter counterB = report.getTripCounterB(trip);
-				if (counterN == null || counterB == null)
-					throw new IllegalArgumentException("Counters for trip cannot be found.");
-				double countB = counterB.getValue();
+			for (Trip trip : trips) {
+				TripCounters tripCounters = report.tripToCounters.get(trip);
+				if (tripCounters == null) {
+//					throw new IllegalArgumentException("Counters for trip cannot be found.");
+					continue;
+				}
+				double countB = tripCounters.getB();
 				countB *= cicoCorrectionFactor; // apply CiCo correction factor to capacity
-				double countN = counterN.getValue();
+				double countN = tripCounters.getN();
 				countN *= cicoCorrectionFactor;
-				double seats = trip.getTrainService().getSeats2() + trip.getTrainService().getFoldableSeats();
-				seats += trip.getTrainService().getSeats1();
+				double seats = tripCounters.getSeatCapacity();
 //				seats *= (2-cicoCorrectionFactor); // apply CiCo correction factor to capacity
 				double seatsAvailable = Math.max(seats - (countN - countB), 0.0);
 				double countF = Math.min(seatsAvailable, countB);
@@ -176,29 +176,29 @@ public class ParallelReport {
 		return new KPIEstimate(mean, std);
 	}
 	
-	public Set<ScheduledTrip> getTripsMorningRushHour(Collection<ScheduledTrip> trips) {
+	public Set<Trip> getTripsMorningRushHour(Collection<Trip> trips) {
 		return getTripsBetweenTimes(trips, LocalTime.parse("07:00"), LocalTime.parse("09:00"));
 	}
 	
-	public Set<ScheduledTrip> getTripsAfternoonRushHour(Collection<ScheduledTrip> trips) {
+	public Set<Trip> getTripsAfternoonRushHour(Collection<Trip> trips) {
 		return getTripsBetweenTimes(trips, LocalTime.parse("16:00"), LocalTime.parse("18:00"));
 	}
 	
-	public Set<ScheduledTrip> getTripsFromTrain(int trainNumber, Collection<ScheduledTrip> trips) {
-		Set<ScheduledTrip> set = new HashSet<>();
-		for (ScheduledTrip trip : trips) {
+	public Set<Trip> getTripsFromTrain(int trainNumber) {
+		Set<Trip> set = new LinkedHashSet<>();
+		for (Trip trip : trips) {
 			if (trip.getTrainService().id() == trainNumber)
 				set.add(trip);
 		}
 		return set;
 	}
 	
-	public Set<ScheduledTrip> getTripsBetweenTimes(
-			Collection<ScheduledTrip> trips, 
+	public Set<Trip> getTripsBetweenTimes(
+			Collection<Trip> trips, 
 			LocalTime time1, 
 			LocalTime time2) {
-		Set<ScheduledTrip> setTrips = new HashSet<>();
-		for (ScheduledTrip trip : trips) {
+		Set<Trip> setTrips = new HashSet<>();
+		for (Trip trip : trips) {
 			LocalTime tripDepartureTime = trip.departureTime();
 			LocalTime tripArrivalTime = trip.arrivalTime();
 			if (tripArrivalTime.compareTo(time2) <= 0
@@ -228,7 +228,7 @@ public class ParallelReport {
 			double term = mean-val;
 			sum += term*term;
 		}
-		return sum/(vals.length-1);
+		return Math.sqrt(sum/(vals.length-1));
 	}
 	
 	private static class JourneyWithKPI implements Comparable<JourneyWithKPI> {

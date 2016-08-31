@@ -10,7 +10,7 @@ import org.xml.sax.SAXException;
 import wagon.data.*;
 import wagon.infrastructure.Station;
 import wagon.simulation.*;
-import wagon.timetable.ScheduledTrip;
+import wagon.timetable.Trip;
 import wagon.timetable.Timetable;
 
 public class TransferTimeExperiment {
@@ -46,15 +46,15 @@ public class TransferTimeExperiment {
 						sample, 
 						rdata, 
 						options);
-				ParallelReport parReport = parSim.start(4);
+				ParallelReport parReport = parSim.start(16);
 				long endTime = System.nanoTime();
 				double duration = (endTime-startTime)*1e-9;
 				
 				times.add(duration);
 				
-				Collection<ScheduledTrip> tripsRushHour = parReport
+				Collection<Trip> tripsRushHour = parReport
 						.getTripsMorningRushHour(sample.getAllTrips(options.getDayOfWeek()));
-				Collection<ScheduledTrip> tripsEveningRushHour = parReport
+				Collection<Trip> tripsEveningRushHour = parReport
 						.getTripsAfternoonRushHour(sample.getAllTrips(options.getDayOfWeek()));
 				tripsRushHour.addAll(tripsEveningRushHour);
 				kpi.add(parReport.calculateKPINew(tripsRushHour).mean);

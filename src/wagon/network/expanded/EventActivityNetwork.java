@@ -105,28 +105,28 @@ public class EventActivityNetwork {
 		units3.add(new SGM3Unit());
 		TrainService comp3 = new TrainService(3, new Composition(units3));
 		
-		ScheduledTrip sd1 = new ScheduledTrip(comp1, 
+		Trip sd1 = new Trip(comp1, 
 				LocalTime.parse("06:47"), 
 				LocalTime.parse("06:50"), 
 				station1, station2, ComfortNorm.C, 2);
-		ScheduledTrip sd2 = new ScheduledTrip(comp2, 
+		Trip sd2 = new Trip(comp2, 
 				LocalTime.parse("07:17"), 
 				LocalTime.parse("07:20"), 
 				station1, station2, ComfortNorm.C, 2);
-		ScheduledTrip sd3 = new ScheduledTrip(comp3, 
+		Trip sd3 = new Trip(comp3, 
 				LocalTime.parse("07:47"), 
 				LocalTime.parse("07:50"), 
 				station1, station2, ComfortNorm.C, 2);
 		
-		ScheduledTrip sd4 = new ScheduledTrip(comp1, 
+		Trip sd4 = new Trip(comp1, 
 				LocalTime.parse("06:50"), 
 				LocalTime.parse("06:53"), 
 				station2, station3, ComfortNorm.C, 2);
-		ScheduledTrip sd5 = new ScheduledTrip(comp2, 
+		Trip sd5 = new Trip(comp2, 
 				LocalTime.parse("07:20"), 
 				LocalTime.parse("07:23"), 
 				station2, station3, ComfortNorm.C, 2);
-		ScheduledTrip sd6 = new ScheduledTrip(comp3, 
+		Trip sd6 = new Trip(comp3, 
 				LocalTime.parse("07:50"), 
 				LocalTime.parse("07:53"), 
 				station2, station3, ComfortNorm.C, 2);
@@ -163,15 +163,15 @@ public class EventActivityNetwork {
 		units2.add(new SLT4Unit());
 		TrainService comp2 = new TrainService(2, new Composition(units2));
 		
-		ScheduledTrip trip1 = new ScheduledTrip(comp1, 
+		Trip trip1 = new Trip(comp1, 
 				LocalTime.parse("10:53"), 
 				LocalTime.parse("11:00"), 
 				stationA, stationB, ComfortNorm.C, 2);
-		ScheduledTrip trip2 = new ScheduledTrip(comp1, 
+		Trip trip2 = new Trip(comp1, 
 				LocalTime.parse("11:00"), 
 				LocalTime.parse("11:30"), 
 				stationB, stationC, ComfortNorm.C, 2);
-		ScheduledTrip trip3 = new ScheduledTrip(comp2, 
+		Trip trip3 = new Trip(comp2, 
 				LocalTime.parse("11:10"), 
 				LocalTime.parse("11:30"), 
 				stationB, stationC, ComfortNorm.C, 2);
@@ -205,19 +205,19 @@ public class EventActivityNetwork {
 		units2.add(new SLT4Unit());
 		TrainService comp2 = new TrainService(2, new Composition(units2));
 		
-		ScheduledTrip trip1 = new ScheduledTrip(comp1, 
+		Trip trip1 = new Trip(comp1, 
 				LocalTime.parse("12:00"), 
 				LocalTime.parse("12:01"), 
 				stationA, stationB, ComfortNorm.C, 2);
-		ScheduledTrip trip2 = new ScheduledTrip(comp1, 
+		Trip trip2 = new Trip(comp1, 
 				LocalTime.parse("12:01"), 
 				LocalTime.parse("12:02"), 
 				stationB, stationA, ComfortNorm.C, 2);
-		ScheduledTrip trip3 = new ScheduledTrip(comp2, 
+		Trip trip3 = new Trip(comp2, 
 				LocalTime.parse("12:02"), 
 				LocalTime.parse("12:03"), 
 				stationA, stationB, ComfortNorm.C, 2);
-		ScheduledTrip trip4 = new ScheduledTrip(comp2, 
+		Trip trip4 = new Trip(comp2, 
 				LocalTime.parse("12:03"), 
 				LocalTime.parse("12:04"), 
 				stationB, stationC, ComfortNorm.C, 2);
@@ -257,19 +257,19 @@ public class EventActivityNetwork {
 		units3.add(new SLT4Unit());
 		TrainService comp3 = new TrainService(3, new Composition(units3));
 		
-		ScheduledTrip trip1 = new ScheduledTrip(comp1, 
+		Trip trip1 = new Trip(comp1, 
 				LocalTime.parse("10:53"), 
 				LocalTime.parse("11:00"), 
 				stationA, stationB, ComfortNorm.C, 2);
-		ScheduledTrip trip2 = new ScheduledTrip(comp1, 
+		Trip trip2 = new Trip(comp1, 
 				LocalTime.parse("11:05"), 
 				LocalTime.parse("11:30"), 
 				stationB, stationC, ComfortNorm.C, 2);
-		ScheduledTrip trip3 = new ScheduledTrip(comp2, 
+		Trip trip3 = new Trip(comp2, 
 				LocalTime.parse("11:10"), 
 				LocalTime.parse("11:30"), 
 				stationB, stationC, ComfortNorm.C, 2);
-		ScheduledTrip trip4 = new ScheduledTrip(comp3, 
+		Trip trip4 = new Trip(comp3, 
 				LocalTime.parse("11:35"), 
 				LocalTime.parse("11:40"), 
 				stationC, stationD, ComfortNorm.C, 2);
@@ -309,19 +309,19 @@ public class EventActivityNetwork {
 		units3.add(new SLT4Unit());
 		TrainService comp3 = new TrainService(3, new Composition(units3));
 		
-		ScheduledTrip trip1 = new ScheduledTrip(comp1, 
+		Trip trip1 = new Trip(comp1, 
 				LocalTime.parse("11:05"), 
 				LocalTime.parse("11:19"), 
 				stationA, stationB, ComfortNorm.C, 2);
-		ScheduledTrip trip2 = new ScheduledTrip(comp1, 
+		Trip trip2 = new Trip(comp1, 
 				LocalTime.parse("11:19"), 
 				LocalTime.parse("12:10"), 
 				stationB, stationC, ComfortNorm.C, 2);
-		ScheduledTrip trip3 = new ScheduledTrip(comp2, 
+		Trip trip3 = new Trip(comp2, 
 				LocalTime.parse("11:06"), 
 				LocalTime.parse("11:07"), 
 				stationA, stationB, ComfortNorm.C, 2);
-		ScheduledTrip trip4 = new ScheduledTrip(comp3, 
+		Trip trip4 = new Trip(comp3, 
 				LocalTime.parse("11:18"), 
 				LocalTime.parse("12:00"), 
 				stationB, stationC, ComfortNorm.C, 2);
@@ -390,17 +390,17 @@ public class EventActivityNetwork {
 		long countTripEdges = 0;
 		long countTransferEdges = 0;
 		for (TrainService comp : timetable.getTrainServices()) {
-			Iterator<ScheduledTrip> tripIter = timetable.getRoute(comp, dayOfWeek).iterator();
+			Iterator<Trip> tripIter = timetable.getRoute(comp, dayOfWeek).iterator();
 			if (!tripIter.hasNext())
 				continue;
-			ScheduledTrip previousTrip = tripIter.next();
+			Trip previousTrip = tripIter.next();
 			Triple<DepartureNode, ArrivalNode, TransferNode> previousTriple = addTripToNetwork(
 					network, 
 					previousTrip);
 			countArrivals++; countDepartures++; countTransfers++;
 			countWaitEdges++; countTripEdges++;
 			while (tripIter.hasNext()) {
-				ScheduledTrip currentTrip = tripIter.next();
+				Trip currentTrip = tripIter.next();
 				Triple<DepartureNode, ArrivalNode, TransferNode> currentTriple = addTripToNetwork(
 						network, 
 						currentTrip);
@@ -498,7 +498,7 @@ public class EventActivityNetwork {
 	
 	private static Triple<DepartureNode, ArrivalNode, TransferNode> addTripToNetwork(
 			EventActivityNetwork network,
-			ScheduledTrip trip) {
+			Trip trip) {
 		
 		TransferNode transfer = new TransferNode(
 				trip.departureTime(), 
@@ -547,7 +547,7 @@ public class EventActivityNetwork {
 		int countDepartures = 0;
 		int counter = 0;
 		for (TrainService comp : timetable.getTrainServices()) {
-			for (ScheduledTrip trip : timetable.getRoute(comp, dayOfWeek)) {
+			for (Trip trip : timetable.getRoute(comp, dayOfWeek)) {
 				Station fromStation = trip.fromStation();
 				Station toStation = trip.toStation();
 				stations.add(fromStation);
@@ -656,7 +656,7 @@ public class EventActivityNetwork {
 		
 		LinkedHashMultiset<RollingStockUnit> units1 = LinkedHashMultiset.create();
 		units1.add(new VIRM4Unit());
-		ScheduledTrip dummyTrip = new ScheduledTrip(
+		Trip dummyTrip = new Trip(
 				new TrainService(0, new Composition(units1)), 
 				time, 
 				time, 
@@ -689,7 +689,7 @@ public class EventActivityNetwork {
 		NavigableSet<ArrivalNode> set = arrivalsByStation.get(station);
 		LinkedHashMultiset<RollingStockUnit> units1 = LinkedHashMultiset.create();
 		units1.add(new VIRM4Unit());
-		ScheduledTrip dummyTrip = new ScheduledTrip(
+		Trip dummyTrip = new Trip(
 				new TrainService(0, new Composition(units1)), 
 				time, 
 				time, 

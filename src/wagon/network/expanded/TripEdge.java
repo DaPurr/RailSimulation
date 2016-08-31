@@ -1,7 +1,7 @@
 package wagon.network.expanded;
 
 import wagon.network.WeightedEdge;
-import wagon.timetable.ScheduledTrip;
+import wagon.timetable.Trip;
 
 /**
  * Wrapper class for trip edges in the event-activity network.
@@ -12,14 +12,14 @@ import wagon.timetable.ScheduledTrip;
 
 public class TripEdge extends WeightedEdge {
 	
-	private ScheduledTrip trip;
+	private Trip trip;
 
 	/**
 	 * @param trip		trip associated to this trip edge
 	 * @param weight	waiting time until next event
 	 */
 	public TripEdge(EventNode source, EventNode target, 
-			ScheduledTrip trip, double weight) {
+			Trip trip, double weight) {
 		super(source, target, weight);
 		this.trip = trip;
 	}
@@ -27,7 +27,7 @@ public class TripEdge extends WeightedEdge {
 	/**
 	 * @return	the wrapped trip
 	 */
-	public ScheduledTrip trip() {
+	public Trip trip() {
 		return trip;
 	}
 	

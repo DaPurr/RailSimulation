@@ -5,29 +5,24 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.Map.Entry;
 
-import wagon.timetable.ScheduledTrip;
+import wagon.timetable.Trip;
 
 public class Report {
 
 //	private SystemState state;
-	private Set<ScheduledTrip> trips;
-	
-	private Map<ScheduledTrip, Counter> tripToB;
-	private Map<ScheduledTrip, Counter> tripToN;
+	Map<Trip, TripCounters> tripToCounters;
 	
 	private final double cicoCorrectionFactor = 1.215767122505321;
 	
-	private Map<Journey, Set<ScheduledTrip>> journeyTrips;
+	private Map<Journey, Set<Trip>> journeyTrips;
 	
 	/**
 	 * Constructs a <code>Report</code> object.
 	 * 
 	 * @param state	the system state after simulation
 	 */
-	public Report(SystemState state, int dayOfWeek, Map<Journey, Set<ScheduledTrip>> journeyTrips) {
-		tripToB = new LinkedHashMap<>(state.tripToB);
-		tripToN = new LinkedHashMap<>(state.tripToN);
-		trips = state.getTimetable().getAllTrips(dayOfWeek);
+	public Report(Map<Trip, TripCounters> tripToCounters, int dayOfWeek, Map<Journey, Set<Trip>> journeyTrips) {
+		this.tripToCounters = tripToCounters;
 		this.journeyTrips = journeyTrips;
 	}
 	
@@ -41,22 +36,22 @@ public class Report {
 		String s = "";
 		s += "ALL TRIPS" + System.lineSeparator();
 		s += "=========================" + System.lineSeparator();
-		s += "KPI_{old}=" + calculateKPIOld(trips) + System.lineSeparator();
-		s += "KPI_{new}=" + calculateKPINew(trips) + System.lineSeparator();
+		s += "KPI_{old}=" + calculateKPIOld(tripToCounters.keySet()) + System.lineSeparator();
+		s += "KPI_{new}=" + calculateKPINew(tripToCounters.keySet()) + System.lineSeparator();
 		s += System.lineSeparator();
-		Set<ScheduledTrip> tripsMorningRush = getTripsMorningRushHour(trips);
+		Set<Trip> tripsMorningRush = getTripsMorningRushHour(tripToCounters.keySet());
 		s += "MORNING RUSH HOUR" + System.lineSeparator();
 		s += "=========================" + System.lineSeparator();
 		s += "KPI_{old}=" + calculateKPIOld(tripsMorningRush) + System.lineSeparator();
 		s += "KPI_{new}=" + calculateKPINew(tripsMorningRush) + System.lineSeparator();
 		s += System.lineSeparator();
-		Set<ScheduledTrip> tripsAfternoonRush = getTripsAfternoonRushHour(trips);
+		Set<Trip> tripsAfternoonRush = getTripsAfternoonRushHour(tripToCounters.keySet());
 		s += "AFTERNOON RUSH HOUR" + System.lineSeparator();
 		s += "=========================" + System.lineSeparator();
 		s += "KPI_{old}=" + calculateKPIOld(tripsAfternoonRush) + System.lineSeparator();
 		s += "KPI_{new}=" + calculateKPINew(tripsAfternoonRush) + System.lineSeparator();
 		s += System.lineSeparator();
-		Set<ScheduledTrip> tripsAllRush = new HashSet<>(tripsMorningRush);
+		Set<Trip> tripsAllRush = new HashSet<>(tripsMorningRush);
 		tripsAllRush.addAll(tripsAfternoonRush);
 		s += "COMBINED RUSH HOUR" + System.lineSeparator();
 		s += "=========================" + System.lineSeparator();
@@ -67,13 +62,13 @@ public class Report {
 		return s;
 	}
 	
-	public Set<ScheduledTrip> getAllTrips() {
-		return trips;
+	public Set<Trip> getAllTrips() {
+		return new LinkedHashSet<>(tripToCounters.keySet());
 	}
 	
-	public Set<ScheduledTrip> getTripsOfService(int id) {
-		Set<ScheduledTrip> set = new HashSet<>();
-		for (ScheduledTrip trip : trips) {
+	public Set<Trip> getTripsOfService(int id) {
+		Set<Trip> set = new HashSet<>();
+		for (Trip trip : tripToCounters.keySet()) {
 			if (trip.getTrainService().id() == id)
 				set.add(trip);
 		}
@@ -90,17 +85,16 @@ public class Report {
 	 * @param trips	the collection of trips
 	 * @return	the old KPI for transport capacity
 	 */
-	public double calculateKPIOld(Collection<ScheduledTrip> trips) {
+	public double calculateKPIOld(Collection<Trip> trips) {
 		double numerator = 0.0;
 		double denominator = 0.0;
-		for (ScheduledTrip trip : trips) {
-			Counter counterN = getTripCounterN(trip);
-			if (counterN == null)
+		for (Trip trip : trips) {
+			TripCounters tripCounters = tripToCounters.get(trip);
+			if (tripCounters == null)
 				throw new IllegalArgumentException("Counters for trip cannot be found.");
-			double countN = counterN.getValue();
+			double countN = tripCounters.getN();
 			countN *= cicoCorrectionFactor; // apply CiCo correction factor to capacity
-			int normCapacity = trip.getTrainService().normCapacity2(trip.getNorm());
-			normCapacity += trip.getTrainService().normCapacity1(trip.getNorm());
+			double normCapacity = tripCounters.getNormCapacity();
 			numerator += countN*Math.min(normCapacity/countN, 1);
 			denominator += countN;
 		}
@@ -113,19 +107,18 @@ public class Report {
 	 * @param trips	the collection of trips
 	 * @return	the new KPI for transport capacity
 	 */
-	public double calculateKPINew(Collection<ScheduledTrip> trips) {
+	public double calculateKPINew(Collection<Trip> trips) {
 		double sumF = 0.0;
 		double sumB = 0.0;
-		for (ScheduledTrip trip : trips) {
-			Counter counterN = getTripCounterN(trip);
- 			Counter counterB = getTripCounterB(trip);
-			if (counterN == null || counterB == null)
+		for (Trip trip : trips) {
+			TripCounters tripCounters = tripToCounters.get(trip);
+			if (tripCounters == null)
 				throw new IllegalArgumentException("Counters for trip cannot be found.");
-			double countB = counterB.getValue();
+			double countB = tripCounters.getB();
 			countB *= cicoCorrectionFactor; // apply CiCo correction factor to capacity
-			double countN = counterN.getValue();
+			double countN = tripCounters.getN();
 			countN *= cicoCorrectionFactor; // apply CiCo correction factor to capacity
-			int seats = trip.getTrainService().getAllSeats() + trip.getTrainService().getFoldableSeats();
+			double seats = tripCounters.getSeatCapacity();
 			double seatsAvailable = Math.max(seats - (countN - countB), 0.0);
 			double countF = Math.min(seatsAvailable, countB);
 			sumF += countF;
@@ -139,7 +132,7 @@ public class Report {
 	 * @param trips	the set of trips
 	 * @return	the set of morning rush hour trips
 	 */
-	public Set<ScheduledTrip> getTripsMorningRushHour(Collection<ScheduledTrip> trips) {
+	public Set<Trip> getTripsMorningRushHour(Collection<Trip> trips) {
 		return getTripsBetweenTimes(trips, LocalTime.parse("07:00"), LocalTime.parse("09:00"));
 	}
 	
@@ -148,13 +141,13 @@ public class Report {
 	 * @param trips	the set of trips
 	 * @return	the set of afternoon rush hour trips
 	 */
-	public Set<ScheduledTrip> getTripsAfternoonRushHour(Collection<ScheduledTrip> trips) {
+	public Set<Trip> getTripsAfternoonRushHour(Collection<Trip> trips) {
 		return getTripsBetweenTimes(trips, LocalTime.parse("16:00"), LocalTime.parse("18:00"));
 	}
 	
-	public Set<ScheduledTrip> getTripsFromTrain(int trainNumber, Collection<ScheduledTrip> trips) {
-		Set<ScheduledTrip> set = new HashSet<>();
-		for (ScheduledTrip trip : trips) {
+	public Set<Trip> getTripsFromTrain(int trainNumber, Collection<Trip> trips) {
+		Set<Trip> set = new HashSet<>();
+		for (Trip trip : trips) {
 			if (trip.getTrainService().id() == trainNumber)
 				set.add(trip);
 		}
@@ -163,7 +156,7 @@ public class Report {
 	
 	public String reportWorstJourneys() {
 		List<JourneyWithKPI> journeyList = new ArrayList<>();
-		for (Entry<Journey, Set<ScheduledTrip>> entry : journeyTrips.entrySet()) {
+		for (Entry<Journey, Set<Trip>> entry : journeyTrips.entrySet()) {
  			Journey journey = entry.getKey();
 			double kpiNew = calculateKPINew(entry.getValue());
 			double kpiOld = calculateKPIOld(entry.getValue());
@@ -187,13 +180,13 @@ public class Report {
 	}
 	
 	public String reportWorstTrains() {
-		Map<Integer, Collection<ScheduledTrip>> trainMap = new HashMap<>();
+		Map<Integer, Collection<Trip>> trainMap = new HashMap<>();
 //		Collection<ScheduledTrip> trips = state.getTimetable().getAllTrips(dayOfWeek);
 		
 		// add trips to all train numbers
-		for (ScheduledTrip trip : trips) {
+		for (Trip trip : tripToCounters.keySet()) {
 			int trainNr = trip.getTrainService().id();
-			Collection<ScheduledTrip> collection = trainMap.get(trainNr);
+			Collection<Trip> collection = trainMap.get(trainNr);
 			if (collection == null) {
 				collection = new ArrayList<>();
 				trainMap.put(trainNr, collection);
@@ -202,7 +195,7 @@ public class Report {
 		}
 		
 		List<TrainWithKPI> trainList = new ArrayList<>();
-		for (Entry<Integer, Collection<ScheduledTrip>> entry : trainMap.entrySet()) {
+		for (Entry<Integer, Collection<Trip>> entry : trainMap.entrySet()) {
 			int trainNr = entry.getKey();
 			double kpiNew = calculateKPINew(entry.getValue());
 			double kpiOld = calculateKPIOld(entry.getValue());
@@ -234,9 +227,9 @@ public class Report {
 	 * @param time2	the upper bound of the time horizon
 	 * @return	the overlapping set of trips
 	 */
-	public Set<ScheduledTrip> getTripsBetweenTimes(Collection<ScheduledTrip> trips, LocalTime time1, LocalTime time2) {
-		Set<ScheduledTrip> setTrips = new HashSet<>();
-		for (ScheduledTrip trip : trips) {
+	public Set<Trip> getTripsBetweenTimes(Collection<Trip> trips, LocalTime time1, LocalTime time2) {
+		Set<Trip> setTrips = new HashSet<>();
+		for (Trip trip : trips) {
 			LocalTime tripDepartureTime = trip.departureTime();
 			LocalTime tripArrivalTime = trip.arrivalTime();
 			if (tripArrivalTime.compareTo(time2) <= 0
@@ -251,27 +244,27 @@ public class Report {
 	 * @param trip	the trip
 	 * @return	returns the counter for n_t corresponding to <code>trip</code>
 	 */
-	public Counter getTripCounterN(ScheduledTrip trip) {
-		Counter counter = tripToN.get(trip);
-		if (counter == null) {
-			counter = new Counter("n_t#" + trip.toString());
-			tripToN.put(trip, counter);
-		}
-		return counter;
-	}
+//	public Counter getTripCounterN(Trip trip) {
+//		Counter counter = tripToN.get(trip);
+//		if (counter == null) {
+//			counter = new Counter("n_t#" + trip.toString());
+//			tripToN.put(trip, counter);
+//		}
+//		return counter;
+//	}
 	
 	/**
 	 * @param trip	the trip
 	 * @return	returns the counter for b_t corresponding to <code>trip</code>
 	 */
-	public Counter getTripCounterB(ScheduledTrip trip) {
-		Counter counter = tripToB.get(trip);
-		if (counter == null) {
-			counter = new Counter("b_t#" + trip.toString());
-			tripToB.put(trip, counter);
-		}
-		return counter;
-	}
+//	public Counter getTripCounterB(Trip trip) {
+//		Counter counter = tripToB.get(trip);
+//		if (counter == null) {
+//			counter = new Counter("b_t#" + trip.toString());
+//			tripToB.put(trip, counter);
+//		}
+//		return counter;
+//	}
 	
 	private static class TrainWithKPI implements Comparable<TrainWithKPI> {
 		private int trainNr;

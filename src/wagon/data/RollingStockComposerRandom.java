@@ -7,7 +7,7 @@ import org.apache.commons.math3.random.MersenneTwister;
 import org.apache.commons.math3.random.RandomGenerator;
 
 import wagon.rollingstock.*;
-import wagon.timetable.ScheduledTrip;
+import wagon.timetable.Trip;
 
 public class RollingStockComposerRandom implements RollingStockComposer {
 	
@@ -20,7 +20,7 @@ public class RollingStockComposerRandom implements RollingStockComposer {
 	}
 
 	@Override
-	public TrainService realizedComposition(TrainService comp, ScheduledTrip trip) {
+	public TrainService realizedComposition(TrainService comp, Trip trip) {
 		Set<Composition> allCompositions = new HashSet<>();
 		for (Entry<Integer, SortedSet<RealisationDataEntry>> entry : rdata.entrySet()) {
 			for (RealisationDataEntry rEntry : entry.getValue()) {

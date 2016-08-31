@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import wagon.network.Node;
-import wagon.timetable.ScheduledTrip;
+import wagon.timetable.Trip;
 
 /**
  * Represents an event in an event-activity graph.
@@ -15,16 +15,16 @@ import wagon.timetable.ScheduledTrip;
 
 public abstract class EventNode implements Node, Comparable<EventNode> {
 	
-	private ScheduledTrip trip;
+	private Trip trip;
 	
-	public EventNode(ScheduledTrip trip) {
+	public EventNode(Trip trip) {
 		this.trip = trip;
 	}
 	
 	/**
 	 * @return	Returns the associated trip
 	 */
-	public ScheduledTrip trip() {
+	public Trip trip() {
 		return trip;
 	}
 	

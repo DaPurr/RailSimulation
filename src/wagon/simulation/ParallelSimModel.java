@@ -27,7 +27,7 @@ public class ParallelSimModel {
 	private Map<Journey, ArrivalProcess> arrivalProcesses;
 	private RollingStockComposerBasic rcomposer;
 	
-	private Map<Journey, Set<ScheduledTrip>> journeyToTrips;
+	private Map<Journey, Set<Trip>> journeyToTrips;
 	private Map<Journey, Integer> journeyCounts;
 	
 	private Logger log = Logger.getLogger(this.getClass().getName());
@@ -86,13 +86,13 @@ public class ParallelSimModel {
 		rcomposer = new RollingStockComposerBasic(timetable, rdata, random.nextLong());
 		rcomposer = rcomposer.decreaseMismatches(options.getPhi());
 		log.info("...Finish estimating mismatch probabilities");
-//		log.info("Exporting probabilities...");
-//		try {
-//			rcomposer.exportProbabilities("data/materieelplan/mismatch_probs.csv");
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//		}
-//		log.info("... Finish exporting mismatch probabilities");
+		log.info("Exporting probabilities...");
+		try {
+			rcomposer.exportProbabilities("data/materieelplan/mismatch_probs.csv");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		log.info("... Finish exporting mismatch probabilities");
 		
 		// estimate arrival processes
 		log.info("Begin estimating arrival processes...");
@@ -171,8 +171,8 @@ public class ParallelSimModel {
 		return resultMap;
 	}
 	
-	synchronized void addTripToJourney(Journey journey, ScheduledTrip trip) {
-		Set<ScheduledTrip> set = journeyToTrips.get(journey);
+	synchronized void addTripToJourney(Journey journey, Trip trip) {
+		Set<Trip> set = journeyToTrips.get(journey);
 		Integer count = journeyCounts.get(journey);
 		if (set == null) {
 			set = new LinkedHashSet<>();

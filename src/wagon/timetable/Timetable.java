@@ -36,8 +36,8 @@ import wagon.rollingstock.*;
  */
 public class Timetable {
 	
-	private Map<Station, List<ScheduledTrip>> departures;
-	private Map<Integer, SortedSet<ScheduledTrip>> routes;
+	private Map<Station, List<Trip>> departures;
+	private Map<Integer, SortedSet<Trip>> routes;
 	private Set<Station> stations;
 	private Set<TrainService> trainServices;
 	
@@ -55,17 +55,17 @@ public class Timetable {
 	}
 	
 	public Timetable(Timetable timetable) {
-		Map<Station, List<ScheduledTrip>> newDepartures = 
+		Map<Station, List<Trip>> newDepartures = 
 				new LinkedHashMap<>();
-		Map<Integer, SortedSet<ScheduledTrip>> newRoutes = 
+		Map<Integer, SortedSet<Trip>> newRoutes = 
 				new LinkedHashMap<>();
 		Set<Station> newStations = new LinkedHashSet<>();
 		Set<TrainService> newTrainServices = new LinkedHashSet<>();
-		for (Entry<Integer, SortedSet<ScheduledTrip>> entry : timetable.routes.entrySet()) {
-			SortedSet<ScheduledTrip> sortedTrips = entry.getValue();
-			SortedSet<ScheduledTrip> newSortedTrips = new TreeSet<>();
-			for (ScheduledTrip trip : sortedTrips) {
-				ScheduledTrip tripCopy = trip.copy();
+		for (Entry<Integer, SortedSet<Trip>> entry : timetable.routes.entrySet()) {
+			SortedSet<Trip> sortedTrips = entry.getValue();
+			SortedSet<Trip> newSortedTrips = new TreeSet<>();
+			for (Trip trip : sortedTrips) {
+				Trip tripCopy = trip.copy();
 				
 				newSortedTrips.add(tripCopy);
 				
@@ -74,7 +74,7 @@ public class Timetable {
 				
 				newTrainServices.add(tripCopy.getTrainService());
 				
-				List<ScheduledTrip> departuresList = newDepartures.get(tripCopy.fromStation());
+				List<Trip> departuresList = newDepartures.get(tripCopy.fromStation());
 				if (departuresList == null) {
 					departuresList = new ArrayList<>();
 					newDepartures.put(tripCopy.fromStation(), departuresList);
@@ -101,10 +101,10 @@ public class Timetable {
 	 * @param dep		<code>ScheduledDeparture</code> object giving time of 
 	 * 					departure, and destination station.
 	 */
-	public void addStation(Station station, List<ScheduledTrip> trips) {
+	public void addStation(Station station, List<Trip> trips) {
 		if (station == null || trips == null)
 			throw new IllegalArgumentException("Arguments can't be null");
-		for (ScheduledTrip trip : trips) {
+		for (Trip trip : trips) {
 			addStation(station, trip);
 		}
 	}
@@ -121,15 +121,15 @@ public class Timetable {
 	 * @param departure		<code>ScheduledDeparture</code> object representing 
 	 * 						the actual departure
 	 */
-	public void addStation(Station station, ScheduledTrip trip) {
+	public void addStation(Station station, Trip trip) {
 		if (station == null || trip == null)
 			throw new IllegalArgumentException("Arguments can't be null");
 		if (!departures.containsKey(station)) {
-			List<ScheduledTrip> deps = new ArrayList<>();
+			List<Trip> deps = new ArrayList<>();
 			deps.add(trip);
 			departures.put(station, deps);
 		} else {
-			List<ScheduledTrip> deps = departures.get(station);
+			List<Trip> deps = departures.get(station);
 			deps.add(trip);
 			Collections.sort(deps);
 		}
@@ -146,19 +146,19 @@ public class Timetable {
 		return new LinkedHashSet<>(trainServices);
 	}
 	
-	public SortedSet<ScheduledTrip> getRoute(TrainService comp) {
-		Set<ScheduledTrip> route = routes.get(comp.id());
+	public SortedSet<Trip> getRoute(TrainService comp) {
+		Set<Trip> route = routes.get(comp.id());
 		if (route == null)
 			return null;
 		return new TreeSet<>(route);
 	}
 	
-	public SortedSet<ScheduledTrip> getRoute(TrainService comp, int dayOfWeek) {
-		SortedSet<ScheduledTrip> route = routes.get(comp.id());
+	public SortedSet<Trip> getRoute(TrainService comp, int dayOfWeek) {
+		SortedSet<Trip> route = routes.get(comp.id());
 		if (route == null)
 			return null;
-		SortedSet<ScheduledTrip> trips = new TreeSet<>();
-		for (ScheduledTrip trip : route) {
+		SortedSet<Trip> trips = new TreeSet<>();
+		for (Trip trip : route) {
 			if (trip.getDayOfWeek() == dayOfWeek)
 				trips.add(trip);
 		}
@@ -169,7 +169,7 @@ public class Timetable {
 	 * @param 	station	departure station
 	 * @return	sorted list of departures from <code>station</code>
 	 */
-	public List<ScheduledTrip> departuresByStation(Station station) {
+	public List<Trip> departuresByStation(Station station) {
 		if (station == null || !departures.containsKey(station))
 			throw new IllegalArgumentException("Station not available: " + station);
 		return new ArrayList<>(departures.get(station));
@@ -203,12 +203,12 @@ public class Timetable {
 			s += station.name();
 			if (departures.get(station) == null)
 				continue;
-			List<ScheduledTrip> deps = departuresByStation(station);
+			List<Trip> deps = departuresByStation(station);
 			for (int i = 0; i < deps.size(); i++) {
 				s += "\t";
 				if (i > 0)
 					s += "\t";
-				ScheduledTrip dep = deps.get(i);
+				Trip dep = deps.get(i);
 				s += dep.toStation().name() + " ";
 				s += dep.departureTime() + " ";
 				s += dep.getTrainService().type().toString() + "_"
@@ -219,9 +219,9 @@ public class Timetable {
 		return s;
 	}
 	
-	private void addTrip(ScheduledTrip trip) {
+	private void addTrip(Trip trip) {
 		TrainService comp = trip.getTrainService();
-		SortedSet<ScheduledTrip> set = routes.get(comp.id());
+		SortedSet<Trip> set = routes.get(comp.id());
 		if (set == null) {
 			set = new TreeSet<>();
 			routes.put(comp.id(), set);
@@ -262,7 +262,7 @@ public class Timetable {
 		timetable.log.info("...Finished parsing Excel");
 		timetable.log.info("Begin Excel import...");
 		
-		Map<TrainService, List<ScheduledTrip>> trainRoutes = 
+		Map<TrainService, List<Trip>> trainRoutes = 
 				new LinkedHashMap<>();
 		
 		int rowCount = 1;
@@ -299,9 +299,9 @@ public class Timetable {
 			
 			TrainService comp = timetable.parseComposition(trainNr, combination);
 			
-			ScheduledTrip trip = new ScheduledTrip(comp, departureTime, arrivalTime, 
+			Trip trip = new Trip(comp, departureTime, arrivalTime, 
 					fromStation, toStation, norm, dayOfWeek);
-			List<ScheduledTrip> trips = trainRoutes.get(comp);
+			List<Trip> trips = trainRoutes.get(comp);
 			if (trips == null) {
 				trips = new ArrayList<>();
 				trainRoutes.put(comp, trips);
@@ -316,8 +316,8 @@ public class Timetable {
 		
 		// fixing departure/arrival times
 		trainRoutes = fixTripTimes(trainRoutes);
-		for (Entry<TrainService, List<ScheduledTrip>> entry : trainRoutes.entrySet()) {
-			for (ScheduledTrip trip : entry.getValue()) {
+		for (Entry<TrainService, List<Trip>> entry : trainRoutes.entrySet()) {
+			for (Trip trip : entry.getValue()) {
 				Station fromStation = trip.fromStation();
 				Station toStation = trip.toStation();
 				timetable.addStation(fromStation, trip);
@@ -378,14 +378,14 @@ public class Timetable {
 		return composition;
 	}
 	
-	private static Map<TrainService, List<ScheduledTrip>> fixTripTimes(
-			Map<TrainService, List<ScheduledTrip>> trainRoutes) {
-		Map<TrainService, List<ScheduledTrip>> newRoutes = new HashMap<>();
-		for (Entry<TrainService, List<ScheduledTrip>> entry : trainRoutes.entrySet()) {
-			List<ScheduledTrip> trips = entry.getValue();
-			List<ScheduledTrip> newTrips = new ArrayList<>();
+	private static Map<TrainService, List<Trip>> fixTripTimes(
+			Map<TrainService, List<Trip>> trainRoutes) {
+		Map<TrainService, List<Trip>> newRoutes = new HashMap<>();
+		for (Entry<TrainService, List<Trip>> entry : trainRoutes.entrySet()) {
+			List<Trip> trips = entry.getValue();
+			List<Trip> newTrips = new ArrayList<>();
 			
-			for (ScheduledTrip trip : trips) {
+			for (Trip trip : trips) {
 				if (trip.departureTime().compareTo(trip.arrivalTime()) < 0)
 					newTrips.add(trip);
 				else break;
@@ -431,7 +431,7 @@ public class Timetable {
 			Station fromStation = new Station(from);
 			ComfortNorm norm = ComfortNorm.valueOf(trip.getAttribute("norm"));
 			int dayOfWeek = Integer.parseInt(trip.getAttribute("day"));
-			ScheduledTrip st = new ScheduledTrip(comp, 
+			Trip st = new Trip(comp, 
 					LocalTime.parse(departureDate), 
 					LocalTime.parse(arrivalDate), 
 					fromStation, new Station(to), 
@@ -494,8 +494,8 @@ public class Timetable {
 		BufferedWriter bw = new BufferedWriter(new FileWriter(file));
 		bw.write("<timetable>");
 		bw.newLine();
-		for (SortedSet<ScheduledTrip> set : routes.values()) {
-			for (ScheduledTrip trip : set) {
+		for (SortedSet<Trip> set : routes.values()) {
+			for (Trip trip : set) {
 				bw.write(tripToXML(trip, 1));
 				bw.newLine();
 			}
@@ -505,7 +505,7 @@ public class Timetable {
 		bw.close();
 	}
 	
-	private String tripToXML(ScheduledTrip trip, int indentLevel) {
+	private String tripToXML(Trip trip, int indentLevel) {
 		String s = indent(indentLevel) + "<trip ";
 		s += "from=\"" + trip.fromStation().name() + "\" ";
 		s += "to=\"" + trip.toStation().name() + "\" ";
@@ -586,20 +586,20 @@ public class Timetable {
 	/**
 	 * @return	returns all trips associated to the timetable
 	 */
-	public Set<ScheduledTrip> getAllTrips() {
-		Set<ScheduledTrip> trips = new LinkedHashSet<>();
-		for (Entry<Integer, SortedSet<ScheduledTrip>> entry : routes.entrySet()) {
-			Set<ScheduledTrip> set = entry.getValue();
+	public Set<Trip> getAllTrips() {
+		Set<Trip> trips = new LinkedHashSet<>();
+		for (Entry<Integer, SortedSet<Trip>> entry : routes.entrySet()) {
+			Set<Trip> set = entry.getValue();
 			trips.addAll(set);
 		}
 		return trips;
 	}
 	
-	public Set<ScheduledTrip> getAllTrips(int dayOfWeek) {
-		Set<ScheduledTrip> trips = new LinkedHashSet<>();
-		for (Entry<Integer, SortedSet<ScheduledTrip>> entry : routes.entrySet()) {
-			Set<ScheduledTrip> set = entry.getValue();
-			for (ScheduledTrip trip : set) {
+	public Set<Trip> getAllTrips(int dayOfWeek) {
+		Set<Trip> trips = new LinkedHashSet<>();
+		for (Entry<Integer, SortedSet<Trip>> entry : routes.entrySet()) {
+			Set<Trip> set = entry.getValue();
+			for (Trip trip : set) {
 				if (trip.getDayOfWeek() == dayOfWeek)
 					trips.add(trip);
 			}

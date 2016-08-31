@@ -80,7 +80,7 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 	}
 	
 	@Override
-	public TrainService realizedComposition(TrainService service, ScheduledTrip trip) {
+	public TrainService realizedComposition(TrainService service, Trip trip) {
 		double r = random.nextDouble();
 		Map<Composition, Double> map = probabilities.get(service.getComposition());
 		if (map == null) {
@@ -105,11 +105,11 @@ public class RollingStockComposerBasic implements RollingStockComposer {
 		MismatchCounter counts = new MismatchCounter();
 		Map<TripStub, Composition> tripToPlannedComp = new HashMap<>();
 		for (TrainService service : timetable.getTrainServices()) {
-			SortedSet<ScheduledTrip> plannedTrips = timetable.getRoute(service);
+			SortedSet<Trip> plannedTrips = timetable.getRoute(service);
 			int currentDayOfWeek = Integer.MAX_VALUE;
 			Composition currentComp = new Composition();
 			boolean processTrip = true;
-			for (ScheduledTrip trip : plannedTrips) {
+			for (Trip trip : plannedTrips) {
 				Composition tripComp = trip.getTrainService().getComposition();
 				if (!tripComp.equals(currentComp))
 					processTrip = true;

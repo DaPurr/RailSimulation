@@ -32,16 +32,16 @@ public class TimetableTest {
 			LocalTime time = LocalTime.parse("12:00:00");
 			Timetable actualTimetable = new Timetable();
 			Timetable expectedTimetable = new Timetable();
-			List<ScheduledTrip> listDeps = new ArrayList<>();
+			List<Trip> listDeps = new ArrayList<>();
 			for (int j = 0; j < nrDeps; j++) {
 				time = time.plusMinutes(5);
-				ScheduledTrip departure = 
-						new ScheduledTrip(comp, time, time.plusMinutes(5), stationFrom, stationTo, ComfortNorm.C, 2);
+				Trip departure = 
+						new Trip(comp, time, time.plusMinutes(5), stationFrom, stationTo, ComfortNorm.C, 2);
 				listDeps.add(departure);
 			}
 			expectedTimetable.addStation(stationFrom, listDeps);
 			expectedTimetables[i] = actualTimetable;
-			List<ScheduledTrip> shuffledDeps = new ArrayList<>(listDeps);
+			List<Trip> shuffledDeps = new ArrayList<>(listDeps);
 			Collections.shuffle(shuffledDeps);
 			actualTimetable.addStation(stationFrom, shuffledDeps);
 			actualTimetables[i] = expectedTimetable;
@@ -73,19 +73,19 @@ public class TimetableTest {
 			LocalTime time = LocalTime.parse("12:00:00");
 			Timetable actualTimetable = new Timetable();
 			Timetable expectedTimetable = new Timetable();
-			List<ScheduledTrip> listDeps = new ArrayList<>();
+			List<Trip> listDeps = new ArrayList<>();
 			for (int j = 0; j < nrDeps; j++) {
 				time = time.plusMinutes(5);
-				ScheduledTrip departure = 
-						new ScheduledTrip(comp, time, time.plusMinutes(5), stationFrom, stationTo, ComfortNorm.C, 2);
+				Trip departure = 
+						new Trip(comp, time, time.plusMinutes(5), stationFrom, stationTo, ComfortNorm.C, 2);
 				listDeps.add(departure);
 			}
-			for (ScheduledTrip dep : listDeps)
+			for (Trip dep : listDeps)
 				expectedTimetable.addStation(stationFrom, dep);
 			expectedTimetables[i] = actualTimetable;
-			List<ScheduledTrip> shuffledDeps = new ArrayList<>(listDeps);
+			List<Trip> shuffledDeps = new ArrayList<>(listDeps);
 			Collections.shuffle(shuffledDeps);
-			for (ScheduledTrip dep : shuffledDeps)
+			for (Trip dep : shuffledDeps)
 				actualTimetable.addStation(stationFrom, dep);
 			actualTimetables[i] = expectedTimetable;
 		}
@@ -113,22 +113,22 @@ public class TimetableTest {
 		TrainService comp = new TrainService(1, new Composition(units1));
 		
 		LocalTime time1 = LocalTime.parse("12:00:00");
-		ScheduledTrip sd1 = new ScheduledTrip(comp, time1, time1.plusMinutes(2), from1, to1, ComfortNorm.C, 2);
+		Trip sd1 = new Trip(comp, time1, time1.plusMinutes(2), from1, to1, ComfortNorm.C, 2);
 		LocalTime time2 = LocalTime.parse("12:04:00");
-		ScheduledTrip sd2 = new ScheduledTrip(comp, time2, time2.plusMinutes(2), from2, to2, ComfortNorm.C, 2);
+		Trip sd2 = new Trip(comp, time2, time2.plusMinutes(2), from2, to2, ComfortNorm.C, 2);
 		LocalTime time3 = LocalTime.parse("12:09:00");
-		ScheduledTrip sd3 = new ScheduledTrip(comp, time3, time3.plusMinutes(3), from3, to3, ComfortNorm.C, 2);
+		Trip sd3 = new Trip(comp, time3, time3.plusMinutes(3), from3, to3, ComfortNorm.C, 2);
 		
 		Timetable timetable = new Timetable();
 		timetable.addStation(from1, sd1);
 		timetable.addStation(from2, sd2);
 		timetable.addStation(from3, sd3);
 		
-		List<ScheduledTrip> list1 = new ArrayList<>();
+		List<Trip> list1 = new ArrayList<>();
 		list1.add(sd1);
-		List<ScheduledTrip> list2 = new ArrayList<>();
+		List<Trip> list2 = new ArrayList<>();
 		list2.add(sd2);
-		List<ScheduledTrip> list3 = new ArrayList<>();
+		List<Trip> list3 = new ArrayList<>();
 		list3.add(sd3);
 		
 		assertEquals("Incorrect scheduled departures.", 
@@ -157,18 +157,18 @@ public class TimetableTest {
 		TrainService comp2 = new TrainService(1, new Composition(units2));
 		
 		LocalTime time1 = LocalTime.parse("12:00:00");
-		ScheduledTrip sd1 = new ScheduledTrip(comp1, time1, time1.plusMinutes(2), from1, to1, ComfortNorm.C, 2);
+		Trip sd1 = new Trip(comp1, time1, time1.plusMinutes(2), from1, to1, ComfortNorm.C, 2);
 		LocalTime time2 = LocalTime.parse("12:04:00");
-		ScheduledTrip sd2 = new ScheduledTrip(comp1, time2, time2.plusMinutes(2), from2, to2, ComfortNorm.C, 2);
+		Trip sd2 = new Trip(comp1, time2, time2.plusMinutes(2), from2, to2, ComfortNorm.C, 2);
 		LocalTime time3 = LocalTime.parse("12:09:00");
-		ScheduledTrip sd3 = new ScheduledTrip(comp1, time3, time3.plusMinutes(3), from3, to3, ComfortNorm.C, 2);
+		Trip sd3 = new Trip(comp1, time3, time3.plusMinutes(3), from3, to3, ComfortNorm.C, 2);
 		
 		LocalTime time4 = LocalTime.parse("15:00:00");
-		ScheduledTrip sd4 = new ScheduledTrip(comp2, time4, time4.plusMinutes(2), from1, to1, ComfortNorm.C, 2);
+		Trip sd4 = new Trip(comp2, time4, time4.plusMinutes(2), from1, to1, ComfortNorm.C, 2);
 		LocalTime time5 = LocalTime.parse("15:04:00");
-		ScheduledTrip sd5 = new ScheduledTrip(comp2, time5, time5.plusMinutes(2), from2, to2, ComfortNorm.C, 2);
+		Trip sd5 = new Trip(comp2, time5, time5.plusMinutes(2), from2, to2, ComfortNorm.C, 2);
 		LocalTime time6 = LocalTime.parse("15:09:00");
-		ScheduledTrip sd6 = new ScheduledTrip(comp2, time6, time6.plusMinutes(3), from3, to3, ComfortNorm.C, 2);
+		Trip sd6 = new Trip(comp2, time6, time6.plusMinutes(3), from3, to3, ComfortNorm.C, 2);
 		
 		Timetable timetable = new Timetable();
 		timetable.addStation(from1, sd1);
@@ -178,12 +178,12 @@ public class TimetableTest {
 		timetable.addStation(from3, sd6);
 		timetable.addStation(from2, sd5);
 		
-		List<ScheduledTrip> list1 = new ArrayList<>();
+		List<Trip> list1 = new ArrayList<>();
 		list1.add(sd1);
 		list1.add(sd2);
 		list1.add(sd3);
 		
-		List<ScheduledTrip> list2 = new ArrayList<>();
+		List<Trip> list2 = new ArrayList<>();
 		list2.add(sd4);
 		list2.add(sd5);
 		list2.add(sd6);
@@ -191,8 +191,8 @@ public class TimetableTest {
 		assertEquals("Incorrect route length.", list1.size(), timetable.getRoute(comp1).size());
 		assertEquals("Incorrect route length.", list2.size(), timetable.getRoute(comp2).size());
 		
-		SortedSet<ScheduledTrip> route1 = timetable.getRoute(comp1);
-		SortedSet<ScheduledTrip> route2 = timetable.getRoute(comp2);
+		SortedSet<Trip> route1 = timetable.getRoute(comp1);
+		SortedSet<Trip> route2 = timetable.getRoute(comp2);
 		assertEquals("Incorrect route.", list1, route1);
 		assertEquals("Incorrect route.", list2, route2);
 	}

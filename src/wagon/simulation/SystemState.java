@@ -26,8 +26,7 @@ public class SystemState {
 	private Map<Integer, Double> trainOccupation;
 	
 	// counters
-	Map<ScheduledTrip, Counter> tripToB; // b_t
-	Map<ScheduledTrip, Counter> tripToN; // n_t
+	Map<Trip, TripCounters> tripToCounters;
 	
 	/**
 	 * Constructs the system state of a DES.
@@ -45,8 +44,7 @@ public class SystemState {
 //		this.realizedTimetable = realizedTimetable;
 		trainOccupation = new LinkedHashMap<>();
 		
-		tripToB = new LinkedHashMap<>();
-		tripToN = new LinkedHashMap<>();
+		tripToCounters = new LinkedHashMap<>();
 		
 		
 //		arrivalProcesses = estimateArrivalProcesses(cicoData);
@@ -117,29 +115,40 @@ public class SystemState {
 	 * @param incr	the increment
 	 * @return		returns the increment added to the old value
 	 */
-	public double incrementCounterN(ScheduledTrip trip, double incr) {
+	public double incrementCounterN(Trip trip, double incr) {
 		if (trip == null)
 			throw new IllegalArgumentException("Invalid arguments.");
-		Counter count = tripToN.get(trip);
-		if (count == null) {
-			count = new Counter("n_t#" + trip.toString());
-			tripToN.put(trip, count);
+		TripCounters counters = tripToCounters.get(trip);
+		if (counters == null) {
+			ComfortNorm norm = trip.getNorm();
+			counters = new TripCounters(
+					0.0, 
+					0.0, 
+					trip.getTrainService().normCapacity1(norm) + trip.getTrainService().normCapacity2(norm), 
+					trip.getTrainService().getAllSeats());
+			tripToCounters.put(trip, counters);
 		}
-		double result = count.increment(incr);
-		if (result < 0.0)
-			throw new IllegalStateException("Number of passengers aboard " + trip + " cannot be " + result);
-		return result;
+		double n = counters.getN();
+		counters.setN(n+1);
+		if (n+1 < 0.0)
+			throw new IllegalStateException("Number of passengers aboard " + trip + " cannot be " + (n+1));
+		return (n+1);
 	}
 	
-	public void setCounterN(ScheduledTrip trip, double val) {
+	public void setCounterN(Trip trip, double val) {
 		if (trip == null || val < 0.0)
 			throw new IllegalArgumentException("Invalid arguments.");
-		Counter count = tripToN.get(trip);
-		if (count == null) {
-			count = new Counter("n_t#" + trip.toString());
-			tripToN.put(trip, count);
+		TripCounters counters = tripToCounters.get(trip);
+		if (counters == null) {
+			ComfortNorm norm = trip.getNorm();
+			counters = new TripCounters(
+					0.0, 
+					0.0, 
+					trip.getTrainService().normCapacity1(norm) + trip.getTrainService().normCapacity2(norm), 
+					trip.getTrainService().getAllSeats());
+			tripToCounters.put(trip, counters);
 		}
-		count.setValue(val);
+		counters.setN(val);
 	}
 	
 	/**
@@ -150,58 +159,46 @@ public class SystemState {
 	 * @param incr	the increment
 	 * @return		returns the increment added to the old value
 	 */
-	public double incrementCounterB(ScheduledTrip trip, double incr) {
-		if (trip == null || incr < 0)
+	public double incrementCounterB(Trip trip, double incr) {
+		if (trip == null)
 			throw new IllegalArgumentException("Invalid arguments.");
-		Counter count = tripToB.get(trip);
-		if (count == null) {
-			count = new Counter("b_t#" + trip.toString());
-			tripToB.put(trip, count);
+		TripCounters counters = tripToCounters.get(trip);
+		if (counters == null) {
+			ComfortNorm norm = trip.getNorm();
+			counters = new TripCounters(
+					0.0, 
+					0.0, 
+					trip.getTrainService().normCapacity1(norm) + trip.getTrainService().normCapacity2(norm), 
+					trip.getTrainService().getAllSeats());
+			tripToCounters.put(trip, counters);
 		}
-		return count.increment(incr);
+		double n = counters.getB();
+		counters.setB(n+1);
+		if (n+1 < 0.0)
+			throw new IllegalStateException("Number of passengers aboard " + trip + " cannot be " + (n+1));
+		return (n+1);
 	}
 	
-	public void setCounterB(ScheduledTrip trip, double val) {
+	public void setCounterB(Trip trip, double val) {
 		if (trip == null || val < 0.0)
 			throw new IllegalArgumentException("Invalid arguments.");
-		Counter count = tripToB.get(trip);
-		if (count == null) {
-			count = new Counter("b_t#" + trip.toString());
-			tripToB.put(trip, count);
+		TripCounters counters = tripToCounters.get(trip);
+		if (counters == null) {
+			ComfortNorm norm = trip.getNorm();
+			counters = new TripCounters(
+					0.0, 
+					0.0, 
+					trip.getTrainService().normCapacity1(norm) + trip.getTrainService().normCapacity2(norm), 
+					trip.getTrainService().getAllSeats());
+			tripToCounters.put(trip, counters);
 		}
-		count.setValue(val);
-	}
-	
-	/**
-	 * @param trip	the trip
-	 * @return	returns the counter for n_t corresponding to <code>trip</code>
-	 */
-	public Counter getTripCounterN(ScheduledTrip trip) {
-		Counter counter = tripToN.get(trip);
-		if (counter == null) {
-			counter = new Counter("n_t#" + trip.toString());
-			tripToN.put(trip, counter);
-		}
-		return counter;
-	}
-	
-	/**
-	 * @param trip	the trip
-	 * @return	returns the counter for b_t corresponding to <code>trip</code>
-	 */
-	public Counter getTripCounterB(ScheduledTrip trip) {
-		Counter counter = tripToB.get(trip);
-		if (counter == null) {
-			counter = new Counter("b_t#" + trip.toString());
-			tripToB.put(trip, counter);
-		}
-		return counter;
+		counters.setB(val);
 	}
 	
 	/**
 	 * @return	returns all trips for which a counter is registered (n_t counter)
 	 */
-	public Set<ScheduledTrip> getRegisteredTrips() {
-		return new LinkedHashSet<>(tripToN.keySet());
+	public Set<Trip> getRegisteredTrips() {
+		return new LinkedHashSet<>(tripToCounters.keySet());
 	}
 }

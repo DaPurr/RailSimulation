@@ -23,7 +23,7 @@ public class SimModel {
 	private PriorityQueue<Event> eventQueue;
 	private Options options;
 	private Map<Journey, ArrivalProcess> arrivalProcesses;
-	private Map<Journey, Set<ScheduledTrip>> journeyTrips;
+	private Map<Journey, Set<Trip>> journeyTrips;
 	private Map<Journey, Integer> journeyCounts;
 	
 	private Logger log = Logger.getLogger(this.getClass().getName());
@@ -44,7 +44,7 @@ public class SimModel {
 		eventQueue = new PriorityQueue<>();
 		this.options = options;
 		this.arrivalProcesses = arrivalProcesses;
-//		generateMismatches(timetable, rcomposer);
+		generateMismatches(timetable, rcomposer);
 		
 		EventActivityNetwork network = EventActivityNetwork.createTransferNetwork(
 				timetable, 
@@ -75,7 +75,7 @@ public class SimModel {
 			Event event = eventQueue.poll();
 			event.process(state);
 		}
-		Report report = new Report(state, options.getDayOfWeek(), journeyTrips);
+		Report report = new Report(state.tripToCounters, options.getDayOfWeek(), journeyTrips);
 		state = null; // help garbage collection
 		return report;
 	}
@@ -84,12 +84,15 @@ public class SimModel {
 		log.info("Begin processing passengers...");
 		
 		long count = 0;
+		long prevModCount = 0;
 		for (Entry<Journey, ArrivalProcess> entry : arrivalProcesses.entrySet()) {
 			Journey journey = entry.getKey();
 			ArrivalProcess arrivalProcess = entry.getValue();
 			count += generateJourneyArrivals(journey, arrivalProcess);
-			if (count % 100 == 0)
+			if (count / 100 != prevModCount) {
+				prevModCount = count/100;
 				log.info("Processed events for " + count + " passengers...");
+			}
 		}
 		
 		log.info("... Finish processing events for " + count + " passengers");
@@ -144,8 +147,8 @@ public class SimModel {
 		return countPassengersWithRoutes;
 	}
 	
-	private void addTripToJourney(Journey journey, ScheduledTrip trip) {
-		Set<ScheduledTrip> set = journeyTrips.get(journey);
+	private void addTripToJourney(Journey journey, Trip trip) {
+		Set<Trip> set = journeyTrips.get(journey);
 		Integer count = journeyCounts.get(journey);
 		if (set == null) {
 			set = new LinkedHashSet<>();
@@ -160,8 +163,8 @@ public class SimModel {
 	
 	private void processArrivalToEvents(Path path) {
 		List<Event> events = new ArrayList<>();
-		ScheduledTrip boardingTrip = null;
-		ScheduledTrip alightingTrip = null;
+		Trip boardingTrip = null;
+		Trip alightingTrip = null;
 		
 		for (WeightedEdge edge : path.getEdges()) {
 			if (edge instanceof TripEdge) {
@@ -189,6 +192,16 @@ public class SimModel {
 		
 		// add events to queue
 		for (Event event : events) {
+//			if (event instanceof BoardingEvent) {
+//				BoardingEvent bEvent = (BoardingEvent) event;
+//				if (bEvent.toString().equals("[day: 2, 23:10: almb	almp 23:13 ([4682: SLT6])]"))
+//					System.out.print("");
+//			} else if (event instanceof AlightingEvent) {
+//				AlightingEvent aEvent = (AlightingEvent) event;
+//				if (aEvent.toString().equals("[day: 2, 23:10: almb	almp 23:13 ([4682: SLT6])]"))
+//					System.out.print("");
+//			}
+			
 			int size = eventQueue.size();
 			eventQueue.add(event);
 			if (eventQueue.size() != size+1)
@@ -211,9 +224,9 @@ public class SimModel {
 			boolean generate = true;
 			Composition currentPlannedComposition = new Composition();
 			TrainService realizedTrainService = null;
-			SortedSet<ScheduledTrip> sortedTrips = timetable.getRoute(comp, options.getDayOfWeek());
+			SortedSet<Trip> sortedTrips = timetable.getRoute(comp, options.getDayOfWeek());
 			if (sortedTrips != null) {
-				for (ScheduledTrip trip : sortedTrips) {
+				for (Trip trip : sortedTrips) {
 					if (!currentPlannedComposition.equals(trip.getTrainService().getComposition())) {
 						generate = true;
 					}
