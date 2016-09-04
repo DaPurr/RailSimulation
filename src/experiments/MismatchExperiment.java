@@ -16,7 +16,6 @@ import com.google.common.collect.Multimap;
 
 import wagon.data.*;
 import wagon.infrastructure.Station;
-import wagon.rollingstock.*;
 import wagon.simulation.*;
 import wagon.timetable.*;
 
@@ -30,7 +29,7 @@ public class MismatchExperiment {
 			options.setPathToCiCoData("data/cico/ritten_20160112.csv");
 			options.setPathToStations("data/cico/omzettabel_stations.csv");
 			options.setDayOfWeek(2);
-//			options.setSeed(0);
+//			options.setSeed(5678);
 			options.setTransferTime(1);
 			options.setSegmentWidth(1); // in minutes
 			options.setNumberofProcessors(4);
@@ -56,7 +55,7 @@ public class MismatchExperiment {
 			List<Double> kpi4919 = new ArrayList<>();
 			List<Double> kpi5020 = new ArrayList<>();
 			List<Double> kpi5618 = new ArrayList<>();
-			List<Double> kpi2654 = new ArrayList<>();
+			List<Double> kpi2218 = new ArrayList<>();
 			
 			RandomGenerator random = new MersenneTwister();
 			
@@ -84,11 +83,12 @@ public class MismatchExperiment {
 				ParallelSimModel parSim = new ParallelSimModel(
 						sample, 
 						rdata, 
+						arrivalProcesses, 
 						options);
 				ParallelReport parReport = parSim.start(32);
-				System.out.println(parReport.summary());
-				System.out.println(parReport.reportWorstTrains());
-				System.out.println(parReport.reportWorstJourneys());
+//				System.out.println(parReport.summary());
+//				System.out.println(parReport.reportWorstTrains());
+//				System.out.println(parReport.reportWorstJourneys());
 				long endTime = System.nanoTime();
 				double duration = (endTime-startTime)*1e-9;
 				System.out.println("Simulation took " + duration + " s");
@@ -114,14 +114,15 @@ public class MismatchExperiment {
 				kpi5020.add(kpi_5020.mean);
 				KPIEstimate kpi_5618 = parReport.calculateKPINew(parReport.getTripsFromTrain(5618));
 				kpi5618.add(kpi_5618.mean);
-				KPIEstimate kpi_2654 = parReport.calculateKPINew(parReport.getTripsFromTrain(2654));
-				kpi2654.add(kpi_2654.mean);
+				KPIEstimate kpi_2218 = parReport.calculateKPINew(parReport.getTripsFromTrain(2218));
+				kpi2218.add(kpi_2218.mean);
 				
 				File file = new File("data/output_"+count+"_"+phi+".txt");
 				BufferedWriter bw = new BufferedWriter(new FileWriter(file));
 				bw.write(parReport.summary()); bw.newLine();
 				bw.write(parReport.reportWorstTrains()); bw.newLine();
 				bw.write(parReport.reportWorstJourneys()); bw.newLine();
+				bw.write(parReport.reportWorstOrigins()); bw.newLine();
 				bw.newLine();
 				
 				bw.write("14869: KPI=" + kpi_14869.mean + " (" + kpi_14869.std + ")"); bw.newLine();
@@ -133,7 +134,7 @@ public class MismatchExperiment {
 				bw.write("4919: KPI=" + kpi_4919.mean + " (" + kpi_4919.std + ")"); bw.newLine();
 				bw.write("5020: KPI=" + kpi_5020.mean + " (" + kpi_5020.std + ")"); bw.newLine();
 				bw.write("5618: KPI=" + kpi_5618.mean + " (" + kpi_5618.std + ")"); bw.newLine();
-				bw.write("2218: KPI=" + kpi_2654.mean + " (" + kpi_2654.std + ")"); bw.newLine();
+				bw.write("2218: KPI=" + kpi_2218.mean + " (" + kpi_2218.std + ")"); bw.newLine();
 				
 				bw.close();
 				count++;
@@ -151,7 +152,7 @@ public class MismatchExperiment {
 			System.out.println("4919: " + kpi4919);
 			System.out.println("5020: " + kpi5020);
 			System.out.println("5618: " + kpi5618);
-			System.out.println("2654: " + kpi2654);
+			System.out.println("2218: " + kpi2218);
 		} catch (SAXException | IOException | ParserConfigurationException e) {
 			e.printStackTrace();
 		}

@@ -5,6 +5,7 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.Map.Entry;
 
+import wagon.infrastructure.Station;
 import wagon.timetable.Trip;
 
 public class Report {
@@ -15,6 +16,7 @@ public class Report {
 	private final double cicoCorrectionFactor = 1.215767122505321;
 	
 	private Map<Journey, Set<Trip>> journeyTrips;
+	private Map<Station, Set<Trip>> originTrips;
 	
 	/**
 	 * Constructs a <code>Report</code> object.

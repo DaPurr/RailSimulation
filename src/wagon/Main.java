@@ -98,10 +98,11 @@ public class Main {
 					sample, 
 					rdata, 
 					options);
-			ParallelReport parReport = parSim.start(32);
+			ParallelReport parReport = parSim.start(4);
 			System.out.println(parReport.summary());
 			System.out.println(parReport.reportWorstTrains());
 			System.out.println(parReport.reportWorstJourneys());
+			System.out.println(parReport.reportWorstOrigins());
 			long endTime = System.nanoTime();
 			double duration = (endTime-startTime)*1e-9;
 			System.out.println("Simulation took " + duration + " s");

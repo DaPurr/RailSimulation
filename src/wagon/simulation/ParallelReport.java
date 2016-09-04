@@ -4,6 +4,7 @@ import java.time.LocalTime;
 import java.util.*;
 import java.util.Map.Entry;
 
+import wagon.infrastructure.Station;
 import wagon.timetable.*;
 
 public class ParallelReport {
@@ -13,14 +14,17 @@ public class ParallelReport {
 	private Set<Report> reports;
 	private Set<Trip> trips;
 	private Map<Journey, Set<Trip>> journeyTrips;
+	private Map<Station, Set<Trip>> originTrips;
 	
 	public ParallelReport(
 			Collection<Report> reports, 
 			Set<Trip> trips, 
-			Map<Journey, Set<Trip>> journeyTrips) {
+			Map<Journey, Set<Trip>> journeyTrips, 
+			Map<Station, Set<Trip>> originTrips) {
 		this.reports = new HashSet<>(reports);
 		this.trips = trips;
 		this.journeyTrips = journeyTrips;
+		this.originTrips = originTrips;
 	}
 	
 	public String reportWorstJourneys() {
@@ -44,6 +48,31 @@ public class ParallelReport {
 				break;
 			JourneyWithKPI journeyKPI = journeyList.get(i);
 			s += journeyKPI.journey + ": KPI_{new}=" + journeyKPI.kpiNew + "\tKPI_{old}=" + journeyKPI.kpiOld + System.lineSeparator();
+		}
+		return s;
+	}
+	
+	public String reportWorstOrigins() {
+		List<OriginWithKPI> originList = new ArrayList<>();
+		for (Entry<Station, Set<Trip>> entry : originTrips.entrySet()) {
+ 			Station origin = entry.getKey();
+			KPIEstimate kpiNew = calculateKPINew(entry.getValue());
+			KPIEstimate kpiOld = calculateKPIOld(entry.getValue());
+			originList.add(new OriginWithKPI(origin, kpiNew, kpiOld));
+		}
+		
+		Collections.sort(originList);
+		
+		// report worst 15
+		String s = "";
+		s += System.lineSeparator();
+		s += "WORST 10 ORIGINS" + System.lineSeparator();
+		s += "===================" + System.lineSeparator();
+		for (int i = 0; i < 15; i++) {
+			if (i >= originList.size())
+				break;
+			OriginWithKPI originKPI = originList.get(i);
+			s += originKPI.origin.name() + ": KPI_{new}=" + originKPI.kpiNew + "\tKPI_{old}=" + originKPI.kpiOld + System.lineSeparator();
 		}
 		return s;
 	}
@@ -272,6 +301,51 @@ public class ParallelReport {
 			if (res2 != 0)
 				return res2;
 			return journey.toString().compareTo(o.journey.toString());
+		}
+		
+	}
+	
+	private static class OriginWithKPI implements Comparable<OriginWithKPI> {
+		
+		private Station origin;
+		private KPIEstimate kpiNew;
+		private KPIEstimate kpiOld;
+		
+		public OriginWithKPI(
+				Station origin, 
+				KPIEstimate kpiNew, 
+				KPIEstimate kpiOld) {
+			this.origin = origin;
+			this.kpiNew = kpiNew;
+			this.kpiOld = kpiOld;
+		}
+		
+		@Override
+		public boolean equals(Object other) {
+			if (other == this)
+				return true;
+			if (!(other instanceof OriginWithKPI))
+				return false;
+			OriginWithKPI o = (OriginWithKPI) other;
+			return this.origin.equals(o.origin) &&
+					this.kpiNew.equals(o.kpiNew) &&
+					this.kpiOld.equals(o.kpiOld);
+		}
+		
+		@Override
+		public int hashCode() {
+			return 7*origin.hashCode() + 13*kpiNew.hashCode() + 17*kpiOld.hashCode();
+		}
+
+		@Override
+		public int compareTo(OriginWithKPI o) {
+			int res1 = this.kpiNew.compareTo(o.kpiNew);
+			if (res1 != 0)
+				return res1;
+			int res2 = this.kpiOld.compareTo(o.kpiOld);
+			if (res2 != 0)
+				return res2;
+			return origin.toString().compareTo(o.origin.toString());
 		}
 		
 	}

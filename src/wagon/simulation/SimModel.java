@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 
 import wagon.algorithms.*;
 import wagon.data.*;
+import wagon.infrastructure.Station;
 import wagon.network.WeightedEdge;
 import wagon.network.expanded.*;
 import wagon.rollingstock.*;
@@ -24,7 +25,7 @@ public class SimModel {
 	private Options options;
 	private Map<Journey, ArrivalProcess> arrivalProcesses;
 	private Map<Journey, Set<Trip>> journeyTrips;
-	private Map<Journey, Integer> journeyCounts;
+	private Map<Station, Set<Trip>> originTrips;
 	
 	private Logger log = Logger.getLogger(this.getClass().getName());
 	
@@ -38,7 +39,7 @@ public class SimModel {
 		log.setLevel(Level.INFO);
 		
 		journeyTrips = new LinkedHashMap<>();
-		journeyCounts = new LinkedHashMap<>();
+		originTrips = new LinkedHashMap<>();
 		
 		// initialize basic variables
 		eventQueue = new PriorityQueue<>();
@@ -131,11 +132,14 @@ public class SimModel {
 						if (add) {
 							add = false;
 							if (tEdge.trip().departureTime().compareTo(LocalTime.parse("07:00")) >= 0 &&
-									tEdge.trip().departureTime().compareTo(LocalTime.parse("09:00")) <= 0)
+									tEdge.trip().departureTime().compareTo(LocalTime.parse("09:00")) <= 0) {
 								parent.addTripToJourney(journey, tEdge.trip());
-							else if (tEdge.trip().departureTime().compareTo(LocalTime.parse("16:00")) >= 0 &&
-									tEdge.trip().departureTime().compareTo(LocalTime.parse("18:00")) <= 0)
+								parent.addTripToOrigin(journey.origin, tEdge.trip());
+							} else if (tEdge.trip().departureTime().compareTo(LocalTime.parse("16:00")) >= 0 &&
+									tEdge.trip().departureTime().compareTo(LocalTime.parse("18:00")) <= 0) {
 								parent.addTripToJourney(journey, tEdge.trip());
+								parent.addTripToOrigin(journey.origin, tEdge.trip());
+							}
 						}
 					} else if (edge instanceof TransferEdge)
 						add = true;
@@ -147,19 +151,19 @@ public class SimModel {
 		return countPassengersWithRoutes;
 	}
 	
-	private void addTripToJourney(Journey journey, Trip trip) {
-		Set<Trip> set = journeyTrips.get(journey);
-		Integer count = journeyCounts.get(journey);
-		if (set == null) {
-			set = new LinkedHashSet<>();
-			journeyTrips.put(journey, set);
-		}
-		if (count == null) {
-			count = 0;
-		}
-		journeyCounts.put(journey, count+1);
-		set.add(trip);
-	}
+//	private void addTripToJourney(Journey journey, Trip trip) {
+//		Set<Trip> set = journeyTrips.get(journey);
+//		Integer count = journeyCounts.get(journey);
+//		if (set == null) {
+//			set = new LinkedHashSet<>();
+//			journeyTrips.put(journey, set);
+//		}
+//		if (count == null) {
+//			count = 0;
+//		}
+//		journeyCounts.put(journey, count+1);
+//		set.add(trip);
+//	}
 	
 	private void processArrivalToEvents(Path path) {
 		List<Event> events = new ArrayList<>();
@@ -192,16 +196,6 @@ public class SimModel {
 		
 		// add events to queue
 		for (Event event : events) {
-//			if (event instanceof BoardingEvent) {
-//				BoardingEvent bEvent = (BoardingEvent) event;
-//				if (bEvent.toString().equals("[day: 2, 23:10: almb	almp 23:13 ([4682: SLT6])]"))
-//					System.out.print("");
-//			} else if (event instanceof AlightingEvent) {
-//				AlightingEvent aEvent = (AlightingEvent) event;
-//				if (aEvent.toString().equals("[day: 2, 23:10: almb	almp 23:13 ([4682: SLT6])]"))
-//					System.out.print("");
-//			}
-			
 			int size = eventQueue.size();
 			eventQueue.add(event);
 			if (eventQueue.size() != size+1)
