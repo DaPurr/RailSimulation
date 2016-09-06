@@ -261,7 +261,7 @@ public class ParallelSimModel {
 				if (r <= psi)
 					canceledTrains.add(service.id());
 			}
-			timetable.cancelTrain(canceledTrains);
+			realizedTimetable.cancelTrain(canceledTrains);
 			SimModel sim = new SimModel(
 					realizedTimetable, 
 					arrivalProcesses, 
