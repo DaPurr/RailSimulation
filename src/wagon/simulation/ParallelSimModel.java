@@ -13,6 +13,7 @@ import com.google.common.collect.*;
 
 import wagon.data.*;
 import wagon.infrastructure.Station;
+import wagon.rollingstock.TrainService;
 import wagon.timetable.*;
 
 public class ParallelSimModel {
@@ -253,6 +254,14 @@ public class ParallelSimModel {
 		@Override
 		public Report call() throws Exception {
 			Timetable realizedTimetable = new Timetable(timetable);
+			Set<Integer> canceledTrains = new LinkedHashSet<>();
+			double psi = options.getPsi();
+			for (TrainService service : realizedTimetable.getTrainServices()) {
+				double r = random.nextDouble();
+				if (r <= psi)
+					canceledTrains.add(service.id());
+			}
+			timetable.cancelTrain(canceledTrains);
 			SimModel sim = new SimModel(
 					realizedTimetable, 
 					arrivalProcesses, 

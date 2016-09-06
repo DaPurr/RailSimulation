@@ -24,6 +24,7 @@ public class Options {
 	
 	private int segmentWidth;
 	private double phi = 1.0;
+	private double psi = 0.0;
 	
 	private Long seed = null;
 	
@@ -44,6 +45,14 @@ public class Options {
 		checkOutTimeCorrection = 0;
 		timeLowerBound = LocalTime.parse("00:00:00");
 		timeUpperBound = LocalTime.parse("23:59:59");
+	}
+	
+	public void setPsi(double psi) {
+		this.psi = psi;
+	}
+	
+	public double getPsi() {
+		return psi;
 	}
 	
 	public void setPhi(double phi) {

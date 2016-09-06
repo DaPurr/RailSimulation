@@ -39,7 +39,7 @@ public class Timetable {
 	private Map<Station, List<Trip>> departures;
 	private Map<Integer, SortedSet<Trip>> routes;
 	private Set<Station> stations;
-	private Set<TrainService> trainServices;
+	private Set<TrainService> trainServices; 
 	
 	private Logger log = Logger.getLogger(this.getClass().getName());
 	
@@ -605,6 +605,10 @@ public class Timetable {
 			}
 		}
 		return trips;
+	}
+	
+	public void cancelTrainsWithProbability(double psi) {
+		
 	}
 	
 	public void cancelTrain(Set<Integer> ids) {
