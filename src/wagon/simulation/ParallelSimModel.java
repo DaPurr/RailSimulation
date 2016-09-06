@@ -71,6 +71,10 @@ public class ParallelSimModel {
 			e.printStackTrace();
 		}
 		log.info("... Finish exporting mismatch probabilities");
+		
+		// estimate train cancellation probability psi
+		double psi = estimatePsi(rdata);
+		options.setPsi(psi);
 	}
 	
 	public ParallelSimModel(
@@ -213,6 +217,21 @@ public class ParallelSimModel {
 			resultMap.put(journey, arrivalProcess);
 		}
 		return resultMap;
+	}
+	
+	private double estimatePsi(RealisationData rdata) {
+		double psi = 0.0;
+		int countTotal = 0;
+		for (Entry<Integer, SortedSet<RealisationDataEntry>> entry : rdata.entrySet()) {
+			RealisationDataEntry firstEntry = entry.getValue().first();
+			countTotal++;
+			if (firstEntry.getRealizedDepartureTime() == RealisationData.DUMMY &&
+					firstEntry.getRealizedArrivalTime() == RealisationData.DUMMY) {
+				psi++;
+			}
+		}
+		psi /= countTotal;
+		return psi;
 	}
 	
 	synchronized void addTripToJourney(Journey journey, Trip trip) {

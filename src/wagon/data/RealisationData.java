@@ -15,7 +15,7 @@ import wagon.rollingstock.*;
 public class RealisationData {
 
 	private Map<Integer, SortedSet<RealisationDataEntry>> entriesPerTrain;
-	private final static LocalDateTime DUMMY = LocalDateTime.of(1992, 12, 05, 12, 0, 0);
+	public final static LocalDateTime DUMMY = LocalDateTime.of(1992, 12, 05, 12, 0, 0);
 	
 	private Logger log = Logger.getLogger(this.getClass().getName());
 	
