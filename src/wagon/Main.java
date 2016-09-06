@@ -52,7 +52,6 @@ public class Main {
 			options.setTransferTime(1);
 			options.setNumberofProcessors(4);
 			options.setPhi(1.0);
-			options.setPsi(0.5);
 //			
 //			CiCoData cicoData = CiCoData
 //					.importRawData(options);

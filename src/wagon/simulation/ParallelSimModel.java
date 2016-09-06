@@ -143,6 +143,10 @@ public class ParallelSimModel {
 		}
 		log.info("... Finish exporting mismatch probabilities");
 		
+		// estimate train cancellation probability psi
+		double psi = estimatePsi(rdata);
+		options.setPsi(psi);
+		
 		// estimate arrival processes
 		log.info("Begin estimating arrival processes...");
 		arrivalProcesses = estimateArrivalProcesses(cicoData);
