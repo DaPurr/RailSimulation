@@ -110,7 +110,7 @@ public class Timetable {
 	}
 	
 	public Set<Station> getStations() {
-		return new LinkedHashSet<>(stations);
+		return new LinkedHashSet<>(departures.keySet());
 	}
 	
 	/**
@@ -605,5 +605,25 @@ public class Timetable {
 			}
 		}
 		return trips;
+	}
+	
+	public void cancelTrain(Set<Integer> ids) {
+		// remove train services from set of services
+		for (Integer id : ids) {
+			TrainService service = new TrainService(id, new Composition());
+			trainServices.remove(service);
+		}
+		
+		// now remove all associated trips
+		for (Integer id : ids)
+			routes.remove(id);
+		for (Station station : departures.keySet()) {
+			Iterator<Trip> tripIter = departures.get(station).iterator();
+			while (tripIter.hasNext()) {
+				Trip trip = tripIter.next();
+				if (ids.contains(trip.getTrainService().id()))
+					tripIter.remove();
+			}
+		}
 	}
 }

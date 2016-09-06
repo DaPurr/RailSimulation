@@ -137,13 +137,12 @@ public class TrainService {
 		if (!(other instanceof TrainService)) 
 			return false;
 		TrainService o = (TrainService) other;
-		return this.id == o.id;// && 
-				//this.wagons.equals(o.wagons);
+		return this.id == o.id;
 	}
 	
 	@Override
 	public int hashCode() {
-		return 7*Integer.hashCode(id);// + 13*wagons.hashCode();
+		return 7*Integer.hashCode(id);
 	}
 	
 	@Override
