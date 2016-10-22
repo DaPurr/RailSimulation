@@ -52,7 +52,7 @@ public class Main {
 			options.setTransferTime(1);
 			options.setNumberofProcessors(4);
 			options.setPhi(1.0);
-//			options.setPsi(0.015);
+			options.setPsi(0.0);
 //			
 //			CiCoData cicoData = CiCoData
 //					.importRawData(options);
@@ -99,9 +99,10 @@ public class Main {
 					sample, 
 					rdata, 
 					options);
-			ParallelReport parReport = parSim.start(4);
+			ParallelReport parReport = parSim.start(32);
 			System.out.println(parReport.summary());
 			System.out.println(parReport.reportWorstTrains());
+			System.out.println(parReport.reportOrderedStatistics(15));
 			System.out.println(parReport.reportWorstJourneys());
 			System.out.println(parReport.reportWorstOrigins());
 			long endTime = System.nanoTime();

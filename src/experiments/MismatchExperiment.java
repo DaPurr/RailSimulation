@@ -121,6 +121,7 @@ public class MismatchExperiment {
 				BufferedWriter bw = new BufferedWriter(new FileWriter(file));
 				bw.write(parReport.summary()); bw.newLine();
 				bw.write(parReport.reportWorstTrains()); bw.newLine();
+				bw.write(parReport.reportOrderedStatistics(15)); bw.newLine();
 				bw.write(parReport.reportWorstJourneys()); bw.newLine();
 				bw.write(parReport.reportWorstOrigins()); bw.newLine();
 				bw.newLine();

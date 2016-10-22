@@ -145,26 +145,106 @@ public class ParallelReport {
 		return s;
 	}
 	
+	public String reportOrderedStatistics(int n) {
+		Map<Integer, Collection<Trip>> trainMap = new HashMap<>();
+		
+		// add trips to all train numbers
+		for (Trip trip : trips) {
+			int trainNr = trip.getTrainService().id();
+			Collection<Trip> collection = trainMap.get(trainNr);
+			if (collection == null) {
+				collection = new ArrayList<>();
+				trainMap.put(trainNr, collection);
+			}
+			collection.add(trip);
+		}
+		
+		List<List<Double>> orderedLists = new ArrayList<>();
+		for (Report report : reports) {
+			List<Double> listKPI = new ArrayList<>();
+			for (Entry<Integer, Collection<Trip>> entry : trainMap.entrySet()) {
+				double kpiNew = calculateKPINewAuxiliary(report, entry.getValue());
+				listKPI.add(kpiNew);
+			}
+			Collections.sort(listKPI);
+			orderedLists.add(listKPI);
+		}
+		
+		List<KPIEstimate> orderedListEstimate = new ArrayList<>();
+		for (int i = 0; i < orderedLists.get(0).size(); i++) {
+			List<Double> tempList = new ArrayList<>();
+			for (List<Double> list : orderedLists) {
+				tempList.add(list.get(i));
+			}
+			double mean = mean(tempList);
+			double std = std(tempList);
+			KPIEstimate kpi = new KPIEstimate(mean, std);
+			orderedListEstimate.add(kpi);
+		}
+		
+		// report worst 10
+		String s = "";
+		s += System.lineSeparator();
+		s += "WORST 10 TRAINS" + System.lineSeparator();
+		s += "===============" + System.lineSeparator();
+		for (int i = 0; i < n; i++) {
+			if (i >= orderedListEstimate.size())
+				break;
+			KPIEstimate trainKPI = orderedListEstimate.get(i);
+			s += (i+1) + ": KPI_{new}=" + trainKPI + System.lineSeparator();
+		}
+		return s;
+	}
+	
+	public double calculateKPINewAuxiliary(Report report, Collection<Trip> trips) {
+		double sumF = 0.0;
+		double sumB = 0.0;
+		for (Trip trip : trips) {
+			TripCounters tripCounters = report.tripToCounters.get(trip);
+			if (tripCounters == null) {
+//				throw new IllegalArgumentException("Counters for trip cannot be found.");
+				continue;
+			}
+			double countB = tripCounters.getB();
+			countB *= cicoCorrectionFactor; // apply CiCo correction factor to capacity
+			double countN = tripCounters.getN();
+			countN *= cicoCorrectionFactor;
+			double seats = tripCounters.getSeatCapacity();
+//			seats *= (2-cicoCorrectionFactor); // apply CiCo correction factor to capacity
+			double seatsAvailable = Math.max(seats - (countN - countB), 0.0);
+			double countF = Math.min(seatsAvailable, countB);
+			sumF += countF;
+			sumB += countB;
+		}
+		double kpi = sumF/sumB;
+		return kpi;
+	}
+	
+	public double calculateKPIOldAuxiliary(Report report, Collection<Trip> trips) {
+		double numerator = 0.0;
+		double denominator = 0.0;
+		for (Trip trip : trips) {
+			TripCounters tripCounters = report.tripToCounters.get(trip);
+			if (tripCounters == null) {
+//				throw new IllegalArgumentException("Counters for trip cannot be found.");
+				continue;
+			}
+			double countN = tripCounters.getN();
+			countN *= cicoCorrectionFactor; // apply CiCo correction factor to capacity
+			double normCapacity = tripCounters.getNormCapacity();
+//			normCapacity *= (2-cicoCorrectionFactor); // apply CiCo correction factor to capacity
+			numerator += countN*Math.min(normCapacity/countN, 1);
+			denominator += countN;
+		}
+		double kpi = numerator/denominator;
+		return kpi;
+	}
+	
 	public KPIEstimate calculateKPIOld(Collection<Trip> trips) {
 		double[] kpi = new double[reports.size()];
 		int count = 0;
 		for (Report report : reports) {
-			double numerator = 0.0;
-			double denominator = 0.0;
-			for (Trip trip : trips) {
-				TripCounters tripCounters = report.tripToCounters.get(trip);
-				if (tripCounters == null) {
-//					throw new IllegalArgumentException("Counters for trip cannot be found.");
-					continue;
-				}
-				double countN = tripCounters.getN();
-				countN *= cicoCorrectionFactor; // apply CiCo correction factor to capacity
-				double normCapacity = tripCounters.getNormCapacity();
-//				normCapacity *= (2-cicoCorrectionFactor); // apply CiCo correction factor to capacity
-				numerator += countN*Math.min(normCapacity/countN, 1);
-				denominator += countN;
-			}
-			kpi[count] = numerator/denominator;
+			kpi[count] = calculateKPIOldAuxiliary(report, trips);
 			count++;
 		}
 		double mean = mean(kpi);
@@ -176,26 +256,7 @@ public class ParallelReport {
 		double[] kpi = new double[reports.size()];
 		int count = 0;
 		for (Report report : reports) {
-			double sumF = 0.0;
-			double sumB = 0.0;
-			for (Trip trip : trips) {
-				TripCounters tripCounters = report.tripToCounters.get(trip);
-				if (tripCounters == null) {
-//					throw new IllegalArgumentException("Counters for trip cannot be found.");
-					continue;
-				}
-				double countB = tripCounters.getB();
-				countB *= cicoCorrectionFactor; // apply CiCo correction factor to capacity
-				double countN = tripCounters.getN();
-				countN *= cicoCorrectionFactor;
-				double seats = tripCounters.getSeatCapacity();
-//				seats *= (2-cicoCorrectionFactor); // apply CiCo correction factor to capacity
-				double seatsAvailable = Math.max(seats - (countN - countB), 0.0);
-				double countF = Math.min(seatsAvailable, countB);
-				sumF += countF;
-				sumB += countB;
-			}
-			kpi[count] = sumF/sumB;
+			kpi[count] = calculateKPINewAuxiliary(report, trips);
 			count++;
 		}
 		
@@ -248,6 +309,16 @@ public class ParallelReport {
 		return sum/vals.length;
 	}
 	
+	private double mean(Collection<Double> vals) {
+		if (vals.size() < 1)
+			throw new IllegalArgumentException("Array length cannot be smaller than 1");
+		double sum = 0.0;
+		for (double val : vals) {
+			sum += val;
+		}
+		return sum/vals.size();
+	}
+	
 	private double std(double[] vals) {
 		if (vals.length <= 1)
 			return 0;
@@ -258,6 +329,18 @@ public class ParallelReport {
 			sum += term*term;
 		}
 		return Math.sqrt(sum/(vals.length-1));
+	}
+	
+	private double std(Collection<Double> vals) {
+		if (vals.size() <= 1)
+			return 0;
+		double sum = 0.0;
+		double mean = mean(vals);
+		for (double val : vals) {
+			double term = mean-val;
+			sum += term*term;
+		}
+		return Math.sqrt(sum/(vals.size()-1));
 	}
 	
 	private static class JourneyWithKPI implements Comparable<JourneyWithKPI> {
